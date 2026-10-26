@@ -14,28 +14,35 @@
         </template>
       </ArtEntitySummary>
 
-      <ArtForm
-        ref="formRef"
-        v-model="form.model"
-        :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id) || parentTenantLocked)"
-        :rules="form.rules"
-        :span="12"
-        :gutter="22"
-        label-position="top"
-        :show-reset="false"
-        :show-submit="false"
+      <ArtAsyncState
+        :error="optionError"
+        error-title="行动所需资料加载失败"
+        :min-height="240"
+        @retry="retryOptions"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择改善行动负责人"
-            subtitle="负责人承担执行、进度维护与成果验收"
-            placeholder="请选择行动负责人"
-          />
-        </template>
-      </ArtForm>
+        <ArtForm
+          ref="formRef"
+          v-model="form.model"
+          :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id) || parentTenantLocked)"
+          :rules="form.rules"
+          :span="12"
+          :gutter="22"
+          label-position="top"
+          :show-reset="false"
+          :show-submit="false"
+        >
+          <template #ownerEmployeeId>
+            <ArtEmployeeSelect
+              v-model="form.model.ownerEmployeeId"
+              v-model:selected-data="ownerSelection"
+              :tenant-id="form.model.tenantId"
+              title="选择改善行动负责人"
+              subtitle="负责人承担执行、进度维护与成果验收"
+              placeholder="请选择行动负责人"
+            />
+          </template>
+        </ArtForm>
+      </ArtAsyncState>
     </div>
   </ArtDialog>
 </template>
@@ -46,12 +53,14 @@
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { normalizeNullableText } from '@/utils/form/normalize'
+  import { loadAllDocumentPages } from '@/utils/business/document-detail-list'
   import dayjs from 'dayjs'
   import { ElMessage, type FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
   import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
@@ -89,6 +98,10 @@
   const surveys = ref<Api.Hr.EmployeeExperienceSurvey[]>([])
   const organizationOptions = ref<ReturnType<typeof toHrOrganizationTreeOptions>>([])
   const ownerSelection = ref<EmployeeIntegrationItem[]>([])
+  const optionError = shallowRef<Error | null>(null)
+  let openGeneration = 0
+  let tenantRequest = 0
+  let surveyRequest = 0
 
   const createInitialModel = (): Api.Hr.EmployeeExperienceAction => ({
     id: undefined,
@@ -134,7 +147,7 @@
             formModel.organizationId = null
             formModel.ownerEmployeeId = ''
             ownerSelection.value = []
-            await loadOrganizations()
+            await retryOptions()
           }
         }
       })
@@ -158,7 +171,7 @@
               formModel.organizationId = null
               formModel.ownerEmployeeId = ''
               ownerSelection.value = []
-              void loadOrganizations()
+              void retryOptions()
             }
           }
         },
@@ -248,31 +261,79 @@
 
   const loadTenants = async (): Promise<void> => {
     if (!isPlatformSuper.value || tenantOptions.value.length) return
+    const request = ++tenantRequest
+    const generation = openGeneration
     const response = await fetchEnabledTenantList()
+    if (request !== tenantRequest || generation !== openGeneration) return
+    if (response.error) {
+      optionError.value = new Error('租户选项加载失败，请重新加载', { cause: response.error })
+      return
+    }
     tenantOptions.value = (response.data ?? []).map((tenant) => ({
       label: `${tenant.tenantName}（${tenant.tenantCode}）`,
       value: tenant.id!
     }))
   }
   const loadSurveys = async (): Promise<void> => {
-    const response = await fetchEmployeeExperienceRecords<Api.Hr.EmployeeExperienceSurvey>(
-      'survey',
-      { tenantId: formModel.tenantId, from: 0, to: 199 }
-    )
-    surveys.value = (response.data ?? []).filter((survey) =>
-      ['open', 'closed'].includes(survey.status)
-    )
+    const request = ++surveyRequest
+    const generation = openGeneration
+    const tenantId = formModel.tenantId
+    surveys.value = []
+    if (!tenantId) return
+    try {
+      const rows = await loadAllDocumentPages<
+        Api.Hr.EmployeeExperienceSurvey,
+        { tenantId: string; from?: number; to?: number }
+      >((params) => fetchEmployeeExperienceRecords('survey', params), { tenantId }, 200)
+      if (
+        request !== surveyRequest ||
+        generation !== openGeneration ||
+        tenantId !== formModel.tenantId
+      )
+        return
+      surveys.value = rows.filter((survey) => ['open', 'closed'].includes(survey.status))
+    } catch (cause) {
+      if (
+        request === surveyRequest &&
+        generation === openGeneration &&
+        tenantId === formModel.tenantId
+      )
+        optionError.value = new Error('关联调查加载失败，请重新加载', { cause })
+    }
   }
   let organizationRequest = 0
   const loadOrganizations = async (): Promise<void> => {
     const request = ++organizationRequest
+    const generation = openGeneration
     const tenantId = formModel.tenantId
     organizationOptions.value = []
     if (!tenantId) return
     const response = await fetchHrOrganizationTree('experience', { tenantId })
-    if (request !== organizationRequest || tenantId !== formModel.tenantId) return
+    if (
+      request !== organizationRequest ||
+      generation !== openGeneration ||
+      tenantId !== formModel.tenantId
+    )
+      return
+    if (response.error) {
+      optionError.value = new Error('组织选项加载失败，请重新加载', { cause: response.error })
+      return
+    }
     organizationOptions.value = toHrOrganizationTreeOptions(response.data ?? [])
   }
+  const retryOptions = async (): Promise<void> => {
+    const generation = openGeneration
+    optionError.value = null
+    dialogRef.value?.setLoading(true)
+    try {
+      await Promise.all([loadTenants(), loadSurveys(), loadOrganizations()])
+    } finally {
+      if (generation === openGeneration) dialogRef.value?.setLoading(false)
+    }
+  }
+  watch(optionError, (error) => {
+    dialogRef.value?.setOptions({ confirmDisabled: Boolean(error) })
+  })
   const submit = async (): Promise<boolean> => {
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
@@ -294,7 +355,11 @@
     }
   }
   const handleOpen = async (payload: OpenPayload): Promise<void> => {
+    const generation = ++openGeneration
+    optionError.value = null
     parentTenantLocked.value = Boolean(payload.presetSurvey)
+    tenantRequest += 1
+    surveyRequest += 1
     organizationRequest += 1
     dialogType.value = payload.type
     Object.assign(formModel, createInitialModel(), payload.editData ?? {})
@@ -308,28 +373,32 @@
       formModel.tenantId
     )
     await nextTick()
+    if (generation !== openGeneration) return
     formRef.value?.clearValidate()
     await dialogRef.value?.handleOpen(undefined, {
       title: `${payload.type === 'add' ? '新增' : '编辑'}员工体验改善行动`,
       subtitle: '行动从匿名聚合主题出发，不连接任何员工个人答卷',
       confirmText: payload.type === 'add' ? '创建行动' : '保存行动',
       contentMaxHeight: 'calc(100vh - 184px)',
-      onOpen: async (_data, api) => {
-        api.setLoading(true)
-        try {
-          await Promise.all([loadTenants(), loadSurveys(), loadOrganizations()])
-          if (
-            payload.presetSurvey &&
-            !surveys.value.some((item) => item.id === payload.presetSurvey?.id)
-          ) {
-            surveys.value.unshift({
-              ...createSurveyFallback(payload.presetSurvey),
-              status: 'open'
-            })
-          }
-        } finally {
-          api.setLoading(false)
+      onOpen: async () => {
+        await retryOptions()
+        if (
+          generation === openGeneration &&
+          !optionError.value &&
+          payload.presetSurvey &&
+          !surveys.value.some((item) => item.id === payload.presetSurvey?.id)
+        ) {
+          surveys.value.unshift({
+            ...createSurveyFallback(payload.presetSurvey),
+            status: 'open'
+          })
         }
+      },
+      onClose: () => {
+        openGeneration += 1
+        tenantRequest += 1
+        surveyRequest += 1
+        organizationRequest += 1
       },
       onConfirm: async (_data, api) => {
         api.setLoading(true)

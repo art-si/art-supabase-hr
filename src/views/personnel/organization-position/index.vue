@@ -67,7 +67,7 @@
                     ref="organizationTreeRef"
                     :data="organizationState.tree"
                     :props="organizationTreeProps"
-                    :filter-node-method="filterOrganizationNode"
+                    :filter-node-method="matchesOrganizationNodeKeyword"
                     node-key="id"
                     default-expand-all
                     highlight-current
@@ -78,7 +78,9 @@
                     <template #default="{ data: organization }">
                       <div class="organization-position-page__organization-node">
                         <span aria-hidden="true">
-                          <ArtSvgIcon :icon="getOrganizationIcon(organization.organizationType)" />
+                          <ArtSvgIcon
+                            :icon="getOrganizationTypeIcon(organization.organizationType)"
+                          />
                         </span>
                         <span>
                           <strong :title="organization.organizationName">
@@ -240,10 +242,14 @@
 </template>
 
 <script setup lang="ts">
+  import {
+    getOrganizationTypeIcon,
+    matchesOrganizationNodeKeyword
+  } from '@/utils/organization-display'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import ArtEmptyState from '@/components/core/feedback/art-empty-state/index.vue'
   import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
-  import type { ElTree, TreeNodeData } from 'element-plus'
+  import type { ElTree } from 'element-plus'
   import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import ArtIconButton from '@/components/core/widget/art-icon-button/index.vue'
   import ArtTreeExpandToggle from '@/components/core/widget/art-tree-expand-toggle/index.vue'
@@ -390,23 +396,6 @@
       tone: 'success'
     }
   ])
-
-  const getOrganizationIcon = (type: Api.SystemManage.OrganizationType): string =>
-    ({
-      company: 'ri:building-4-line',
-      division: 'ri:git-branch-line',
-      department: 'ri:team-line',
-      team: 'ri:group-2-line'
-    })[type]
-
-  const filterOrganizationNode = (value: string, data: TreeNodeData): boolean => {
-    const organization = data as Organization
-    const keyword = value.trim().toLocaleLowerCase('zh-CN')
-    if (!keyword) return true
-    return [organization.organizationName, organization.organizationCode].some((field) =>
-      field.toLocaleLowerCase('zh-CN').includes(keyword)
-    )
-  }
 
   const loadDirectory = async (): Promise<void> => {
     if (!organizationState.selectedId) return

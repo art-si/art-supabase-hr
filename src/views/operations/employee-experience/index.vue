@@ -1190,13 +1190,12 @@
       }
 
       em {
+        @include ellipsis;
+
         margin-top: 2px;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 11px;
         font-style: normal;
         color: var(--el-text-color-secondary);
-        white-space: nowrap;
       }
     }
 

@@ -393,7 +393,7 @@
               <ElFormItem label="培训费用">
                 <ElInputNumber
                   v-if="canEditCompensationDetails"
-                  :model-value="editableAmount(item.cost)"
+                  :model-value="normalizeNullableNumber(item.cost)"
                   :min="0"
                   :precision="2"
                   :controls="false"
@@ -494,7 +494,7 @@
               <ElFormItem label="金额">
                 <ElInputNumber
                   v-if="canEditCompensationDetails"
-                  :model-value="editableAmount(item.amount)"
+                  :model-value="normalizeNullableNumber(item.amount)"
                   :min="0"
                   :precision="2"
                   :controls="false"
@@ -539,6 +539,7 @@
 </template>
 
 <script setup lang="ts">
+  import { normalizeNullableNumber } from '@/utils/form/normalize'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import { replaceReactiveModel } from '@/utils/form/model'
   import { getScrollBehavior } from '@/utils/ui/scroll'
@@ -687,12 +688,6 @@
       ? `${readonlyGroups} 组敏感信息受字段权限限制；隐藏字段不会提交，只读字段不会被修改。`
       : ''
   })
-  const editableAmount = (value: Api.Hr.ProtectedAmount | undefined): number | null => {
-    const numericValue = Number(value)
-    return value === null || value === undefined || !Number.isFinite(numericValue)
-      ? null
-      : numericValue
-  }
   const historyCountItems = computed(() => [
     { key: 'contracts', label: '劳动合同', value: form.historyCounts?.contracts ?? 0 },
     { key: 'educations', label: '教育背景', value: form.historyCounts?.educations ?? 0 },

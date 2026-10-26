@@ -119,7 +119,7 @@
           <ElFormItem label="月薪">
             <ElInputNumber
               v-if="canEditCompensationDetails"
-              :model-value="editableAmount(item.monthlySalary)"
+              :model-value="normalizeNullableNumber(item.monthlySalary)"
               :min="0"
               :precision="2"
               :controls="false"
@@ -134,6 +134,7 @@
 </template>
 
 <script setup lang="ts">
+  import { normalizeNullableNumber } from '@/utils/form/normalize'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
   import HistoryCard from './history-card.vue'
   import HistorySection from './history-section.vue'
@@ -161,12 +162,6 @@
   const fieldKey = (index: number, field: string): string => `contracts.${index}.${field}`
   const fieldError = (index: number, field: string): string =>
     props.validationErrors[fieldKey(index, field)] ?? ''
-  const editableAmount = (value: Api.Hr.ProtectedAmount | undefined): number | null => {
-    const numericValue = Number(value)
-    return value === null || value === undefined || !Number.isFinite(numericValue)
-      ? null
-      : numericValue
-  }
   const createContract = (): Api.Hr.EmployeeContract => ({
     contractNo: '',
     contractType: 'fixed_term',

@@ -14,17 +14,24 @@
         </template>
       </ArtEntitySummary>
 
-      <ArtForm
-        ref="formRef"
-        v-model="form.model"
-        :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
-        :rules="form.rules"
-        :span="12"
-        :gutter="22"
-        label-position="top"
-        :show-reset="false"
-        :show-submit="false"
-      />
+      <ArtAsyncState
+        :error="optionError"
+        error-title="调查所需资料加载失败"
+        :min-height="240"
+        @retry="retryOptions"
+      >
+        <ArtForm
+          ref="formRef"
+          v-model="form.model"
+          :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
+          :rules="form.rules"
+          :span="12"
+          :gutter="22"
+          label-position="top"
+          :show-reset="false"
+          :show-submit="false"
+        />
+      </ArtAsyncState>
     </div>
   </ArtDialog>
 </template>
@@ -40,6 +47,7 @@
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
   import { fetchHrOrganizationTree, saveEmployeeExperienceRecord } from '@hr/api'
@@ -62,6 +70,9 @@
   const dialogType = ref<DialogType>('add')
   const tenantOptions = ref<Array<{ label: string; value: string }>>([])
   const organizationOptions = ref<ReturnType<typeof toHrOrganizationTreeOptions>>([])
+  const optionError = shallowRef<Error | null>(null)
+  let openGeneration = 0
+  let tenantRequest = 0
 
   const createInitialModel = (): Api.Hr.EmployeeExperienceSurvey => ({
     id: undefined,
@@ -96,7 +107,7 @@
           placeholder: '请选择调查所属租户',
           onChange: async () => {
             formModel.audienceOrganizationId = null
-            await loadOrganizations()
+            await retryOptions()
           }
         }
       })
@@ -218,7 +229,14 @@
 
   const loadTenants = async (): Promise<void> => {
     if (!isPlatformSuper.value || tenantOptions.value.length) return
+    const request = ++tenantRequest
+    const generation = openGeneration
     const response = await fetchEnabledTenantList()
+    if (request !== tenantRequest || generation !== openGeneration) return
+    if (response.error) {
+      optionError.value = new Error('租户选项加载失败，请重新加载', { cause: response.error })
+      return
+    }
     tenantOptions.value = (response.data ?? []).map((tenant) => ({
       label: `${tenant.tenantName}（${tenant.tenantCode}）`,
       value: tenant.id!
@@ -227,13 +245,36 @@
   let organizationRequest = 0
   const loadOrganizations = async (): Promise<void> => {
     const request = ++organizationRequest
+    const generation = openGeneration
     const tenantId = formModel.tenantId
     organizationOptions.value = []
     if (!tenantId) return
     const response = await fetchHrOrganizationTree('experience', { tenantId })
-    if (request !== organizationRequest || tenantId !== formModel.tenantId) return
+    if (
+      request !== organizationRequest ||
+      generation !== openGeneration ||
+      tenantId !== formModel.tenantId
+    )
+      return
+    if (response.error) {
+      optionError.value = new Error('组织选项加载失败，请重新加载', { cause: response.error })
+      return
+    }
     organizationOptions.value = toHrOrganizationTreeOptions(response.data ?? [])
   }
+  const retryOptions = async (): Promise<void> => {
+    const generation = openGeneration
+    optionError.value = null
+    dialogRef.value?.setLoading(true)
+    try {
+      await Promise.all([loadTenants(), loadOrganizations()])
+    } finally {
+      if (generation === openGeneration) dialogRef.value?.setLoading(false)
+    }
+  }
+  watch(optionError, (error) => {
+    dialogRef.value?.setOptions({ confirmDisabled: Boolean(error) })
+  })
   const submit = async (): Promise<boolean> => {
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
@@ -265,23 +306,25 @@
     type: DialogType,
     editData?: Api.Hr.EmployeeExperienceSurvey
   ): Promise<void> => {
+    const generation = ++openGeneration
+    optionError.value = null
+    tenantRequest += 1
     organizationRequest += 1
     dialogType.value = type
     Object.assign(formModel, createInitialModel(), editData ?? {})
     await nextTick()
+    if (generation !== openGeneration) return
     formRef.value?.clearValidate()
     await dialogRef.value?.handleOpen(undefined, {
       title: `${type === 'add' ? '新建' : '编辑'}员工体验调查`,
       subtitle: '调查发布前可维护配置与题目，发布后设置与受众快照冻结',
       confirmText: type === 'add' ? '创建草稿' : '保存设置',
       contentMaxHeight: 'calc(100vh - 184px)',
-      onOpen: async (_data, api) => {
-        api.setLoading(true)
-        try {
-          await Promise.all([loadTenants(), loadOrganizations()])
-        } finally {
-          api.setLoading(false)
-        }
+      onOpen: async () => retryOptions(),
+      onClose: () => {
+        openGeneration += 1
+        tenantRequest += 1
+        organizationRequest += 1
       },
       onConfirm: async (_data, api) => {
         api.setLoading(true)
