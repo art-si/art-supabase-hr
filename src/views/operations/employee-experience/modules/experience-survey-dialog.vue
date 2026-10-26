@@ -41,7 +41,6 @@
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { normalizeNullableText } from '@/utils/form/normalize'
-  import { toTenantSelectOptions } from '@/utils/tenant-display'
   import dayjs from 'dayjs'
   import { ElMessage, type FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
@@ -49,7 +48,6 @@
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
-  import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
   import { fetchHrOrganizationTree, saveEmployeeExperienceRecord } from '@hr/api'
   import {
@@ -69,12 +67,10 @@
   const dialogRef = ref<ArtDialogExpose>()
   const formRef = ref<ArtFormExpose>()
   const dialogType = ref<DialogType>('add')
-  const tenantOptions = ref<Array<{ label: string; value: string }>>([])
   const organizationOptions = ref<ReturnType<typeof toHrOrganizationTreeOptions>>([])
   const optionError = shallowRef<Error | null>(null)
   let openGeneration = 0
   let optionsRequest = 0
-  let tenantRequest = 0
 
   const createInitialModel = (): Api.Hr.EmployeeExperienceSurvey => ({
     id: undefined,
@@ -102,15 +98,10 @@
         key: 'tenantId',
         type: 'select',
         span: 24,
-        options: tenantOptions.value,
         props: {
           filterable: true,
           disabled: Boolean(formModel.id),
-          placeholder: '请选择调查所属租户',
-          onChange: async () => {
-            formModel.audienceOrganizationId = null
-            await retryOptions()
-          }
+          placeholder: '请选择调查所属租户'
         }
       })
     }
@@ -229,22 +220,6 @@
     }))
   })
 
-  const loadTenants = async (): Promise<void> => {
-    if (!isPlatformSuper.value || tenantOptions.value.length) return
-    const request = ++tenantRequest
-    const generation = openGeneration
-    const response = await fetchEnabledTenantList()
-    if (request !== tenantRequest || generation !== openGeneration) return
-    if (response.error) {
-      optionError.value = new Error('租户选项加载失败，请重新加载', { cause: response.error })
-      return
-    }
-    tenantOptions.value = toTenantSelectOptions(
-      (response.data ?? []).filter((tenant): tenant is typeof tenant & { id: string } =>
-        Boolean(tenant.id)
-      )
-    )
-  }
   let organizationRequest = 0
   const loadOrganizations = async (): Promise<void> => {
     const request = ++organizationRequest
@@ -271,7 +246,7 @@
     optionError.value = null
     dialogRef.value?.setLoading(true)
     try {
-      await Promise.all([loadTenants(), loadOrganizations()])
+      await loadOrganizations()
     } catch (cause) {
       if (generation === openGeneration && request === optionsRequest)
         optionError.value = new Error('调查所需资料加载失败，请重新加载', { cause })
@@ -283,6 +258,21 @@
   watch(optionError, (error) => {
     dialogRef.value?.setOptions({ confirmDisabled: Boolean(error) })
   })
+  watch(
+    () => formModel.tenantId,
+    (tenantId, previousTenantId) => {
+      if (
+        !tenantId ||
+        !previousTenantId ||
+        tenantId === previousTenantId ||
+        !unref(dialogRef.value?.visible) ||
+        formModel.id
+      )
+        return
+      formModel.audienceOrganizationId = null
+      void retryOptions()
+    }
+  )
   const submit = async (): Promise<boolean> => {
     const generation = openGeneration
     const type = dialogType.value
@@ -319,7 +309,6 @@
   ): Promise<void> => {
     const generation = ++openGeneration
     optionError.value = null
-    tenantRequest += 1
     organizationRequest += 1
     dialogType.value = type
     Object.assign(formModel, createInitialModel(), editData ?? {})
@@ -334,7 +323,6 @@
       onOpen: async () => retryOptions(),
       onClose: () => {
         openGeneration += 1
-        tenantRequest += 1
         organizationRequest += 1
       },
       onConfirm: async (_data, api) => {

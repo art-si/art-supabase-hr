@@ -54,7 +54,6 @@
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { normalizeNullableText } from '@/utils/form/normalize'
   import { loadAllDocumentPages } from '@/utils/business/document-detail-list'
-  import { toTenantSelectOptions } from '@/utils/tenant-display'
   import dayjs from 'dayjs'
   import { ElMessage, type FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
@@ -64,7 +63,6 @@
   import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
   import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
-  import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
   import {
     fetchEmployeeExperienceRecords,
@@ -95,14 +93,12 @@
   const formRef = ref<ArtFormExpose>()
   const dialogType = ref<DialogType>('add')
   const parentTenantLocked = ref(false)
-  const tenantOptions = ref<Array<{ label: string; value: string }>>([])
   const surveys = ref<Api.Hr.EmployeeExperienceSurvey[]>([])
   const organizationOptions = ref<ReturnType<typeof toHrOrganizationTreeOptions>>([])
   const ownerSelection = ref<EmployeeIntegrationItem[]>([])
   const optionError = shallowRef<Error | null>(null)
   let openGeneration = 0
   let optionsRequest = 0
-  let tenantRequest = 0
   let surveyRequest = 0
 
   const createInitialModel = (): Api.Hr.EmployeeExperienceAction => ({
@@ -139,18 +135,10 @@
         key: 'tenantId',
         type: 'select',
         span: 24,
-        options: tenantOptions.value,
         props: {
           filterable: true,
           disabled: Boolean(formModel.id),
-          placeholder: '请选择行动所属租户',
-          onChange: async () => {
-            formModel.surveyId = ''
-            formModel.organizationId = null
-            formModel.ownerEmployeeId = ''
-            ownerSelection.value = []
-            await retryOptions()
-          }
+          placeholder: '请选择行动所属租户'
         }
       })
     }
@@ -170,10 +158,6 @@
             const survey = surveys.value.find((item) => item.id === value)
             if (survey?.tenantId && survey.tenantId !== formModel.tenantId) {
               formModel.tenantId = survey.tenantId
-              formModel.organizationId = null
-              formModel.ownerEmployeeId = ''
-              ownerSelection.value = []
-              void retryOptions()
             }
           }
         },
@@ -261,22 +245,6 @@
     }))
   })
 
-  const loadTenants = async (): Promise<void> => {
-    if (!isPlatformSuper.value || tenantOptions.value.length) return
-    const request = ++tenantRequest
-    const generation = openGeneration
-    const response = await fetchEnabledTenantList()
-    if (request !== tenantRequest || generation !== openGeneration) return
-    if (response.error) {
-      optionError.value = new Error('租户选项加载失败，请重新加载', { cause: response.error })
-      return
-    }
-    tenantOptions.value = toTenantSelectOptions(
-      (response.data ?? []).filter((tenant): tenant is typeof tenant & { id: string } =>
-        Boolean(tenant.id)
-      )
-    )
-  }
   const loadSurveys = async (): Promise<void> => {
     const request = ++surveyRequest
     const generation = openGeneration
@@ -330,7 +298,7 @@
     optionError.value = null
     dialogRef.value?.setLoading(true)
     try {
-      await Promise.all([loadTenants(), loadSurveys(), loadOrganizations()])
+      await Promise.all([loadSurveys(), loadOrganizations()])
     } catch (cause) {
       if (generation === openGeneration && request === optionsRequest)
         optionError.value = new Error('行动所需资料加载失败，请重新加载', { cause })
@@ -342,6 +310,26 @@
   watch(optionError, (error) => {
     dialogRef.value?.setOptions({ confirmDisabled: Boolean(error) })
   })
+  watch(
+    () => formModel.tenantId,
+    (tenantId, previousTenantId) => {
+      if (
+        !tenantId ||
+        !previousTenantId ||
+        tenantId === previousTenantId ||
+        !unref(dialogRef.value?.visible) ||
+        formModel.id ||
+        parentTenantLocked.value
+      )
+        return
+      const selectedSurvey = surveys.value.find((survey) => survey.id === formModel.surveyId)
+      if (selectedSurvey?.tenantId !== tenantId) formModel.surveyId = ''
+      formModel.organizationId = null
+      formModel.ownerEmployeeId = ''
+      ownerSelection.value = []
+      void retryOptions()
+    }
+  )
   const submit = async (): Promise<boolean> => {
     const generation = openGeneration
     const type = dialogType.value
@@ -369,7 +357,6 @@
     const generation = ++openGeneration
     optionError.value = null
     parentTenantLocked.value = Boolean(payload.presetSurvey)
-    tenantRequest += 1
     surveyRequest += 1
     organizationRequest += 1
     dialogType.value = payload.type
@@ -407,7 +394,6 @@
       },
       onClose: () => {
         openGeneration += 1
-        tenantRequest += 1
         surveyRequest += 1
         organizationRequest += 1
       },
