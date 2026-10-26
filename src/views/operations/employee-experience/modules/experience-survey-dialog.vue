@@ -41,6 +41,7 @@
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { normalizeNullableText } from '@/utils/form/normalize'
+  import { toTenantSelectOptions } from '@/utils/tenant-display'
   import dayjs from 'dayjs'
   import { ElMessage, type FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
@@ -72,6 +73,7 @@
   const organizationOptions = ref<ReturnType<typeof toHrOrganizationTreeOptions>>([])
   const optionError = shallowRef<Error | null>(null)
   let openGeneration = 0
+  let optionsRequest = 0
   let tenantRequest = 0
 
   const createInitialModel = (): Api.Hr.EmployeeExperienceSurvey => ({
@@ -237,10 +239,11 @@
       optionError.value = new Error('租户选项加载失败，请重新加载', { cause: response.error })
       return
     }
-    tenantOptions.value = (response.data ?? []).map((tenant) => ({
-      label: `${tenant.tenantName}（${tenant.tenantCode}）`,
-      value: tenant.id!
-    }))
+    tenantOptions.value = toTenantSelectOptions(
+      (response.data ?? []).filter((tenant): tenant is typeof tenant & { id: string } =>
+        Boolean(tenant.id)
+      )
+    )
   }
   let organizationRequest = 0
   const loadOrganizations = async (): Promise<void> => {
@@ -264,20 +267,28 @@
   }
   const retryOptions = async (): Promise<void> => {
     const generation = openGeneration
+    const request = ++optionsRequest
     optionError.value = null
     dialogRef.value?.setLoading(true)
     try {
       await Promise.all([loadTenants(), loadOrganizations()])
+    } catch (cause) {
+      if (generation === openGeneration && request === optionsRequest)
+        optionError.value = new Error('调查所需资料加载失败，请重新加载', { cause })
     } finally {
-      if (generation === openGeneration) dialogRef.value?.setLoading(false)
+      if (generation === openGeneration && request === optionsRequest)
+        dialogRef.value?.setLoading(false)
     }
   }
   watch(optionError, (error) => {
     dialogRef.value?.setOptions({ confirmDisabled: Boolean(error) })
   })
   const submit = async (): Promise<boolean> => {
+    const generation = openGeneration
+    const type = dialogType.value
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
+      if (generation !== openGeneration) return false
       if (formModel.audienceType === 'organization' && !formModel.audienceOrganizationId) {
         ElMessage.warning('组织定向调查需要选择目标组织')
         return false
@@ -294,7 +305,7 @@
           formModel.audienceType === 'organization' ? formModel.audienceOrganizationId : null,
         description: normalizeNullableText(formModel.description)
       })
-      emit('success', dialogType.value)
+      emit('success', type)
       return true
     } catch (error) {
       notifyFriendlyError(error, '保存失败，请检查填写内容后重试', 'warning')
@@ -327,11 +338,12 @@
         organizationRequest += 1
       },
       onConfirm: async (_data, api) => {
+        const confirmGeneration = openGeneration
         api.setLoading(true)
         try {
           return await submit()
         } finally {
-          api.setLoading(false)
+          if (confirmGeneration === openGeneration) api.setLoading(false)
         }
       }
     })
