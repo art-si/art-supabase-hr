@@ -386,7 +386,7 @@
       color: var(--el-text-color-secondary);
       background: var(--default-box-color);
       border: 1px dashed var(--art-card-border);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       svg {
         flex: 0 0 auto;

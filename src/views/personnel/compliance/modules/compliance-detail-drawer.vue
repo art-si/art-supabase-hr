@@ -401,7 +401,7 @@
         ),
         color-mix(in srgb, var(--theme-color) 5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 18%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 6px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__identity {
@@ -443,7 +443,7 @@
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 11%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 18%, transparent);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__status {
@@ -458,7 +458,7 @@
       padding: 4px 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       dl {
         display: grid;
@@ -497,7 +497,7 @@
       padding: 17px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > header {
         display: flex;

@@ -43,7 +43,8 @@ async function prepareLocation(
     dataState: {
       rows: computed(() => rows.value),
       loading: computed(() => loading.value),
-      error: computed(() => error.value)
+      error: computed(() => error.value),
+      pagination: computed(() => undefined)
     },
     refreshData: async () => {
       refreshCount++

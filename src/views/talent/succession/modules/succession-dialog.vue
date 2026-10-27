@@ -578,7 +578,7 @@
       color: var(--el-text-color-regular);
       background: color-mix(in srgb, var(--el-color-primary) 7%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--el-color-primary) 18%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > :deep(.art-svg-icon) {
         flex: 0 0 auto;

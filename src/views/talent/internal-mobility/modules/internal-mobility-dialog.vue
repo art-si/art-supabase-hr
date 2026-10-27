@@ -632,7 +632,7 @@
       gap: 14px;
       align-items: center;
       padding: 15px 16px;
-      border-radius: 12px;
+      border-radius: var(--art-surface-radius);
 
       > span:first-child {
         display: grid;
@@ -642,7 +642,7 @@
         font-size: 20px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 11%, transparent);
-        border-radius: 11px;
+        border-radius: var(--art-surface-radius);
       }
 
       div {

@@ -885,7 +885,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 13%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 24px color-mix(in srgb, var(--art-gray-900) 3.5%, transparent);
     }
 
@@ -945,7 +945,7 @@
     &__section-icon {
       width: 42px;
       height: 42px;
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       :deep(.art-svg-icon) {
         font-size: 19px;
@@ -974,7 +974,7 @@
       overflow: hidden;
       background: color-mix(in srgb, var(--theme-color) 2%, var(--default-box-color));
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       button {
         position: relative;
@@ -1083,7 +1083,7 @@
     &__stage-icon {
       width: 36px;
       height: 36px;
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       :deep(.art-svg-icon) {
         font-size: 17px;

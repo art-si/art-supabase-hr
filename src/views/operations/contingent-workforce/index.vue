@@ -1215,6 +1215,7 @@
 
 <style scoped lang="scss">
   @use '../../shared/hr-table-workspace-layout' as *;
+  @use '../../shared/hr-lifecycle-workspace' as lifecycle;
 
   .contingent-page {
     @include hr-table-workspace-layout(420px);
@@ -1233,7 +1234,7 @@
       padding: 18px;
       background: var(--art-bg-color);
       border: 1px solid var(--contingent-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 28px rgb(37 42 62 / 3%);
     }
 
@@ -1260,15 +1261,7 @@
     }
 
     &__command-icon {
-      display: grid;
-      flex: 0 0 auto;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      font-size: 19px;
-      color: var(--theme-color);
-      background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-      border-radius: 11px;
+      @include lifecycle.command-icon;
     }
 
     &__command small,
@@ -1293,13 +1286,7 @@
 
     &__command em,
     &__workspace header span {
-      margin-top: 2px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 12px;
-      font-style: normal;
-      color: var(--el-text-color-secondary);
-      white-space: nowrap;
+      @include lifecycle.supporting-text;
     }
 
     &__lifecycle {
@@ -1312,7 +1299,7 @@
       list-style: none;
       background: var(--contingent-border);
       border: 1px solid var(--contingent-border);
-      border-radius: 11px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__lifecycle li {
@@ -1371,13 +1358,7 @@
     }
 
     &__stage-icon {
-      display: grid;
-      place-items: center;
-      width: 30px;
-      height: 30px;
-      color: var(--theme-color);
-      background: color-mix(in srgb, var(--theme-color) 9%, transparent);
-      border-radius: 9px;
+      @include lifecycle.stage-icon;
     }
 
     &__guardrails {
@@ -1395,7 +1376,7 @@
       padding: 12px;
       background: var(--default-box-color);
       border: 1px solid var(--contingent-border);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       > span {
         display: grid;
@@ -1405,7 +1386,7 @@
         height: 34px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 8%, transparent);
-        border-radius: 9px;
+        border-radius: var(--art-surface-radius);
       }
 
       div {
@@ -1497,7 +1478,7 @@
       margin-top: 12px;
       background: color-mix(in srgb, var(--theme-color) 5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 15%, var(--contingent-border));
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       > span {
         display: grid;
@@ -1506,7 +1487,7 @@
         height: 32px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-        border-radius: 9px;
+        border-radius: var(--art-surface-radius);
       }
 
       div {

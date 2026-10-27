@@ -408,7 +408,7 @@
         var(--default-box-color) 55%
       );
       border: 1px solid color-mix(in srgb, var(--theme-color) 11%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > div {
         display: flex;
@@ -442,7 +442,7 @@
       height: 36px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__actions {

@@ -894,7 +894,7 @@
       padding: 18px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 6px);
+      border-radius: var(--art-surface-radius);
       box-shadow: var(--art-box-shadow-xs);
     }
 
@@ -974,7 +974,7 @@
         padding: 13px;
         background: color-mix(in srgb, var(--default-box-color) 92%, var(--theme-color));
         border: 1px solid var(--art-card-border);
-        border-radius: calc(var(--el-border-radius-base) + 3px);
+        border-radius: var(--art-surface-radius);
 
         &.is-current {
           border-color: color-mix(in srgb, var(--theme-color) 38%, var(--art-card-border));

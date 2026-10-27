@@ -1064,7 +1064,7 @@
         ),
         var(--default-box-color);
       border: 1px solid var(--art-border-color);
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__heading,

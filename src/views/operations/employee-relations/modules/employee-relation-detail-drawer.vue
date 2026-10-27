@@ -389,7 +389,7 @@
         ),
         color-mix(in srgb, var(--theme-color) 4%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 16%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__identity {
@@ -505,7 +505,7 @@
       padding: 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 3px);
+      border-radius: var(--art-surface-radius);
 
       > header {
         display: flex;

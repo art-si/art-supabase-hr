@@ -581,7 +581,7 @@
       height: 36px;
       color: var(--el-color-primary);
       background: var(--el-color-primary-light-9);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__mobile-scope > div {

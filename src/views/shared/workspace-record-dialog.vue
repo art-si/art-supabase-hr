@@ -344,7 +344,7 @@
       overflow: hidden;
       background: color-mix(in srgb, var(--el-color-primary) 5%, var(--el-bg-color));
       border: 1px solid color-mix(in srgb, var(--el-color-primary) 14%, var(--el-border-color));
-      border-radius: 12px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__icon {
@@ -355,7 +355,7 @@
       font-size: 23px;
       color: var(--el-color-white);
       background: var(--el-color-primary);
-      border-radius: 12px;
+      border-radius: var(--art-surface-radius);
 
       > :deep(.art-svg-icon),
       > .hr-record-dialog__icon-fallback {
@@ -415,7 +415,7 @@
       padding: 18px 18px 4px;
       background: var(--el-fill-color-blank);
       border: 1px solid var(--el-border-color-lighter);
-      border-radius: 12px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__form-heading {
@@ -453,7 +453,7 @@
       line-height: 18px;
       color: var(--el-text-color-secondary);
       background: var(--el-fill-color-light);
-      border-radius: 8px;
+      border-radius: var(--art-surface-radius);
     }
 
     :deep(.el-form-item) {

@@ -1199,7 +1199,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 11%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 26px color-mix(in srgb, var(--art-gray-900) 4%, transparent);
     }
 
@@ -1262,7 +1262,7 @@
       height: 42px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 11%, transparent);
-      border-radius: 13px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__cycle-picker {
@@ -1295,7 +1295,7 @@
       list-style: none;
       background: var(--art-card-border);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 3px);
+      border-radius: var(--art-surface-radius);
 
       li {
         position: relative;
@@ -1389,7 +1389,7 @@
       height: 34px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 9%, transparent);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     .is-complete &__stage-icon {
@@ -1416,7 +1416,7 @@
         padding: 11px 12px;
         background: color-mix(in srgb, var(--theme-color) 3%, var(--default-box-color));
         border: 1px solid var(--art-card-border);
-        border-radius: calc(var(--el-border-radius-base) + 2px);
+        border-radius: var(--art-surface-radius);
       }
 
       article > span {
@@ -1426,7 +1426,7 @@
         height: 36px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 9%, transparent);
-        border-radius: 10px;
+        border-radius: var(--art-surface-radius);
       }
 
       article > div {
@@ -1493,7 +1493,7 @@
         var(--default-box-color)
       );
       border: 1px dashed color-mix(in srgb, var(--theme-color) 30%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > span {
         display: grid;
@@ -1502,7 +1502,7 @@
         height: 48px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 11%, transparent);
-        border-radius: 14px;
+        border-radius: var(--art-surface-radius);
       }
 
       div {

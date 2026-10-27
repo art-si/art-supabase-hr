@@ -247,7 +247,7 @@
       padding: 18px;
       background: color-mix(in srgb, var(--theme-color) 7%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 18%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 6px);
+      border-radius: var(--art-surface-radius);
 
       > div:first-child {
         min-width: 0;
@@ -284,7 +284,7 @@
       padding: 4px 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       dl {
         display: grid;
@@ -323,7 +323,7 @@
       padding: 17px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > header {
         display: flex;

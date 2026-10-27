@@ -697,7 +697,7 @@
       padding: 15px 16px;
       background: color-mix(in srgb, var(--el-fill-color-light) 74%, transparent);
       border: 1px solid var(--el-border-color-lighter);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       span,
       small {

@@ -654,7 +654,7 @@
         ),
         color-mix(in srgb, var(--theme-color) 4%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 16%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__identity {
@@ -718,7 +718,7 @@
       overflow: hidden;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__summary dl > div {
@@ -760,7 +760,7 @@
       padding: 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > header {
         display: grid;
@@ -854,7 +854,7 @@
       padding: 18px;
       background: color-mix(in srgb, var(--el-color-success) 4%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--el-color-success) 15%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
 
       > div:nth-child(2) {
         min-width: 0;
@@ -1112,7 +1112,7 @@
       padding: 17px;
       background: color-mix(in srgb, var(--el-color-success) 5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--el-color-success) 15%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
 
       > span {
         display: grid;

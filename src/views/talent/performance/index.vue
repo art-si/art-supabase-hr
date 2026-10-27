@@ -1238,7 +1238,7 @@
         ),
         var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
       box-shadow: var(--art-box-shadow-xs);
     }
 
@@ -1278,7 +1278,7 @@
       height: 36px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__governance-badge {
@@ -1302,7 +1302,7 @@
       padding: 16px;
       background: color-mix(in srgb, var(--theme-color) 3%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 15%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__cycle-identity {
@@ -1397,7 +1397,7 @@
 
         &.is-current {
           background: color-mix(in srgb, var(--theme-color) 7%, transparent);
-          border-radius: 10px;
+          border-radius: var(--art-surface-radius);
 
           .performance-page__rail-marker,
           b {
@@ -1428,7 +1428,7 @@
     &__empty-cycle {
       background: color-mix(in srgb, var(--theme-color) 3%, var(--default-box-color));
       border: 1px dashed color-mix(in srgb, var(--theme-color) 24%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__control-note {

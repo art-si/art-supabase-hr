@@ -79,7 +79,7 @@
       cursor: pointer;
       background: color-mix(in srgb, var(--default-box-color) 96%, transparent);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
       transition:
         border-color 160ms ease,
         background-color 160ms ease,
@@ -135,7 +135,7 @@
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 10%, transparent);
       border: 1px solid color-mix(in srgb, var(--theme-color) 13%, transparent);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       :deep(.art-svg-icon) {
         font-size: 18px;

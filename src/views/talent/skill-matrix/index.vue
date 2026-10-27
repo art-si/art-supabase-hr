@@ -594,7 +594,7 @@
         ),
         color-mix(in srgb, var(--theme-color) 2.5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 12%, var(--art-border-color));
-      border-radius: calc(var(--el-border-radius-base) + 3px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__setup-header {
@@ -639,7 +639,7 @@
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 11%, transparent);
       border: 1px solid color-mix(in srgb, var(--theme-color) 16%, transparent);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       svg {
         width: 20px;
@@ -668,7 +668,7 @@
       margin: 0;
       overflow: hidden;
       border: 1px solid var(--art-border-color);
-      border-radius: calc(var(--el-border-radius-base) + 1px);
+      border-radius: var(--art-surface-radius);
 
       div {
         display: grid;
@@ -710,7 +710,7 @@
       overflow: hidden;
       list-style: none;
       border: 1px solid var(--art-border-color);
-      border-radius: calc(var(--el-border-radius-base) + 1px);
+      border-radius: var(--art-surface-radius);
 
       li {
         position: relative;

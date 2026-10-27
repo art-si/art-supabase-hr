@@ -977,7 +977,7 @@
       list-style: none;
       background: var(--art-card-border);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       li {
         position: relative;

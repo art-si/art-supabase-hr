@@ -1066,7 +1066,7 @@
       padding: 18px;
       background: var(--art-bg-color);
       border: 1px solid var(--mobility-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 28px rgb(37 42 62 / 3%);
     }
 
@@ -1161,7 +1161,7 @@
       font-size: 18px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__lifecycle {
@@ -1173,7 +1173,7 @@
       overflow: hidden;
       list-style: none;
       border: 1px solid var(--mobility-border);
-      border-radius: 12px;
+      border-radius: var(--art-surface-radius);
 
       li {
         position: relative;
@@ -1254,7 +1254,7 @@
       height: 28px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 9%, transparent);
-      border-radius: 8px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__guardrails {
@@ -1272,7 +1272,7 @@
         padding: 10px 11px;
         background: var(--art-gray-50);
         border: 1px solid var(--mobility-border);
-        border-radius: 10px;
+        border-radius: var(--art-surface-radius);
 
         > span {
           display: grid;
@@ -1281,7 +1281,7 @@
           height: 34px;
           color: var(--theme-color);
           background: color-mix(in srgb, var(--theme-color) 9%, transparent);
-          border-radius: 9px;
+          border-radius: var(--art-surface-radius);
         }
 
         div {
@@ -1382,7 +1382,7 @@
       padding: 10px 12px;
       background: color-mix(in srgb, var(--theme-color) 5%, var(--art-bg-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 16%, var(--mobility-border));
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__focus {
@@ -1394,7 +1394,7 @@
         height: 32px;
         color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-        border-radius: 8px;
+        border-radius: var(--art-surface-radius);
       }
 
       > div {

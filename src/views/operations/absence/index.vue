@@ -823,7 +823,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 11%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 26px color-mix(in srgb, var(--art-gray-900) 4%, transparent);
     }
 
@@ -859,7 +859,7 @@
       height: 38px;
       color: var(--theme-color);
       background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-      border-radius: 11px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__control-badge {
@@ -889,7 +889,7 @@
       padding: 10px 12px;
       background: color-mix(in srgb, var(--theme-color) 3%, var(--default-box-color));
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       > svg {
         flex: 0 0 auto;

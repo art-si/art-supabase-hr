@@ -117,7 +117,7 @@
       padding: 14px;
       background: color-mix(in srgb, var(--theme-color) 6%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 16%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       > span {
         display: grid;

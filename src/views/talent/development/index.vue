@@ -1206,7 +1206,7 @@
         ),
         var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
       box-shadow: var(--art-box-shadow-xs);
     }
 
@@ -1294,7 +1294,7 @@
         padding: 13px 16px;
         background: color-mix(in srgb, var(--default-box-color) 96%, var(--theme-color));
         border: 1px solid var(--art-card-border);
-        border-radius: calc(var(--el-border-radius-base) + 2px);
+        border-radius: var(--art-surface-radius);
       }
 
       div {

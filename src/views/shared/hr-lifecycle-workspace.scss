@@ -1,0 +1,31 @@
+@mixin command-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  font-size: 19px;
+  color: var(--theme-color);
+  background: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  border-radius: var(--art-surface-radius);
+}
+
+@mixin supporting-text {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+@mixin stage-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--theme-color);
+  background: color-mix(in srgb, var(--theme-color) 9%, transparent);
+  border-radius: var(--art-surface-radius);
+}

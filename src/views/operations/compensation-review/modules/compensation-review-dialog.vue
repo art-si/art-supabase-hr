@@ -588,7 +588,7 @@
       padding: 14px 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 3px);
+      border-radius: var(--art-surface-radius);
 
       > div {
         display: grid;
@@ -623,7 +623,7 @@
         min-width: 0;
         padding: 9px 10px;
         background: var(--art-bg-color);
-        border-radius: 9px;
+        border-radius: var(--art-surface-radius);
       }
 
       dd {

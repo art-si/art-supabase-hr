@@ -1153,7 +1153,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 12%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 5px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 8px 24px color-mix(in srgb, var(--art-gray-900) 3.5%, transparent);
     }
 
@@ -1212,7 +1212,7 @@
     &__section-icon {
       width: 42px;
       height: 42px;
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
 
       :deep(.art-svg-icon) {
         font-size: 19px;
@@ -1245,7 +1245,7 @@
       list-style: none;
       background: color-mix(in srgb, var(--theme-color) 2%, var(--default-box-color));
       border: 1px solid var(--art-card-border);
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       li {
         position: relative;
@@ -1341,7 +1341,7 @@
       margin-top: 10px;
       background: color-mix(in srgb, var(--theme-color) 3.5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 12%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       > div {
         display: flex;

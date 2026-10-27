@@ -1511,7 +1511,7 @@
       color: var(--el-text-color-secondary);
       background: var(--el-fill-color-extra-light);
       border-color: var(--el-border-color);
-      border-radius: calc(var(--custom-radius) - 4px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__summary-copy {

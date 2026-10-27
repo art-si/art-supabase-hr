@@ -1024,7 +1024,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 11%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 6px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 10px 30px color-mix(in srgb, var(--art-gray-900) 4%, transparent);
     }
 
@@ -1072,7 +1072,7 @@
     &__section-icon {
       width: 38px;
       height: 38px;
-      border-radius: calc(var(--el-border-radius-base) + 3px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__governance {
@@ -1115,7 +1115,7 @@
         padding: 10px;
         background: color-mix(in srgb, var(--theme-color) 2%, var(--art-gray-100));
         border: 1px solid color-mix(in srgb, var(--theme-color) 10%, var(--art-card-border));
-        border-radius: calc(var(--el-border-radius-base) + 2px);
+        border-radius: var(--art-surface-radius);
 
         &.is-current {
           background: color-mix(in srgb, var(--theme-color) 7%, var(--default-box-color));
@@ -1193,7 +1193,7 @@
       margin-top: 10px;
       background: color-mix(in srgb, var(--theme-color) 3.5%, var(--default-box-color));
       border: 1px solid color-mix(in srgb, var(--theme-color) 12%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 2px);
+      border-radius: var(--art-surface-radius);
 
       > div {
         display: flex;

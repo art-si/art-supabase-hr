@@ -246,7 +246,7 @@
       padding: 14px 16px;
       background: var(--default-box-color);
       border: 1px solid var(--art-border-color);
-      border-radius: calc(var(--el-border-radius-base) + 4px);
+      border-radius: var(--art-surface-radius);
     }
 
     &__risk-icon {
@@ -257,7 +257,7 @@
       font-size: 19px;
       color: var(--el-color-info);
       background: var(--el-color-info-light-9);
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
 
       &.is-critical {
         color: var(--el-color-danger);

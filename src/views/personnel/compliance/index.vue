@@ -1025,7 +1025,7 @@
         ),
         var(--default-box-color);
       border: 1px solid color-mix(in srgb, var(--theme-color) 10%, var(--art-card-border));
-      border-radius: calc(var(--el-border-radius-base) + 6px);
+      border-radius: var(--art-surface-radius);
       box-shadow: 0 10px 30px color-mix(in srgb, var(--art-gray-900) 4%, transparent);
     }
 
@@ -1074,7 +1074,7 @@
     &__section-icon {
       width: 38px;
       height: 38px;
-      border-radius: 11px;
+      border-radius: var(--art-surface-radius);
 
       :deep(.art-svg-icon) {
         font-size: 19px;
@@ -1113,7 +1113,7 @@
         padding: 12px;
         background: color-mix(in srgb, var(--theme-color) 2.5%, var(--default-box-color));
         border: 1px solid var(--art-card-border);
-        border-radius: calc(var(--el-border-radius-base) + 3px);
+        border-radius: var(--art-surface-radius);
 
         &.is-risk {
           background: var(--el-color-danger-light-9);
@@ -1164,7 +1164,7 @@
     &__rail-icon {
       width: 38px;
       height: 38px;
-      border-radius: 10px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__context {
@@ -1250,7 +1250,7 @@
     &__context-icon {
       width: 36px;
       height: 36px;
-      border-radius: 9px;
+      border-radius: var(--art-surface-radius);
     }
 
     &__note {
