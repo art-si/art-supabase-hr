@@ -893,9 +893,9 @@
       min-width: 0;
       padding: 18px;
       background: var(--default-box-color);
-      border: 1px solid var(--art-card-border);
+      border: 1px solid var(--art-surface-border);
       border-radius: var(--art-surface-radius);
-      box-shadow: var(--art-box-shadow-xs);
+      box-shadow: var(--art-surface-shadow);
     }
 
     &__heading,

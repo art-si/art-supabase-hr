@@ -3,13 +3,13 @@ import { normalizeNullableText } from '@/utils/form/normalize'
 import { omit } from 'lodash-es'
 import { useSupabase } from '@/hooks/core/useSupabase'
 import { withRequestOptions } from '@/api/providers/supabase/query'
-import type { ApiRequestOptions } from '@/types/api/request'
+import type { ApiFeedbackOptions, ApiRequestOptions } from '@/types/api/request'
 
 const { supabase, keysToSnakeDeep, responseHandle } = useSupabase()
 
 export async function fetchWorkforcePlanningOverview(
   tenantId?: string,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   return await responseHandle<Api.Hr.WorkforcePlanningOverview>(
     () =>
@@ -17,14 +17,14 @@ export async function fetchWorkforcePlanningOverview(
         supabase.rpc('hr_workforce_overview_secure', { p_tenant_id: tenantId || null }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 
 export async function fetchWorkforcePlanningRecords<TRecord extends Api.Hr.WorkforcePlanningRecord>(
   entity: Api.Hr.WorkforcePlanningEntity,
   params: Api.Hr.WorkforcePlanningSearchParams,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   const from = Math.max(params.from ?? 0, 0)
   const result = await responseHandle<Api.Hr.WorkforcePlanningListResult<TRecord>>(
@@ -40,7 +40,7 @@ export async function fetchWorkforcePlanningRecords<TRecord extends Api.Hr.Workf
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
   return { data: result.data?.records ?? [], total: result.data?.total ?? 0, error: result.error }
 }
@@ -48,7 +48,7 @@ export async function fetchWorkforcePlanningRecords<TRecord extends Api.Hr.Workf
 export async function fetchWorkforcePlanningOptions(
   kind: Api.Hr.WorkforcePlanningOptionKind,
   tenantId?: string,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   return await responseHandle<Api.Hr.WorkforcePlanningReference[]>(
     () =>
@@ -59,7 +59,7 @@ export async function fetchWorkforcePlanningOptions(
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 

@@ -3,26 +3,29 @@ import { normalizeNullableText } from '@/utils/form/normalize'
 import { omit } from 'lodash-es'
 import { useSupabase } from '@/hooks/core/useSupabase'
 import { withRequestOptions } from '@/api/providers/supabase/query'
-import type { ApiRequestOptions } from '@/types/api/request'
+import type { ApiFeedbackOptions, ApiRequestOptions } from '@/types/api/request'
 import { createEmployeeReferenceSelector } from '@/api/integration/employees'
 
 const { supabase, keysToSnakeDeep, responseHandle } = useSupabase()
 
-export async function fetchLifecycleOverview(tenantId?: string, options?: ApiRequestOptions) {
+export async function fetchLifecycleOverview(
+  tenantId?: string,
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
+) {
   return await responseHandle<Api.Hr.LifecycleOverview>(
     () =>
       withRequestOptions(
         supabase.rpc('hr_lifecycle_overview_secure', { p_tenant_id: tenantId || null }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 
 export async function fetchLifecycleRecords<TRecord extends Api.Hr.LifecycleRecord>(
   entity: Api.Hr.LifecycleEntity,
   params: Api.Hr.LifecycleSearchParams,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   const from = Math.max(params.from ?? 0, 0)
   const result = await responseHandle<Api.Hr.LifecycleListResult<TRecord>>(
@@ -39,7 +42,7 @@ export async function fetchLifecycleRecords<TRecord extends Api.Hr.LifecycleReco
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
   return { data: result.data?.records ?? [], total: result.data?.total ?? 0, error: result.error }
 }
@@ -47,7 +50,7 @@ export async function fetchLifecycleRecords<TRecord extends Api.Hr.LifecycleReco
 export async function fetchLifecycleOptions(
   kind: Api.Hr.LifecycleOptionKind,
   tenantId?: string,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   return await responseHandle<Api.Hr.LifecycleReference[]>(
     () =>
@@ -58,7 +61,7 @@ export async function fetchLifecycleOptions(
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 

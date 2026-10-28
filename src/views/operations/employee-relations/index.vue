@@ -1023,9 +1023,9 @@
           transparent 30%
         ),
         var(--default-box-color);
-      border: 1px solid color-mix(in srgb, var(--theme-color) 11%, var(--art-card-border));
+      border: 1px solid var(--art-surface-border);
       border-radius: var(--art-surface-radius);
-      box-shadow: 0 10px 30px color-mix(in srgb, var(--art-gray-900) 4%, transparent);
+      box-shadow: var(--art-surface-shadow);
     }
 
     &__heading {

@@ -992,14 +992,7 @@
       border-radius: var(--art-surface-radius);
 
       > span {
-        display: grid;
-        flex: 0 0 auto;
-        place-items: center;
-        width: 34px;
-        height: 34px;
-        color: var(--theme-color);
-        background: color-mix(in srgb, var(--theme-color) 8%, transparent);
-        border-radius: var(--art-surface-radius);
+        @include lifecycle.guardrail-icon;
       }
 
       div {
@@ -1089,13 +1082,7 @@
       border-radius: var(--art-surface-radius);
 
       > span {
-        display: grid;
-        place-items: center;
-        width: 32px;
-        height: 32px;
-        color: var(--theme-color);
-        background: color-mix(in srgb, var(--theme-color) 10%, transparent);
-        border-radius: var(--art-surface-radius);
+        @include lifecycle.focus-icon;
       }
 
       div {

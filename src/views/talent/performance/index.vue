@@ -29,7 +29,20 @@
           </span>
         </header>
 
-        <div v-if="overview.featuredCycle" class="performance-page__featured-cycle">
+        <ElAlert
+          v-if="overviewError || referenceError"
+          type="error"
+          show-icon
+          :closable="false"
+          title="绩效数据加载失败"
+        >
+          <template #default>
+            <span>{{ [overviewError, referenceError].filter(Boolean).join('；') }}</span>
+            <ElButton type="primary" link @click="retryPageData">重新加载</ElButton>
+          </template>
+        </ElAlert>
+        <ElSkeleton v-if="overviewLoading" :rows="3" animated />
+        <div v-else-if="overview.featuredCycle" class="performance-page__featured-cycle">
           <div class="performance-page__cycle-identity">
             <span>当前主周期</span>
             <strong>{{ overview.featuredCycle.cycleName }}</strong>
@@ -55,7 +68,7 @@
           </ol>
         </div>
         <ArtEmptyState
-          v-else
+          v-else-if="!overviewError"
           class="performance-page__empty-cycle"
           title="先建立考核周期与员工考核范围"
           description="配置员工目标且权重合计达到 100% 后，周期才能启动并开放员工自评。"
@@ -115,7 +128,7 @@
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import { useHrMasterDeleteLocation } from '@hr/views/shared/use-hr-master-delete-location'
-  import { ElButton, ElProgress, ElTag } from 'element-plus'
+  import { ElButton, ElProgress, ElSkeleton, ElTag } from 'element-plus'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -142,10 +155,11 @@
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
   import { useUserStore } from '@/store/modules/user'
+  import { useTenantScopeStore } from '@/store/modules/tenant-scope'
   import { buildSupabasePageRange } from '@/utils/supabase/pagination'
   import { createDateTimeFormatter } from '@/utils/ui/format'
   import type { ColumnOption, DialogType } from '@/types'
-  import { fetchEnabledTenantList } from '@/api/system-manage'
+  import type { ApiRequestOptions } from '@/types/api/request'
   import {
     deletePerformanceRecord,
     getPerformanceDeleteTable,
@@ -237,7 +251,8 @@
   ]
 
   const userStore = useUserStore()
-  const { getDictMap, isPlatformSuper } = storeToRefs(userStore)
+  const { getDictMap } = storeToRefs(userStore)
+  const { effectiveTenantId } = storeToRefs(useTenantScopeStore())
   const { hasAuth } = useAuth()
   const { confirmAction, promptText } = useArtFeedback()
   const activeEntity = ref<Entity>('cycle')
@@ -253,11 +268,13 @@
   const navigationItems: HrEntityNavigationItem[] = tabs
   const tableQueryRef = ref<ArtTableQueryExpose>()
   const dialogRef = ref<DialogExpose>()
-  const tenantOptions = ref<Array<{ label: string; value: string }>>([])
   const cycleOptions = shallowRef<Api.Hr.PerformanceReference[]>([])
   const calibrationOptions = shallowRef<Api.Hr.PerformanceReference[]>([])
+  const overviewLoading = ref(false)
+  const overviewError = ref('')
+  const referenceError = ref('')
   const tableState = reactive<{ searchQuery: Api.Hr.PerformanceSearchParams }>({
-    searchQuery: { tenantId: '', status: '', keyword: '', cycleId: '', sessionId: '' }
+    searchQuery: { status: '', keyword: '', cycleId: '', sessionId: '' }
   })
   const { locationReady } = useHrMasterDeleteLocation<Entity>(
     {
@@ -369,19 +386,6 @@
 
   const searchItems = computed<SearchFormItem[]>(() => {
     const items: SearchFormItem[] = []
-    if (isPlatformSuper.value)
-      items.push({
-        label: '租户',
-        key: 'tenantId',
-        type: 'select',
-        options: tenantOptions.value,
-        props: {
-          clearable: true,
-          filterable: true,
-          placeholder: '全部租户',
-          onChange: handleTenantFilterChange
-        }
-      })
     if (activeEntity.value !== 'cycle')
       items.push({
         label: '绩效周期',
@@ -1016,34 +1020,68 @@
           }
         ]
   )
-  const fetchTableData = async (params: TableParams) => {
+  const fetchTableData = async (params: TableParams, options?: ApiRequestOptions) => {
     const { from, to } = buildSupabasePageRange({ current: params.current, size: params.size })
-    const response = await fetchPerformanceRecords(activeEntity.value, { ...params, from, to })
+    const response = await fetchPerformanceRecords(
+      activeEntity.value,
+      { ...params, tenantId: effectiveTenantId.value ?? '', from, to },
+      { signal: options?.signal, showErrorMessage: false }
+    )
+    if (response.error && !options?.signal?.aborted)
+      throw new Error('绩效列表加载失败，请重试', { cause: response.error })
     return response
   }
+  let overviewRequest = 0
+  let referenceRequest = 0
   const loadReferences = async (): Promise<void> => {
-    const tenantId = tableState.searchQuery.tenantId
-    const [cycles, sessions] = await Promise.all([
-      fetchPerformanceOptions('cycle', tenantId),
-      fetchPerformanceOptions('calibration', tenantId)
-    ])
-    cycleOptions.value = cycles.data ?? []
-    calibrationOptions.value = sessions.data ?? []
+    const request = ++referenceRequest
+    const tenantId = effectiveTenantId.value ?? ''
+    referenceError.value = ''
+    try {
+      const [cycles, sessions] = await Promise.all([
+        fetchPerformanceOptions('cycle', tenantId, { showErrorMessage: false }),
+        fetchPerformanceOptions('calibration', tenantId, { showErrorMessage: false })
+      ])
+      if (request !== referenceRequest) return
+      if (cycles.error || sessions.error || !cycles.data || !sessions.data) {
+        referenceError.value = '绩效周期和校准会议筛选项暂时无法加载，请重试'
+        return
+      }
+      cycleOptions.value = cycles.data
+      calibrationOptions.value = sessions.data
+    } catch {
+      if (request === referenceRequest)
+        referenceError.value = '绩效周期和校准会议筛选项暂时无法加载，请重试'
+    }
   }
   const refreshOverview = async (): Promise<void> => {
-    const response = await fetchPerformanceOverview(tableState.searchQuery.tenantId)
-    if (response.data) Object.assign(overview, response.data)
+    const request = ++overviewRequest
+    const tenantId = effectiveTenantId.value ?? ''
+    overviewLoading.value = true
+    overviewError.value = ''
+    try {
+      const response = await fetchPerformanceOverview(tenantId, { showErrorMessage: false })
+      if (request !== overviewRequest) return
+      if (response.error || !response.data) {
+        overviewError.value = '绩效总览暂时无法加载，请重试'
+        return
+      }
+      Object.assign(overview, response.data)
+    } catch {
+      if (request === overviewRequest) overviewError.value = '绩效总览暂时无法加载，请重试'
+    } finally {
+      if (request === overviewRequest) overviewLoading.value = false
+    }
   }
-  const handleTenantFilterChange = async (): Promise<void> => {
-    Object.assign(tableState.searchQuery, { cycleId: '', sessionId: '' })
-    await Promise.all([loadReferences(), refreshOverview()])
+  const retryPageData = (): void => {
+    void Promise.all([refreshOverview(), loadReferences()])
   }
   const openDialog = (entity: Entity, row?: RecordItem, preset?: Record<string, unknown>): void => {
     void dialogRef.value?.handleOpen({
       entity,
       type: row ? 'edit' : 'add',
       editData: row,
-      preset: { tenantId: tableState.searchQuery.tenantId || undefined, ...preset }
+      preset: { tenantId: effectiveTenantId.value ?? undefined, ...preset }
     })
   }
   const handleSaveSuccess = (type: DialogType): void => {
@@ -1208,14 +1246,7 @@
         'hrPerformanceLevel'
       ].map((code) => userStore.ensureDictLoaded(code))
     )
-    if (isPlatformSuper.value) {
-      const response = await fetchEnabledTenantList()
-      tenantOptions.value = (response.data ?? []).map((tenant) => ({
-        label: `${tenant.tenantName}（${tenant.tenantCode}）`,
-        value: tenant.id!
-      }))
-    }
-    await Promise.all([loadReferences(), refreshOverview()])
+    retryPageData()
   })
 </script>
 
@@ -1237,9 +1268,9 @@
           transparent 27%
         ),
         var(--default-box-color);
-      border: 1px solid var(--art-card-border);
+      border: 1px solid var(--art-surface-border);
       border-radius: var(--art-surface-radius);
-      box-shadow: var(--art-box-shadow-xs);
+      box-shadow: var(--art-surface-shadow);
     }
 
     &__control-heading,

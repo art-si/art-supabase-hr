@@ -1077,9 +1077,9 @@
           transparent 48%
         ),
         var(--default-box-color);
-      border: 1px solid var(--art-card-border);
+      border: 1px solid var(--art-surface-border);
       border-radius: var(--el-border-radius-base);
-      box-shadow: var(--art-box-shadow-xs);
+      box-shadow: var(--art-surface-shadow);
     }
 
     &__heading,

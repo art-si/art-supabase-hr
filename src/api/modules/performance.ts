@@ -3,26 +3,29 @@ import { normalizeNullableText } from '@/utils/form/normalize'
 import { omit } from 'lodash-es'
 import { useSupabase } from '@/hooks/core/useSupabase'
 import { withRequestOptions } from '@/api/providers/supabase/query'
-import type { ApiRequestOptions } from '@/types/api/request'
+import type { ApiFeedbackOptions, ApiRequestOptions } from '@/types/api/request'
 import { createEmployeeReferenceSelector } from '@/api/integration/employees'
 
 const { supabase, keysToSnakeDeep, responseHandle } = useSupabase()
 
-export async function fetchPerformanceOverview(tenantId?: string, options?: ApiRequestOptions) {
+export async function fetchPerformanceOverview(
+  tenantId?: string,
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
+) {
   return await responseHandle<Api.Hr.PerformanceOverview>(
     () =>
       withRequestOptions(
         supabase.rpc('hr_performance_overview_secure', { p_tenant_id: tenantId || null }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 
 export async function fetchPerformanceRecords<TRecord extends Api.Hr.PerformanceRecord>(
   entity: Api.Hr.PerformanceEntity,
   params: Api.Hr.PerformanceSearchParams,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   const from = Math.max(params.from ?? 0, 0)
   const result = await responseHandle<Api.Hr.PerformanceListResult<TRecord>>(
@@ -39,7 +42,7 @@ export async function fetchPerformanceRecords<TRecord extends Api.Hr.Performance
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
   return { data: result.data?.records ?? [], total: result.data?.total ?? 0, error: result.error }
 }
@@ -47,7 +50,7 @@ export async function fetchPerformanceRecords<TRecord extends Api.Hr.Performance
 export async function fetchPerformanceOptions(
   kind: Api.Hr.PerformanceOptionKind,
   tenantId?: string,
-  options?: ApiRequestOptions
+  options: ApiRequestOptions & ApiFeedbackOptions = {}
 ) {
   return await responseHandle<Api.Hr.PerformanceReference[]>(
     () =>
@@ -58,7 +61,7 @@ export async function fetchPerformanceOptions(
         }),
         options
       ),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
 }
 

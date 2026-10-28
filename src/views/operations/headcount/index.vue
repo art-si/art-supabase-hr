@@ -29,7 +29,26 @@
           </span>
         </header>
 
-        <div v-if="featuredPlan" class="workforce-page__bridge" aria-label="当前重点规划容量变化">
+        <ElAlert
+          v-if="overviewError || planFilterError"
+          type="error"
+          show-icon
+          :closable="false"
+          title="编制规划数据加载失败"
+          class="mb-4"
+        >
+          <template #default>
+            <span>{{ [overviewError, planFilterError].filter(Boolean).join('；') }}</span>
+            <ElButton type="primary" link @click="retryPageData">重新加载</ElButton>
+          </template>
+        </ElAlert>
+
+        <ElSkeleton v-if="overviewLoading" :rows="3" animated />
+        <div
+          v-else-if="featuredPlan"
+          class="workforce-page__bridge"
+          aria-label="当前重点规划容量变化"
+        >
           <div class="workforce-page__bridge-identity">
             <span>{{ featuredPlan.planNo }}</span>
             <strong>{{ featuredPlan.planName }}</strong>
@@ -76,7 +95,7 @@
           </div>
         </div>
         <ArtEmptyState
-          v-else
+          v-else-if="!overviewError"
           title="尚未建立人力规划"
           description="先创建规划周期，再按岗位维护增减员和成本假设。"
           size="compact"
@@ -93,7 +112,7 @@
       </section>
 
       <ArtTableQuery
-        :key="activeEntity"
+        :key="`${activeEntity}:${effectiveTenantId ?? 'all-tenants'}`"
         ref="tableQueryRef"
         v-model="tableState.searchQuery"
         :search-items="searchItems"
@@ -124,7 +143,7 @@
 
   import { useDictionaryOptions } from '@/hooks/core/useDictionaryOptions'
   import dayjs from 'dayjs'
-  import { ElProgress, ElTag } from 'element-plus'
+  import { ElButton, ElProgress, ElSkeleton, ElTag } from 'element-plus'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -152,8 +171,9 @@
   import { notifyFriendlyError, useArtFeedback } from '@/hooks/core/useArtFeedback'
   import { useUserStore } from '@/store/modules/user'
   import { buildSupabasePageRange } from '@/utils/supabase/pagination'
+  import type { ApiRequestOptions } from '@/types/api/request'
   import type { ColumnOption, DialogType } from '@/types'
-  import { fetchEnabledTenantList } from '@/api/system-manage'
+  import { useTenantScopeStore } from '@/store/modules/tenant-scope'
   import {
     deleteWorkforcePlanningRecord,
     fetchWorkforcePlanningOptions,
@@ -209,7 +229,8 @@
   ]
 
   const userStore = useUserStore()
-  const { getDictMap, isPlatformSuper } = storeToRefs(userStore)
+  const { getDictMap } = storeToRefs(userStore)
+  const { effectiveTenantId } = storeToRefs(useTenantScopeStore())
   const { confirmAction, promptReason } = useArtFeedback()
   const activeEntity = ref<Entity>('cycle')
   const activeTab = computed(() => tabs.find((tab) => tab.entity === activeEntity.value) ?? tabs[0])
@@ -227,10 +248,12 @@
   )
   const tableQueryRef = ref<ArtTableQueryExpose>()
   const dialogRef = ref<DialogExpose>()
-  const tenantOptions = ref<Array<{ label: string; value: string }>>([])
   const planFilterOptions = shallowRef<Api.Hr.WorkforcePlanningReference[]>([])
+  const overviewLoading = ref(false)
+  const overviewError = ref('')
+  const planFilterError = ref('')
   const tableState = reactive<{ searchQuery: Api.Hr.WorkforcePlanningSearchParams }>({
-    searchQuery: { tenantId: '', status: '', keyword: '', planId: '' }
+    searchQuery: { status: '', keyword: '', planId: '' }
   })
   const { locationReady } = useHrMasterDeleteLocation<Entity>(
     {
@@ -242,7 +265,7 @@
     tableState.searchQuery,
     tableQueryRef
   )
-  const overview = reactive<Api.Hr.WorkforcePlanningOverview>({
+  const emptyOverview: Api.Hr.WorkforcePlanningOverview = {
     activePlanCount: 0,
     pendingApprovalCount: 0,
     operationalCapacity: 0,
@@ -250,7 +273,8 @@
     vacancyCount: 0,
     overCapacityCount: 0,
     featuredPlan: null
-  })
+  }
+  const overview = reactive<Api.Hr.WorkforcePlanningOverview>({ ...emptyOverview })
   const tableOverview = reactive({ total: 0 })
 
   const featuredPlan = computed(() => overview.featuredPlan ?? null)
@@ -301,20 +325,7 @@
 
   const effectiveStatusOptions = useDictionaryOptions('hrHeadcountFulfillmentStatus')
   const searchItems = computed<SearchFormItem[]>(() => {
-    const items: SearchFormItem[] = [
-      {
-        label: '所属租户',
-        key: 'tenantId',
-        type: 'select',
-        hidden: !isPlatformSuper.value,
-        props: {
-          options: tenantOptions.value,
-          clearable: true,
-          filterable: true,
-          onChange: handleTenantSearchChange
-        }
-      }
-    ]
+    const items: SearchFormItem[] = []
     if (activeEntity.value === 'line')
       items.push({
         label: '规划周期',
@@ -743,30 +754,81 @@
       onClick: () => openDialog()
     }
   ])
-  const fetchTableData = async (params: TableParams) => {
+  const fetchTableData = async (params: TableParams, options?: ApiRequestOptions) => {
     const page = buildSupabasePageRange(params)
-    const response = await fetchWorkforcePlanningRecords(activeEntity.value, {
-      ...tableState.searchQuery,
-      from: page.from,
-      to: page.to
-    })
+    const tenantId = effectiveTenantId.value ?? ''
+    const response = await fetchWorkforcePlanningRecords(
+      activeEntity.value,
+      {
+        ...tableState.searchQuery,
+        tenantId,
+        from: page.from,
+        to: page.to
+      },
+      { signal: options?.signal, showErrorMessage: false }
+    )
+    if (response.error && !options?.signal?.aborted)
+      throw new Error('编制规划列表加载失败，请重试', { cause: response.error })
     return response
   }
   const handleTableSuccess: NonNullable<ArtTableQueryProps['onSuccess']> = (_data, response) => {
     tableOverview.total = Number(response.total ?? 0)
   }
+  let overviewRequest = 0
+  let planFilterRequest = 0
   const loadOverview = async (): Promise<void> => {
-    const result = await fetchWorkforcePlanningOverview(tableState.searchQuery.tenantId)
-    if (result.data) Object.assign(overview, result.data)
+    const request = ++overviewRequest
+    const tenantId = effectiveTenantId.value ?? ''
+    overviewLoading.value = true
+    overviewError.value = ''
+    try {
+      const result = await fetchWorkforcePlanningOverview(tenantId, { showErrorMessage: false })
+      if (request !== overviewRequest || tenantId !== (effectiveTenantId.value ?? '')) return
+      if (result.error || !result.data) {
+        overviewError.value = '容量总览暂时无法加载，请重试'
+        return
+      }
+      Object.assign(overview, result.data)
+    } catch {
+      if (request === overviewRequest && tenantId === (effectiveTenantId.value ?? ''))
+        overviewError.value = '容量总览暂时无法加载，请重试'
+    } finally {
+      if (request === overviewRequest) overviewLoading.value = false
+    }
   }
   const loadPlanFilters = async (): Promise<void> => {
-    const result = await fetchWorkforcePlanningOptions('plan', tableState.searchQuery.tenantId)
-    planFilterOptions.value = result.data ?? []
+    const request = ++planFilterRequest
+    const tenantId = effectiveTenantId.value ?? ''
+    planFilterError.value = ''
+    try {
+      const result = await fetchWorkforcePlanningOptions('plan', tenantId, {
+        showErrorMessage: false
+      })
+      if (request !== planFilterRequest || tenantId !== (effectiveTenantId.value ?? '')) return
+      if (result.error || !result.data) {
+        planFilterError.value = '规划周期筛选项暂时无法加载，请重试'
+        return
+      }
+      planFilterOptions.value = result.data
+    } catch {
+      if (request === planFilterRequest && tenantId === (effectiveTenantId.value ?? ''))
+        planFilterError.value = '规划周期筛选项暂时无法加载，请重试'
+    }
   }
-  const handleTenantSearchChange = (): void => {
-    tableState.searchQuery.planId = ''
+  const retryPageData = (): void => {
     void Promise.all([loadOverview(), loadPlanFilters()])
   }
+  watch(
+    effectiveTenantId,
+    () => {
+      tableState.searchQuery.planId = ''
+      Object.assign(overview, emptyOverview)
+      tableOverview.total = 0
+      planFilterOptions.value = []
+      retryPageData()
+    },
+    { flush: 'sync' }
+  )
   const selectEntity = (value: string): void => {
     activeEntity.value = value as Entity
     Object.assign(tableState.searchQuery, { status: '', keyword: '', planId: '' })
@@ -839,16 +901,7 @@
     }
   }
 
-  onMounted(async () => {
-    if (isPlatformSuper.value) {
-      const result = await fetchEnabledTenantList()
-      tenantOptions.value = (result.data ?? []).map((tenant) => ({
-        label: `${tenant.tenantName}（${tenant.tenantCode}）`,
-        value: tenant.id!
-      }))
-    }
-    await Promise.all([loadOverview(), loadPlanFilters()])
-  })
+  onMounted(retryPageData)
 </script>
 
 <style scoped lang="scss">
@@ -863,9 +916,9 @@
       gap: 14px;
       padding: 16px 18px 12px;
       background: var(--default-box-color);
-      border: 1px solid var(--art-card-border);
+      border: 1px solid var(--art-surface-border);
       border-radius: var(--art-surface-radius);
-      box-shadow: var(--art-card-shadow);
+      box-shadow: var(--art-surface-shadow);
 
       :deep(.hr-entity-navigation) {
         grid-column: 1 / -1;
