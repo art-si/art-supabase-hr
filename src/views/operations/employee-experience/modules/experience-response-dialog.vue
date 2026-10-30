@@ -18,7 +18,12 @@
           aria-labelledby="experience-response-title"
         >
           <div>
-            <span aria-hidden="true"><ArtSvgIcon icon="ri:chat-heart-line" /></span>
+            <span
+              aria-hidden="true"
+              class="grid size-[46px] place-items-center text-[var(--theme-color)] rounded-[var(--el-border-radius-base)]"
+            >
+              <ArtSvgIcon icon="ri:chat-heart-line" />
+            </span>
             <div>
               <small>{{ detail.surveyCode }}</small>
               <h3 id="experience-response-title">{{ detail.surveyName }}</h3>
@@ -323,13 +328,7 @@
       }
 
       > div:first-child > span {
-        display: grid;
-        place-items: center;
-        width: 46px;
-        height: 46px;
-        color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 12%, transparent);
-        border-radius: var(--el-border-radius-base);
       }
 
       small {

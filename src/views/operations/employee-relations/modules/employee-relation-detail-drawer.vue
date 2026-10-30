@@ -11,7 +11,12 @@
       <div v-if="record" class="employee-relation-detail">
         <section class="employee-relation-detail__hero" aria-labelledby="employee-relation-title">
           <div class="employee-relation-detail__identity">
-            <span aria-hidden="true"><ArtSvgIcon icon="ri:shield-user-line" /></span>
+            <span
+              aria-hidden="true"
+              class="grid size-[46px] place-items-center text-[var(--theme-color)] rounded-[var(--el-border-radius-base)]"
+            >
+              <ArtSvgIcon icon="ri:shield-user-line" />
+            </span>
             <div>
               <small>{{ record.caseNo }}</small>
               <h3 id="employee-relation-title">{{ record.title }}</h3>
@@ -400,13 +405,7 @@
       min-width: 0;
 
       > span {
-        display: grid;
-        place-items: center;
-        width: 46px;
-        height: 46px;
-        color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 12%, transparent);
-        border-radius: var(--el-border-radius-base);
       }
 
       div {

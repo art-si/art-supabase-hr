@@ -11,7 +11,12 @@
       <div v-if="record" class="benefit-detail">
         <section class="benefit-detail__hero" aria-labelledby="benefit-detail-title">
           <div class="benefit-detail__identity">
-            <span aria-hidden="true"><ArtSvgIcon :icon="hero.icon" /></span>
+            <span
+              aria-hidden="true"
+              class="grid size-[46px] place-items-center text-[var(--theme-color)] rounded-[var(--el-border-radius-base)]"
+            >
+              <ArtSvgIcon :icon="hero.icon" />
+            </span>
             <div>
               <small>{{ hero.eyebrow }}</small>
               <h3 id="benefit-detail-title">{{ hero.title }}</h3>
@@ -473,13 +478,7 @@
       min-width: 0;
 
       > span {
-        display: grid;
-        place-items: center;
-        width: 46px;
-        height: 46px;
-        color: var(--theme-color);
         background: color-mix(in srgb, var(--theme-color) 12%, transparent);
-        border-radius: var(--el-border-radius-base);
       }
 
       div {
