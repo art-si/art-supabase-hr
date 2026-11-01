@@ -152,7 +152,7 @@
     value: score
   }))
 
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     const items: FormItem[] = []
     let previousDimension = ''
     for (const [index, question] of (detail.value?.questions ?? []).entries()) {

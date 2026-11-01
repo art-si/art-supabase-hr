@@ -108,7 +108,7 @@
   const dialogModeLabel = computed(() => (isEditing.value ? '编辑记录' : '新增记录'))
   const form = reactive<FormState>({
     model: {},
-    items: computed(() => currentTab.value?.fields.map(createFormItem) ?? []),
+    items: computed((): FormItem[] => currentTab.value?.fields.map(createFormItem) ?? []),
     rules: computed(() => {
       const rules: FormRules<Api.Hr.WorkspaceRecord> = {}
       currentTab.value?.fields.forEach((field) => {

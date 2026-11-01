@@ -79,7 +79,7 @@
     rules: FormRules<Api.Hr.BenefitOption>
   }>({
     model: formModel,
-    items: computed(() => [
+    items: computed((): FormItem[] => [
       { label: '方案识别', key: 'identity', type: 'divider', span: 24 },
       {
         label: '方案编码',

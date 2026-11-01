@@ -71,7 +71,7 @@
         ? '适用于推荐意愿题，范围为 0–10'
         : '用于员工补充语境，不参与数值得分计算'
   )
-  const formItems = computed<FormItem[]>(() => [
+  const formItems = computed<FormItem[]>((): FormItem[] => [
     {
       label: '体验主题',
       key: 'dimension',

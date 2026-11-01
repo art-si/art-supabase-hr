@@ -18,34 +18,17 @@
         :span="12"
         :gutter="24"
         label-position="top"
-        ><template #compensationComponents
+        ><template #compensationComponents="{ fields: Fields }"
           ><ArtSectionCard
             v-if="entity === 'plan'"
             title="方案薪酬项目"
             subtitle="定义方案包含的收入、扣减和企业成本项目；方案被已批准员工薪酬使用后即锁定。"
             body-class="compensation-dialog__section-body"
           >
-            <div class="compensation-dialog__selector">
-              <span>选择薪酬项目</span>
-              <ElSelect
-                v-model="selectedPlanComponentIds"
-                multiple
-                filterable
-                collapse-tags
-                collapse-tags-tooltip
-                placeholder="请选择方案包含的薪酬项目"
-              >
-                <ElOption
-                  v-for="option in componentOptions"
-                  :key="option.id"
-                  :label="`${option.name} · ${option.code}`"
-                  :value="option.id"
-                />
-              </ElSelect>
-            </div>
+            <component :is="Fields" :items="planComponentSelectorItems" :actions="false" />
             <div v-if="planItems.length" class="compensation-dialog__item-list">
               <div
-                v-for="item in planItems"
+                v-for="(item, index) in planItems"
                 :key="item.componentId"
                 class="compensation-dialog__item"
               >
@@ -60,35 +43,13 @@
                     display="tag"
                   />
                 </div>
-                <div class="compensation-dialog__item-fields">
-                  <label v-if="item.amountType === 'fixed'">
-                    <span>默认金额</span>
-                    <ElInputNumber
-                      v-model="item.defaultAmount"
-                      :min="0"
-                      :precision="2"
-                      :controls="false"
-                      placeholder="选填"
-                    />
-                  </label>
-                  <label v-else-if="item.amountType === 'rate'">
-                    <span>默认比例</span>
-                    <ElInputNumber
-                      v-model="item.defaultRate"
-                      :min="0"
-                      :precision="6"
-                      :controls="false"
-                      placeholder="如 0.10"
-                    />
-                  </label>
-                  <div v-else class="compensation-dialog__variable-note">
-                    <ArtSvgIcon icon="ri:edit-box-line" />
-                    <span>由薪资核算期录入</span>
-                  </div>
-                  <label class="compensation-dialog__switch-field">
-                    <span>员工必配</span>
-                    <ElSwitch v-model="item.required" />
-                  </label>
+                <component :is="Fields" :items="planComponentItems(item, index)" :actions="false" />
+                <div
+                  v-if="item.amountType === 'variable'"
+                  class="compensation-dialog__variable-note"
+                >
+                  <ArtSvgIcon icon="ri:edit-box-line" />
+                  <span>由薪资核算期录入</span>
                 </div>
               </div>
             </div>
@@ -109,7 +70,7 @@
           >
             <div v-if="employeeItems.length" class="compensation-dialog__item-list">
               <div
-                v-for="item in employeeItems"
+                v-for="(item, index) in employeeItems"
                 :key="item.componentId"
                 class="compensation-dialog__item"
               >
@@ -124,31 +85,14 @@
                     display="tag"
                   />
                 </div>
-                <div class="compensation-dialog__item-fields">
-                  <label v-if="item.amountType !== 'rate'">
-                    <span>{{ item.amountType === 'variable' ? '核算金额' : '员工金额' }}</span>
-                    <ElInputNumber
-                      v-model="item.amount"
-                      :min="0"
-                      :precision="2"
-                      :controls="false"
-                      placeholder="留空则使用方案默认值"
-                    />
-                  </label>
-                  <label v-else>
-                    <span>员工比例</span>
-                    <ElInputNumber
-                      v-model="item.rate"
-                      :min="0"
-                      :precision="6"
-                      :controls="false"
-                      placeholder="留空则使用方案默认值"
-                    />
-                  </label>
-                  <div class="compensation-dialog__source-note">
-                    <ArtSvgIcon icon="ri:git-merge-line" />
-                    <span>保存后记录方案值或员工覆盖值</span>
-                  </div>
+                <component
+                  :is="Fields"
+                  :items="employeeComponentItems(item, index)"
+                  :actions="false"
+                />
+                <div class="compensation-dialog__source-note">
+                  <ArtSvgIcon icon="ri:git-merge-line" />
+                  <span>保存后记录方案值或员工覆盖值</span>
                 </div>
               </div>
             </div>
@@ -172,6 +116,7 @@
   import { hrTenantScopedFormItems } from '@hr/views/shared/hr-tenant-scoped-form-items'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
+  import { toNameCodeOption } from '@/utils/form/option'
   import dayjs from 'dayjs'
   import { cloneDeep, compact, uniqBy } from 'lodash-es'
   import type { FormRules } from 'element-plus'
@@ -223,6 +168,8 @@
     enabled: boolean
     sort: number
     description?: string | null
+    planItems: CompensationPlanItemEditor[]
+    employeeItems: EmployeeCompensationItemEditor[]
   }
 
   interface FormExpose {
@@ -265,8 +212,6 @@
   const planOptions = shallowRef<Api.Hr.CompensationPlan[]>([])
   const employeeOptions = shallowRef<Api.Hr.CompensationReference[]>([])
   const gradeOptions = shallowRef<Api.Hr.CompensationReference[]>([])
-  const planItems = ref<CompensationPlanItemEditor[]>([])
-  const employeeItems = ref<EmployeeCompensationItemEditor[]>([])
 
   const createInitialModel = (): CompensationFormModel => ({
     tenantId: isPlatformSuper.value ? undefined : getUserInfo.value.tenantId,
@@ -291,10 +236,24 @@
     changeReason: '',
     enabled: true,
     sort: 0,
-    description: null
+    description: null,
+    planItems: [],
+    employeeItems: []
   })
 
   const formModel = reactive<CompensationFormModel>(createInitialModel())
+  const planItems = computed({
+    get: () => formModel.planItems,
+    set: (items: CompensationPlanItemEditor[]) => {
+      formModel.planItems = items
+    }
+  })
+  const employeeItems = computed({
+    get: () => formModel.employeeItems,
+    set: (items: EmployeeCompensationItemEditor[]) => {
+      formModel.employeeItems = items
+    }
+  })
 
   const toOptionalNumber = (value: Api.Hr.ProtectedAmount | undefined): number | null => {
     const numberValue = Number(value)
@@ -328,6 +287,71 @@
       })
     }
   })
+
+  const planComponentSelectorItems = computed<FormItem[]>(() => [
+    {
+      key: 'selectedPlanComponentIds',
+      label: '选择薪酬项目',
+      type: 'select',
+      span: 24,
+      options: componentOptions.value.map(toNameCodeOption),
+      props: {
+        modelValue: selectedPlanComponentIds.value,
+        'onUpdate:modelValue': (ids: string[]) => {
+          selectedPlanComponentIds.value = ids
+        },
+        multiple: true,
+        filterable: true,
+        collapseTags: true,
+        collapseTagsTooltip: true,
+        placeholder: '请选择方案包含的薪酬项目'
+      }
+    }
+  ])
+
+  const planComponentItems = (item: CompensationPlanItemEditor, index: number): FormItem[] => [
+    ...(item.amountType === 'variable'
+      ? []
+      : [
+          {
+            key: `planItems.${index}.${item.amountType === 'rate' ? 'defaultRate' : 'defaultAmount'}`,
+            label: item.amountType === 'rate' ? '默认比例' : '默认金额',
+            type: 'number',
+            props: {
+              min: 0,
+              precision: item.amountType === 'rate' ? 6 : 2,
+              controls: false,
+              class: 'w-full!',
+              placeholder: item.amountType === 'rate' ? '如 0.10' : '选填'
+            }
+          }
+        ]),
+    { key: `planItems.${index}.required`, label: '员工必配', type: 'switch' }
+  ]
+
+  const employeeComponentItems = (
+    item: EmployeeCompensationItemEditor,
+    index: number
+  ): FormItem[] => [
+    {
+      key: `employeeItems.${index}.${item.amountType === 'rate' ? 'rate' : 'amount'}`,
+      label:
+        item.amountType === 'rate'
+          ? '员工比例'
+          : item.amountType === 'variable'
+            ? '核算金额'
+            : '员工金额',
+      type: 'number',
+      span: 24,
+      props: {
+        min: 0,
+        precision: item.amountType === 'rate' ? 6 : 2,
+        controls: false,
+        class: 'w-full!',
+        placeholder: '留空则使用方案默认值'
+      }
+    }
+  ]
 
   let referenceRequest = 0
   const loadReferenceData = async (): Promise<void> => {
@@ -429,7 +453,7 @@
 
   const form = reactive<FormState>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const tenant: FormItem[] = isPlatformSuper.value
         ? [
             {
@@ -696,7 +720,7 @@
     Object.assign(form.model, next)
   }
 
-  const workspaceItems = computed<FormItem[]>(() => {
+  const workspaceItems = computed<FormItem[]>((): FormItem[] => {
     const hasComponents = entity.value === 'plan' || entity.value === 'employee'
     const showTabs =
       entity.value === 'plan'
@@ -876,19 +900,6 @@
     gap: 14px;
     min-width: 0;
 
-    &__selector {
-      display: grid;
-      grid-template-columns: 140px minmax(0, 1fr);
-      gap: 16px;
-      align-items: center;
-
-      > span {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--art-gray-700);
-      }
-    }
-
     &__item-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -931,33 +942,6 @@
       }
     }
 
-    &__item-fields {
-      display: flex;
-      gap: 16px;
-      align-items: flex-end;
-
-      label {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
-
-        > span {
-          font-size: 12px;
-          color: var(--art-gray-600);
-        }
-      }
-
-      :deep(.el-input-number) {
-        width: 100%;
-      }
-    }
-
-    &__switch-field {
-      flex: 0 0 auto !important;
-    }
-
     &__variable-note,
     &__source-note {
       display: flex;
@@ -977,20 +961,8 @@
     }
 
     @media (width <= 760px) {
-      &__selector,
       &__item-list {
         grid-template-columns: 1fr;
-      }
-
-      &__item-fields {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      &__switch-field {
-        flex-direction: row !important;
-        align-items: center;
-        justify-content: space-between;
       }
     }
   }

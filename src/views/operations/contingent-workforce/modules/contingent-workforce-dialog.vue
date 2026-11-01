@@ -39,16 +39,6 @@
         :gutter="22"
         label-position="top"
       >
-        <template #sponsorEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.sponsorEmployeeId"
-            v-model:selected-data="sponsorSelection"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchContingentSponsorEmployeeSelector"
-            :display-fields="['jobTitle']"
-            placeholder="请选择内部负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -63,7 +53,6 @@
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { normalizeNullableText } from '@/utils/form/normalize'
   import dayjs from 'dayjs'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { employeeReferenceSelection } from '@/utils/form/employee-reference'
   import { fetchContingentSponsorEmployeeSelector } from '@hr/api/modules/contingent-workforce'
@@ -252,7 +241,7 @@
         ]
       : []
 
-  const vendorItems = computed<FormItem[]>(() => [
+  const vendorItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '供应商身份', key: 'vendorIdentity', type: 'tab', span: 24 },
     { label: '供应商编码', key: 'vendorCode', type: 'input', props: { maxlength: 40 } },
@@ -282,7 +271,7 @@
     }
   ])
 
-  const workerItems = computed<FormItem[]>(() => [
+  const workerItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '人员身份', key: 'workerIdentity', type: 'divider', span: 24 },
     { label: '外部人员编号', key: 'workerNo', type: 'input', props: { maxlength: 40 } },
@@ -318,7 +307,7 @@
       (item) => !formModel.organizationId || item.organizationId === formModel.organizationId
     )
   )
-  const engagementItems = computed<FormItem[]>(() => [
+  const engagementItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '任务归属', key: 'engagementIdentity', type: 'tab', span: 24 },
     { label: '用工任务编号', key: 'engagementNo', type: 'input', props: { maxlength: 40 } },
@@ -342,9 +331,19 @@
       props: { clearable: true, filterable: true, placeholder: '可选：不占正式员工编制' }
     },
     {
+      props: {
+        selectedData: sponsorSelection.value,
+        'onUpdate:selectedData': ($event: typeof sponsorSelection.value) => {
+          sponsorSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        apiFn: fetchContingentSponsorEmployeeSelector,
+        displayFields: ['jobTitle'],
+        placeholder: '请选择内部负责人'
+      },
       label: '内部负责人',
       key: 'sponsorEmployeeId',
-      type: 'input',
+      type: 'employeeSelect',
       description: '对准入、在场与退场负责'
     },
     { label: '服务角色', key: 'serviceTitle', type: 'input', props: { maxlength: 120 } },
@@ -397,7 +396,7 @@
     }
   ])
 
-  const controlItems = computed<FormItem[]>(() => [
+  const controlItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '控制对象', key: 'controlTarget', type: 'divider', span: 24 },
     {
@@ -440,7 +439,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() =>
+    items: computed((): FormItem[] =>
       entity.value === 'vendor'
         ? vendorItems.value
         : entity.value === 'worker'

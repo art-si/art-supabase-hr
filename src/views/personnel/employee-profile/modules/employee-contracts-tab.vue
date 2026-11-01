@@ -22,116 +22,20 @@
         @remove="contracts.splice(index, 1)"
       >
         <ArtForm
-          custom-layout
+          v-model="contracts[index]"
+          :items="contractItems(item, index)"
+          :span="formSpan"
+          :gutter="18"
           label-position="top"
-          form-class="hr-profile-page__record-form"
-          :disabled="isReadonly"
-        >
-          <ElFormItem
-            label="合同编号"
-            :required="Boolean(item.id) || contractNumberManualRequired"
-            :error="fieldError(index, 'contractNo')"
-            :data-validation-key="fieldKey(index, 'contractNo')"
-          >
-            <ElInput
-              v-model="item.contractNo"
-              maxlength="60"
-              :disabled="contractNumberLoading || Boolean(item.id) || contractNumberAutomatic"
-              :placeholder="contractNumberAutomatic ? '保存后自动生成' : '请输入合同编号'"
-            />
-            <small class="hr-contract-number-help">{{ contractNumberDescription }}</small>
-          </ElFormItem>
-          <ElFormItem
-            label="合同类型"
-            required
-            :error="fieldError(index, 'contractType')"
-            :data-validation-key="fieldKey(index, 'contractType')"
-          >
-            <ElSelect v-model="item.contractType">
-              <ElOption
-                v-for="option in dict('hrContractType')"
-                :key="String(option.value)"
-                :label="option.label"
-                :value="option.value"
-              />
-            </ElSelect>
-          </ElFormItem>
-          <ElFormItem
-            label="合同状态"
-            required
-            :error="fieldError(index, 'contractStatus')"
-            :data-validation-key="fieldKey(index, 'contractStatus')"
-          >
-            <ElSelect v-model="item.contractStatus">
-              <ElOption
-                v-for="option in dict('hrContractStatus')"
-                :key="String(option.value)"
-                :label="option.label"
-                :value="option.value"
-              />
-            </ElSelect>
-          </ElFormItem>
-          <ElFormItem label="签署日期">
-            <ElDatePicker v-model="item.signDate" type="date" value-format="YYYY-MM-DD" />
-          </ElFormItem>
-          <ElFormItem
-            label="开始日期"
-            required
-            :error="fieldError(index, 'startDate')"
-            :data-validation-key="fieldKey(index, 'startDate')"
-          >
-            <ElDatePicker v-model="item.startDate" type="date" value-format="YYYY-MM-DD" />
-          </ElFormItem>
-          <ElFormItem
-            label="结束日期"
-            :error="fieldError(index, 'endDate')"
-            :data-validation-key="fieldKey(index, 'endDate')"
-          >
-            <ElDatePicker v-model="item.endDate" type="date" value-format="YYYY-MM-DD" />
-          </ElFormItem>
-          <ElFormItem label="试用期结束">
-            <ElDatePicker v-model="item.probationEndDate" type="date" value-format="YYYY-MM-DD" />
-          </ElFormItem>
-          <ElFormItem label="工作地点">
-            <ElInput v-model="item.workLocation" maxlength="120" />
-          </ElFormItem>
-          <ElFormItem label="合同备注" class="is-wide">
-            <ElInput
-              v-model="item.remark"
-              type="textarea"
-              :rows="4"
-              maxlength="300"
-              show-word-limit
-            />
-          </ElFormItem>
-        </ArtForm>
-        <ArtForm
-          custom-layout
-          v-if="canViewCompensationDetails"
-          label-position="top"
-          form-class="hr-profile-page__compensation-form"
-          :disabled="!canEditCompensationDetails"
-        >
-          <ElFormItem label="月薪">
-            <ElInputNumber
-              v-if="canEditCompensationDetails"
-              :model-value="normalizeNullableNumber(item.monthlySalary)"
-              :min="0"
-              :precision="2"
-              :controls="false"
-              @update:model-value="item.monthlySalary = $event"
-            />
-            <ElInput v-else :model-value="formatSensitiveNumber(item.monthlySalary)" disabled />
-          </ElFormItem>
-        </ArtForm>
+          root-class="p-0!"
+        />
       </HistoryCard>
     </HistorySection>
   </ElTabPane>
 </template>
 
 <script setup lang="ts">
-  import { normalizeNullableNumber } from '@/utils/form/normalize'
-  import ArtForm from '@/components/core/forms/art-form/index.vue'
+  import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import HistoryCard from './history-card.vue'
   import HistorySection from './history-section.vue'
   import { formatSensitiveNumber } from '@/utils/field-permission'
@@ -142,6 +46,7 @@
   }
 
   const props = defineProps<{
+    formSpan: number
     isReadonly: boolean
     canViewCompensationDetails: boolean
     canEditCompensationDetails: boolean
@@ -158,6 +63,95 @@
   const fieldKey = (index: number, field: string): string => `contracts.${index}.${field}`
   const fieldError = (index: number, field: string): string =>
     props.validationErrors[fieldKey(index, field)] ?? ''
+  const validationProps = (index: number, field: string, required = false) => ({
+    required,
+    error: fieldError(index, field),
+    'data-validation-key': fieldKey(index, field)
+  })
+  const contractItems = (item: Api.Hr.EmployeeContract, index: number): FormItem[] => {
+    const dateProps = {
+      type: 'date',
+      valueFormat: 'YYYY-MM-DD',
+      class: 'w-full!',
+      disabled: props.isReadonly
+    }
+    return [
+      {
+        key: 'contractNo',
+        label: '合同编号',
+        type: 'input',
+        description: props.contractNumberDescription,
+        props: {
+          maxlength: 60,
+          disabled:
+            props.isReadonly ||
+            props.contractNumberLoading ||
+            Boolean(item.id) ||
+            props.contractNumberAutomatic,
+          placeholder: props.contractNumberAutomatic ? '保存后自动生成' : '请输入合同编号'
+        },
+        formItemProps: validationProps(
+          index,
+          'contractNo',
+          Boolean(item.id) || props.contractNumberManualRequired
+        )
+      },
+      {
+        key: 'contractType',
+        label: '合同类型',
+        type: 'select',
+        options: props.dict('hrContractType'),
+        props: { disabled: props.isReadonly },
+        formItemProps: validationProps(index, 'contractType', true)
+      },
+      {
+        key: 'contractStatus',
+        label: '合同状态',
+        type: 'select',
+        options: props.dict('hrContractStatus'),
+        props: { disabled: props.isReadonly },
+        formItemProps: validationProps(index, 'contractStatus', true)
+      },
+      { key: 'signDate', label: '签署日期', type: 'date', props: dateProps },
+      {
+        key: 'startDate',
+        label: '开始日期',
+        type: 'date',
+        props: dateProps,
+        formItemProps: validationProps(index, 'startDate', true)
+      },
+      {
+        key: 'endDate',
+        label: '结束日期',
+        type: 'date',
+        props: dateProps,
+        formItemProps: validationProps(index, 'endDate')
+      },
+      { key: 'probationEndDate', label: '试用期结束', type: 'date', props: dateProps },
+      {
+        key: 'workLocation',
+        label: '工作地点',
+        type: 'input',
+        props: { maxlength: 120, disabled: props.isReadonly }
+      },
+      {
+        key: 'monthlySalary',
+        label: '月薪',
+        type: props.canEditCompensationDetails ? 'number' : 'text',
+        hidden: !props.canViewCompensationDetails,
+        props: props.canEditCompensationDetails
+          ? { min: 0, precision: 2, controls: false, class: 'w-full!' }
+          : { formatter: () => formatSensitiveNumber(item.monthlySalary) }
+      },
+      {
+        key: 'remark',
+        label: '合同备注',
+        type: 'textarea',
+        span: 24,
+        props: { rows: 4, maxlength: 300, showWordLimit: true, disabled: props.isReadonly }
+      }
+    ]
+  }
   const createContract = (): Api.Hr.EmployeeContract => ({
     contractNo: '',
     contractType: 'fixed_term',
@@ -171,13 +165,3 @@
     remark: ''
   })
 </script>
-
-<style scoped lang="scss">
-  .hr-contract-number-help {
-    display: block;
-    margin-top: 5px;
-    font-size: 11px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
-  }
-</style>

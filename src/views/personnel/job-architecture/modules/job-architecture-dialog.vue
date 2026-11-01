@@ -99,7 +99,7 @@
 
   const form = reactive<FormState>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const common: FormItem[] = [
         {
           label: '所属租户',

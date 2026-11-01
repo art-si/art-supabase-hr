@@ -26,36 +26,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="selections.employee"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchLifecycleEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择生命周期事项员工"
-          />
-        </template>
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="selections.owner"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchLifecycleEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择事项或任务负责人"
-          />
-        </template>
-        <template #buddyEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.buddyEmployeeId"
-            v-model:selected-data="selections.buddy"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchLifecycleEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择入职伙伴（可选）"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -76,7 +46,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -193,7 +162,7 @@
     )
   )
 
-  const tenantItem = computed<FormItem[]>(() =>
+  const tenantItem = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -211,7 +180,7 @@
       : []
   )
 
-  const caseItems = computed<FormItem[]>(() => [
+  const caseItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '事项与来源', key: 'caseSection', type: 'tab', span: 24 },
     {
@@ -241,7 +210,21 @@
       },
       description: '选择后自动带入员工、组织、岗位及交接负责人。'
     },
-    { label: '员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: selections.employee,
+        'onUpdate:selectedData': ($event: typeof selections.employee) => {
+          selections.employee = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchLifecycleEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择生命周期事项员工'
+      },
+      label: '员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '计划生效日期',
       key: 'plannedEffectiveDate',
@@ -277,11 +260,35 @@
       options: positionOptions.value.map(toNameCodeOption),
       props: { clearable: true, filterable: true, placeholder: '请选择事项关联岗位' }
     },
-    { label: '事项负责人', key: 'ownerEmployeeId', type: 'input' },
     {
+      props: {
+        selectedData: selections.owner,
+        'onUpdate:selectedData': ($event: typeof selections.owner) => {
+          selections.owner = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchLifecycleEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择事项或任务负责人'
+      },
+      label: '事项负责人',
+      key: 'ownerEmployeeId',
+      type: 'employeeSelect'
+    },
+    {
+      props: {
+        selectedData: selections.buddy,
+        'onUpdate:selectedData': ($event: typeof selections.buddy) => {
+          selections.buddy = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchLifecycleEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择入职伙伴（可选）'
+      },
       label: '入职伙伴',
       key: 'buddyEmployeeId',
-      type: 'input',
+      type: 'employeeSelect',
       hidden: () => formModel.caseType !== 'onboarding'
     },
     {
@@ -293,7 +300,7 @@
     }
   ])
 
-  const taskItems = computed<FormItem[]>(() => [
+  const taskItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '任务归属', key: 'taskScopeSection', type: 'tab', span: 24 },
     {
@@ -325,7 +332,21 @@
       options: getDictMap.value.hrLifecycleOwnerRole ?? [],
       props: { placeholder: '请选择责任泳道' }
     },
-    { label: '具体负责人', key: 'ownerEmployeeId', type: 'input' },
+    {
+      props: {
+        selectedData: selections.owner,
+        'onUpdate:selectedData': ($event: typeof selections.owner) => {
+          selections.owner = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchLifecycleEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择事项或任务负责人'
+      },
+      label: '具体负责人',
+      key: 'ownerEmployeeId',
+      type: 'employeeSelect'
+    },
     { label: '必办任务', key: 'required', type: 'switch' },
     {
       label: '阻断生效',
@@ -344,7 +365,7 @@
     }
   ])
 
-  const templateItems = computed<FormItem[]>(() => [
+  const templateItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '任务包定义', key: 'templateSection', type: 'divider', span: 24 },
     { label: '任务包编码', key: 'templateCode', type: 'input', props: { maxlength: 60 } },
@@ -366,7 +387,7 @@
     }
   ])
 
-  const templateTaskItems = computed<FormItem[]>(() => [
+  const templateTaskItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '模板任务', key: 'templateTaskSection', type: 'divider', span: 24 },
     {
@@ -418,7 +439,7 @@
     }
   ])
 
-  const formItems = computed(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     if (entity.value === 'case') return caseItems.value
     if (entity.value === 'task') return taskItems.value
     if (entity.value === 'template') return templateItems.value

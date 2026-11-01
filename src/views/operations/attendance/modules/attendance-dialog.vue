@@ -26,16 +26,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchAttendanceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择排班或考勤员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -56,7 +46,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -167,7 +156,7 @@
     }))
   )
 
-  const tenantItem = computed<FormItem[]>(() =>
+  const tenantItem = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -185,7 +174,7 @@
       : []
   )
 
-  const shiftItems = computed<FormItem[]>(() => [
+  const shiftItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '班次识别', key: 'shiftIdentity', type: 'tab', span: 24 },
     { label: '班次编码', key: 'shiftCode', type: 'input', props: { maxlength: 40 } },
@@ -240,10 +229,24 @@
     }
   ])
 
-  const assignmentItems = computed<FormItem[]>(() => [
+  const assignmentItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '排班对象', key: 'assignmentScope', type: 'divider', span: 24 },
-    { label: '员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchAttendanceEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择排班或考勤员工'
+      },
+      label: '员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '执行班次',
       key: 'shiftId',
@@ -272,10 +275,24 @@
     }
   ])
 
-  const recordItems = computed<FormItem[]>(() => [
+  const recordItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '日考勤事实', key: 'recordScope', type: 'divider', span: 24 },
-    { label: '员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.value.model.tenantId,
+        apiFn: fetchAttendanceEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择排班或考勤员工'
+      },
+      label: '员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '执行班次',
       key: 'shiftId',
@@ -332,7 +349,7 @@
     }
   ])
 
-  const correctionItems = computed<FormItem[]>(() => [
+  const correctionItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '修正对象', key: 'correctionScope', type: 'divider', span: 24 },
     {
@@ -378,7 +395,7 @@
     }
   ])
 
-  const periodItems = computed<FormItem[]>(() => [
+  const periodItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItem.value,
     { label: '月度考勤期间', key: 'periodScope', type: 'divider', span: 24 },
     {
@@ -396,7 +413,7 @@
     }
   ])
 
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     if (entity.value === 'shift') return shiftItems.value
     if (entity.value === 'assignment') return assignmentItems.value
     if (entity.value === 'record') return recordItems.value

@@ -24,36 +24,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择员工"
-            subtitle="合同与资质只能关联当前租户内的有效员工"
-            placeholder="请选择员工"
-          />
-        </template>
-        <template #renewalOwnerId>
-          <ArtEmployeeSelect
-            v-model="form.model.renewalOwnerId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择续签负责人"
-            subtitle="负责人将承担到期评估与续签处置"
-            placeholder="请选择续签负责人"
-          />
-        </template>
-        <template #responsibleEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.responsibleEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择资质责任人"
-            subtitle="责任人负责复审、换证和失效处置"
-            placeholder="请选择资质责任人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -72,7 +42,6 @@
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useDocumentNumberRule } from '@/hooks/core/useDocumentNumberRule'
@@ -166,7 +135,7 @@
   const formModel = reactive<FormModel>(createInitialModel())
   const numberRule = useDocumentNumberRule('hr.employee_contract', () => formModel.tenantId)
 
-  const tenantItems = computed<FormItem[]>(() =>
+  const tenantItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -184,10 +153,24 @@
       : []
   )
 
-  const contractItems = computed<FormItem[]>(() => [
+  const contractItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '合同主体', key: 'identity', type: 'tab', span: 24 },
-    { label: '关联员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择员工',
+        subtitle: '合同与资质只能关联当前租户内的有效员工',
+        placeholder: '请选择员工'
+      },
+      label: '关联员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '合同编号',
       key: 'contractNo',
@@ -227,7 +210,21 @@
       type: 'number',
       props: { min: 0, max: 365, controls: false }
     },
-    { label: '续签负责人', key: 'renewalOwnerId', type: 'input' },
+    {
+      props: {
+        selectedData: ownerSelection.value,
+        'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+          ownerSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择续签负责人',
+        subtitle: '负责人将承担到期评估与续签处置',
+        placeholder: '请选择续签负责人'
+      },
+      label: '续签负责人',
+      key: 'renewalOwnerId',
+      type: 'employeeSelect'
+    },
     { label: '工作地点', key: 'workLocation', type: 'input' },
     {
       label: '月薪参考',
@@ -246,10 +243,24 @@
     }
   ])
 
-  const qualificationItems = computed<FormItem[]>(() => [
+  const qualificationItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '证照主体', key: 'identity', type: 'tab', span: 24 },
-    { label: '关联员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择员工',
+        subtitle: '合同与资质只能关联当前租户内的有效员工',
+        placeholder: '请选择员工'
+      },
+      label: '关联员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '资质类型',
       key: 'qualificationType',
@@ -274,7 +285,21 @@
       type: 'number',
       props: { min: 0, max: 365, controls: false }
     },
-    { label: '资质责任人', key: 'responsibleEmployeeId', type: 'input' },
+    {
+      props: {
+        selectedData: ownerSelection.value,
+        'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+          ownerSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择资质责任人',
+        subtitle: '责任人负责复审、换证和失效处置',
+        placeholder: '请选择资质责任人'
+      },
+      label: '资质责任人',
+      key: 'responsibleEmployeeId',
+      type: 'employeeSelect'
+    },
     { label: '证书附件地址', key: 'attachmentUrl', type: 'input' },
     {
       label: '备注',
@@ -291,7 +316,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() =>
+    items: computed((): FormItem[] =>
       entity.value === 'contract' ? contractItems.value : qualificationItems.value
     ),
     rules: computed(() => {

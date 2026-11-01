@@ -916,7 +916,6 @@
 
     display: flex;
     flex-direction: column;
-    gap: var(--art-page-gap);
 
     &__control {
       display: grid;

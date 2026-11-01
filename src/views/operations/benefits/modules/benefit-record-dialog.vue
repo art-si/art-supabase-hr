@@ -32,16 +32,6 @@
         :gutter="22"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择福利涉及员工"
-            subtitle="员工身份用于校验人生事件、参保资格与租户边界"
-            placeholder="请选择员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -60,7 +50,6 @@
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useAuth } from '@/hooks/core/useAuth'
@@ -205,7 +194,7 @@
         ]
       : []
 
-  const planItems = computed<FormItem[]>(() => [
+  const planItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '计划识别', key: 'identity', type: 'tab', span: 24 },
     {
@@ -262,7 +251,7 @@
     }
   ])
 
-  const enrollmentItems = computed<FormItem[]>(() => [
+  const enrollmentItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     {
       label: '员工与资格',
@@ -270,7 +259,21 @@
       type: hasAuth('Hr:Benefits:Amount:Edit') ? 'tab' : 'divider',
       span: 24
     },
-    { label: '员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择福利涉及员工',
+        subtitle: '员工身份用于校验人生事件、参保资格与租户边界',
+        placeholder: '请选择员工'
+      },
+      label: '员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '参保编号',
       key: 'enrollmentNo',
@@ -347,10 +350,24 @@
     }
   ])
 
-  const eventItems = computed<FormItem[]>(() => [
+  const eventItems = computed<FormItem[]>((): FormItem[] => [
     ...commonTenantItems(),
     { label: '事件与员工', key: 'eventSection', type: 'divider', span: 24 },
-    { label: '员工', key: 'employeeId', type: 'input' },
+    {
+      props: {
+        selectedData: employeeSelection.value,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+          employeeSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择福利涉及员工',
+        subtitle: '员工身份用于校验人生事件、参保资格与租户边界',
+        placeholder: '请选择员工'
+      },
+      label: '员工',
+      key: 'employeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '人生事件类型',
       key: 'eventType',
@@ -396,7 +413,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() =>
+    items: computed((): FormItem[] =>
       entity.value === 'plan'
         ? planItems.value
         : entity.value === 'enrollment'

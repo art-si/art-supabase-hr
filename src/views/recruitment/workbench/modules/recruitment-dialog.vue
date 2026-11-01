@@ -24,34 +24,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #interviewerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.interviewerEmployeeId"
-            v-model:selected-data="employeeSelection.interviewer"
-            :tenant-id="form.model.tenantId"
-          />
-        </template>
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="employeeSelection.owner"
-            :tenant-id="form.model.tenantId"
-          />
-        </template>
-        <template #buddyEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.buddyEmployeeId"
-            v-model:selected-data="employeeSelection.buddy"
-            :tenant-id="form.model.tenantId"
-          />
-        </template>
-        <template #onboardEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.onboardEmployeeId"
-            v-model:selected-data="employeeSelection.onboard"
-            :tenant-id="form.model.tenantId"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -70,7 +42,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -224,7 +195,7 @@
   })
 
   const model = reactive<FormModel>(createInitialModel())
-  const commonTenantItem = computed<FormItem[]>(() =>
+  const commonTenantItem = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -244,7 +215,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       if (entity.value === 'requisition')
         return [
           ...commonTenantItem.value,
@@ -319,7 +290,18 @@
           date('scheduledStartAt', '开始时间', 'datetime'),
           date('scheduledEndAt', '结束时间', 'datetime'),
           input('location', '面试地点 / 会议链接'),
-          { label: '面试官', key: 'interviewerEmployeeId', type: 'input' }
+          {
+            props: {
+              selectedData: employeeSelection.interviewer,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.interviewer) => {
+                employeeSelection.interviewer = $event
+              },
+              tenantId: form.model.tenantId
+            },
+            label: '面试官',
+            key: 'interviewerEmployeeId',
+            type: 'employeeSelect'
+          }
         ]
       if (entity.value === 'offer')
         return [
@@ -339,9 +321,43 @@
           ...commonTenantItem.value,
           remoteSelect('offerId', '已接受 Offer', 'accepted_offer', '请选择已接受的 Offer'),
           date('plannedOnboardDate', '计划入职日期'),
-          { label: '交接负责人', key: 'ownerEmployeeId', type: 'input' },
-          { label: '入职伙伴', key: 'buddyEmployeeId', type: 'input' },
-          { label: '关联员工档案', key: 'onboardEmployeeId', type: 'input', span: 24 },
+          {
+            props: {
+              selectedData: employeeSelection.owner,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.owner) => {
+                employeeSelection.owner = $event
+              },
+              tenantId: form.model.tenantId
+            },
+            label: '交接负责人',
+            key: 'ownerEmployeeId',
+            type: 'employeeSelect'
+          },
+          {
+            props: {
+              selectedData: employeeSelection.buddy,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.buddy) => {
+                employeeSelection.buddy = $event
+              },
+              tenantId: form.model.tenantId
+            },
+            label: '入职伙伴',
+            key: 'buddyEmployeeId',
+            type: 'employeeSelect'
+          },
+          {
+            props: {
+              selectedData: employeeSelection.onboard,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.onboard) => {
+                employeeSelection.onboard = $event
+              },
+              tenantId: form.model.tenantId
+            },
+            label: '关联员工档案',
+            key: 'onboardEmployeeId',
+            type: 'employeeSelect',
+            span: 24
+          },
           textarea('handoffNote', '交接说明', '记录报到安排、特殊准备事项和已确认信息')
         ]
       return [
@@ -349,7 +365,18 @@
         remoteSelect('handoffId', '入职交接', 'handoff', '请选择待处理的入职交接'),
         dict('taskCategory', '任务分类', 'hrOnboardingTaskCategory'),
         input('taskTitle', '任务名称'),
-        { label: '任务负责人', key: 'ownerEmployeeId', type: 'input' },
+        {
+          props: {
+            selectedData: employeeSelection.owner,
+            'onUpdate:selectedData': ($event: typeof employeeSelection.owner) => {
+              employeeSelection.owner = $event
+            },
+            tenantId: form.model.tenantId
+          },
+          label: '任务负责人',
+          key: 'ownerEmployeeId',
+          type: 'employeeSelect'
+        },
         date('dueDate', '截止日期'),
         {
           label: '任务状态',

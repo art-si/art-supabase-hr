@@ -465,7 +465,6 @@
 
 <style scoped lang="scss">
   .organization-position-page {
-    gap: var(--art-space-3);
     min-width: 0;
 
     &__workspace {

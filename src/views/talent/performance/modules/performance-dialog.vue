@@ -26,46 +26,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="selections.owner"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchPerformanceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择周期负责人"
-          />
-        </template>
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="selections.employee"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchPerformanceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择被考核员工"
-          />
-        </template>
-        <template #reviewerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.reviewerEmployeeId"
-            v-model:selected-data="selections.reviewer"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchPerformanceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择评价主管"
-          />
-        </template>
-        <template #facilitatorEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.facilitatorEmployeeId"
-            v-model:selected-data="selections.facilitator"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchPerformanceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择沟通或校准负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -86,7 +46,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchPerformanceEmployeeSelector } from '@hr/api/modules/performance'
   import { fetchEnabledTenantList } from '@/api/system-manage'
@@ -228,7 +187,7 @@
   })
 
   const formModel = reactive<FormModel>(createInitialModel())
-  const commonItems = computed<FormItem[]>(() =>
+  const commonItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -252,14 +211,28 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const common = commonItems.value
       if (entity.value === 'cycle')
         return [
           ...common,
           input('cycleCode', '周期编码', '如 PERF_2027_ANNUAL'),
           input('cycleName', '周期名称', '如 2027 年度绩效周期'),
-          { label: '周期负责人', key: 'ownerEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: selections.owner,
+              'onUpdate:selectedData': ($event: typeof selections.owner) => {
+                selections.owner = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchPerformanceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择周期负责人'
+            },
+            label: '周期负责人',
+            key: 'ownerEmployeeId',
+            type: 'employeeSelect'
+          },
           number('checkInFrequencyDays', '沟通频率（天）', { min: 7, max: 365, precision: 0 }),
           date('startDate', '周期开始'),
           date('endDate', '周期结束'),
@@ -272,8 +245,36 @@
         return [
           ...common,
           select('cycleId', '绩效周期', cycleOptions.value, '请选择草稿或执行中的周期'),
-          { label: '被考核员工', key: 'employeeId', type: 'input' },
-          { label: '评价主管', key: 'reviewerEmployeeId', type: 'input' }
+          {
+            props: {
+              selectedData: selections.employee,
+              'onUpdate:selectedData': ($event: typeof selections.employee) => {
+                selections.employee = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchPerformanceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择被考核员工'
+            },
+            label: '被考核员工',
+            key: 'employeeId',
+            type: 'employeeSelect'
+          },
+          {
+            props: {
+              selectedData: selections.reviewer,
+              'onUpdate:selectedData': ($event: typeof selections.reviewer) => {
+                selections.reviewer = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchPerformanceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择评价主管'
+            },
+            label: '评价主管',
+            key: 'reviewerEmployeeId',
+            type: 'employeeSelect'
+          }
         ]
       if (entity.value === 'goal')
         return [
@@ -298,7 +299,21 @@
           ...common,
           { key: 'checkInContext', label: '沟通记录', type: 'tab' },
           select('reviewId', '员工考核', reviewOptions.value, '请选择执行中的员工考核'),
-          { label: '沟通负责人', key: 'facilitatorEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: selections.facilitator,
+              'onUpdate:selectedData': ($event: typeof selections.facilitator) => {
+                selections.facilitator = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchPerformanceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择沟通或校准负责人'
+            },
+            label: '沟通负责人',
+            key: 'facilitatorEmployeeId',
+            type: 'employeeSelect'
+          },
           date('checkInDate', '沟通日期'),
           number('progressPercent', '整体进度（%）', { min: 0, max: 100, precision: 2 }),
           dict('riskStatus', '进展风险', 'hrPerformanceCheckInRisk'),
@@ -320,7 +335,21 @@
             options: organizationOptions.value,
             placeholder: '不选则覆盖整个周期'
           }),
-          { label: '校准主持人', key: 'facilitatorEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: selections.facilitator,
+              'onUpdate:selectedData': ($event: typeof selections.facilitator) => {
+                selections.facilitator = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchPerformanceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择沟通或校准负责人'
+            },
+            label: '校准主持人',
+            key: 'facilitatorEmployeeId',
+            type: 'employeeSelect'
+          },
           datetime('scheduledAt', '会议时间'),
           textarea('distributionNote', '校准口径', '说明评分尺度、分布参考及需重点讨论的群体')
         ]

@@ -25,31 +25,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="employeeSelection.owner"
-            :tenant-id="form.model.tenantId"
-            placeholder="请选择计划负责人"
-          />
-        </template>
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection.learner"
-            :tenant-id="form.model.tenantId"
-            :clearable="false"
-            title="安排员工学习"
-          />
-        </template>
-        <template #nominatedByEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.nominatedByEmployeeId"
-            v-model:selected-data="employeeSelection.nominator"
-            :tenant-id="form.model.tenantId"
-            placeholder="可选：选择学习安排人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -70,7 +45,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -215,7 +189,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const common: FormItem[] = isPlatformSuper.value
         ? [
             {
@@ -239,7 +213,19 @@
           input('planCode', '计划编码', '如 FY27_LEADERSHIP'),
           input('planName', '计划名称', '如 年度基层主管培养计划'),
           dict('trainingType', '培训类型', 'hrTrainingType'),
-          { label: '计划负责人', key: 'ownerEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: employeeSelection.owner,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.owner) => {
+                employeeSelection.owner = $event
+              },
+              tenantId: form.model.tenantId,
+              placeholder: '请选择计划负责人'
+            },
+            label: '计划负责人',
+            key: 'ownerEmployeeId',
+            type: 'employeeSelect'
+          },
           { key: 'planArrangement', label: '周期与执行', type: 'tab' },
           date('startDate', '开始日期'),
           date('endDate', '结束日期'),
@@ -310,8 +296,33 @@
         return [
           ...common,
           select('sessionId', '开放班次', sessionOptions.value, '请选择可报名班次'),
-          { label: '学习员工', key: 'employeeId', type: 'input' },
-          { label: '安排人', key: 'nominatedByEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: employeeSelection.learner,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.learner) => {
+                employeeSelection.learner = $event
+              },
+              tenantId: form.model.tenantId,
+              clearable: false,
+              title: '安排员工学习'
+            },
+            label: '学习员工',
+            key: 'employeeId',
+            type: 'employeeSelect'
+          },
+          {
+            props: {
+              selectedData: employeeSelection.nominator,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.nominator) => {
+                employeeSelection.nominator = $event
+              },
+              tenantId: form.model.tenantId,
+              placeholder: '可选：选择学习安排人'
+            },
+            label: '安排人',
+            key: 'nominatedByEmployeeId',
+            type: 'employeeSelect'
+          },
           textarea('remark', '安排说明', '记录安排来源、培养目标或员工确认情况')
         ]
       return [

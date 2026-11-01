@@ -31,16 +31,6 @@
         :gutter="20"
         label-position="top"
       >
-        <template #renewalOwnerId>
-          <ArtEmployeeSelect
-            v-model="form.model.renewalOwnerId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="record?.tenantId"
-            title="选择续签负责人"
-            subtitle="负责人承担续签评估、材料和签署跟进"
-            placeholder="请选择续签负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -57,7 +47,6 @@
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { useDocumentNumberRule } from '@/hooks/core/useDocumentNumberRule'
   import { useUserStore } from '@/store/modules/user'
@@ -188,10 +177,25 @@
       : (record.value as Api.Hr.ComplianceQualification).qualificationName
   })
 
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     if (action.value === 'start_renewal') {
       return [
-        { label: '续签负责人', key: 'renewalOwnerId', type: 'input', span: 24 },
+        {
+          props: {
+            selectedData: ownerSelection.value,
+            'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+              ownerSelection.value = $event
+            },
+            tenantId: record.value?.tenantId,
+            title: '选择续签负责人',
+            subtitle: '负责人承担续签评估、材料和签署跟进',
+            placeholder: '请选择续签负责人'
+          },
+          label: '续签负责人',
+          key: 'renewalOwnerId',
+          type: 'employeeSelect',
+          span: 24
+        },
         commentItem('续签评估说明', false)
       ]
     }
@@ -221,7 +225,21 @@
           props: { valueFormat: 'YYYY-MM-DD' }
         },
         { key: 'renewalControl', label: '责任与依据', type: 'tab' },
-        { label: '续签负责人', key: 'renewalOwnerId', type: 'input' },
+        {
+          props: {
+            selectedData: ownerSelection.value,
+            'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+              ownerSelection.value = $event
+            },
+            tenantId: record.value?.tenantId,
+            title: '选择续签负责人',
+            subtitle: '负责人承担续签评估、材料和签署跟进',
+            placeholder: '请选择续签负责人'
+          },
+          label: '续签负责人',
+          key: 'renewalOwnerId',
+          type: 'employeeSelect'
+        },
         {
           label: '提醒天数',
           key: 'renewalReminderDays',

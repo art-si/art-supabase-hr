@@ -132,7 +132,7 @@
   })
   const formModel = reactive<FormModel>(createInitialModel())
 
-  const tenantItems = computed<FormItem[]>(() =>
+  const tenantItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -151,7 +151,7 @@
       : []
   )
 
-  const formItems = computed<FormItem[]>(() => [
+  const formItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '版本身份', key: 'versionIdentity', type: 'tab', span: 24 },
     { label: '政策编码', key: 'policyCode', type: 'input', props: { maxlength: 40 } },

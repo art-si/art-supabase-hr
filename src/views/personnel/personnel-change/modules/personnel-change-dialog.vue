@@ -69,7 +69,6 @@
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type {
     EmployeeIntegrationItem,
     EmployeeSelectorContractParams
@@ -367,7 +366,7 @@
 
   const form = reactive<FormState>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const changeType = formModel.changeType ?? ''
       return [
         {
@@ -390,7 +389,6 @@
           label: '员工',
           key: 'employeeId',
           type: 'employeeSelect',
-          render: ArtEmployeeSelect,
           props: {
             apiFn: loadEmployeeOptions,
             tenantId:

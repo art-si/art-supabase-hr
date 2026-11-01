@@ -25,14 +25,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            placeholder="请选择规划负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -53,7 +45,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -236,7 +227,7 @@
     props: { filterable: true, placeholder: `请选择${label}`, onChange }
   })
 
-  const tenantItem = computed<FormItem[]>(() =>
+  const tenantItem = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -259,7 +250,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       if (entity.value === 'cycle')
         return [
           ...tenantItem.value,
@@ -267,7 +258,19 @@
           input('planNo', '规划编号', '如 WFP_2027_BASE'),
           input('planName', '规划名称', '如 2027 年度业务增长人力规划'),
           dict('scenario', '规划场景', 'hrWorkforcePlanScenario'),
-          { label: '规划负责人', key: 'ownerEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: ownerSelection.value,
+              'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+                ownerSelection.value = $event
+              },
+              tenantId: form.model.tenantId,
+              placeholder: '请选择规划负责人'
+            },
+            label: '规划负责人',
+            key: 'ownerEmployeeId',
+            type: 'employeeSelect'
+          },
           { key: 'planBasis', label: '周期与测算依据', type: 'tab' },
           date('periodStart', '周期开始'),
           date('periodEnd', '周期结束'),

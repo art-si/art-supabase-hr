@@ -47,27 +47,6 @@
         :gutter="22"
         label-position="top"
       >
-        <template #hiringManagerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.hiringManagerEmployeeId"
-            v-model:selected-data="employeeSelection.manager"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchInternalMobilityEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择机会负责人"
-          />
-        </template>
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection.applicant"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchInternalMobilityEmployeeSelector"
-            :display-fields="[]"
-            :disabled="Boolean(form.model.id)"
-            placeholder="请选择申请员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -85,7 +64,6 @@
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchInternalMobilityEmployeeSelector } from '@hr/api/modules/internal-mobility'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
@@ -207,7 +185,7 @@
   const opportunityTypeLabel = (value: Api.Hr.InternalOpportunityType): string =>
     ({ permanent: '永久岗位', rotation: '轮岗机会', project: '项目机会', gig: '短期任务' })[value]
 
-  const tenantItems = computed<FormItem[]>(() =>
+  const tenantItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value && entity.value === 'opportunity'
       ? [
           {
@@ -227,7 +205,7 @@
     )
   )
 
-  const opportunityItems = computed<FormItem[]>(() => [
+  const opportunityItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '机会定义', key: 'opportunityDefinition', type: 'tab', span: 24 },
     { label: '机会编码', key: 'opportunityCode', type: 'input', props: { maxlength: 40 } },
@@ -263,9 +241,19 @@
           }
         ]),
     {
+      props: {
+        selectedData: employeeSelection.manager,
+        'onUpdate:selectedData': ($event: typeof employeeSelection.manager) => {
+          employeeSelection.manager = $event
+        },
+        tenantId: form.model.tenantId,
+        apiFn: fetchInternalMobilityEmployeeSelector,
+        displayFields: [],
+        placeholder: '请选择机会负责人'
+      },
       label: '机会负责人',
       key: 'hiringManagerEmployeeId',
-      type: 'input'
+      type: 'employeeSelect'
     },
     {
       label: '录用容量',
@@ -324,7 +312,7 @@
     }
   ])
 
-  const applicationItems = computed<FormItem[]>(() => [
+  const applicationItems = computed<FormItem[]>((): FormItem[] => [
     ...(!selectedOpportunity.value
       ? [
           {
@@ -342,9 +330,20 @@
           {
             label: '申请员工',
             key: 'employeeId',
-            type: 'input' as const,
+            type: 'employeeSelect',
             span: 24,
-            props: { filterable: true, disabled: Boolean(formModel.id) }
+            props: {
+              ...{ filterable: true, disabled: Boolean(formModel.id) },
+              selectedData: employeeSelection.applicant,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.applicant) => {
+                employeeSelection.applicant = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchInternalMobilityEmployeeSelector,
+              displayFields: [],
+              disabled: Boolean(form.model.id),
+              placeholder: '请选择申请员工'
+            }
           }
         ]
       : []),
@@ -430,7 +429,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() =>
+    items: computed((): FormItem[] =>
       entity.value === 'opportunity' ? opportunityItems.value : applicationItems.value
     ),
     rules: formRules

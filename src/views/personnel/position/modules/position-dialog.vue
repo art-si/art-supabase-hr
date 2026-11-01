@@ -84,7 +84,7 @@
     description: [{ max: 300, message: '岗位说明不能超过 300 个字符', trigger: 'blur' }]
   }))
 
-  const formItems = computed<FormItem[]>(() => [
+  const formItems = computed<FormItem[]>((): FormItem[] => [
     { label: '岗位信息', key: 'baseSection', type: 'divider', span: 24 },
     {
       label: '所属租户',

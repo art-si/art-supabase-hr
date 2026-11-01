@@ -19,16 +19,6 @@
         :gutter="20"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="record?.tenantId"
-            title="选择案件负责人"
-            subtitle="负责人承担调查推进、期限控制和结案材料完整性"
-            placeholder="请选择案件负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -44,7 +34,6 @@
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { useUserStore } from '@/store/modules/user'
   import { fetchEmployeeRelationCaseDetail, transitionEmployeeRelationCase } from '@hr/api'
@@ -120,10 +109,25 @@
   }
   const actionMeta = computed(() => actionMetas[action.value])
 
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     if (action.value === 'triage') {
       return [
-        { label: '案件负责人', key: 'ownerEmployeeId', type: 'input', span: 24 },
+        {
+          props: {
+            selectedData: ownerSelection.value,
+            'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+              ownerSelection.value = $event
+            },
+            tenantId: record.value?.tenantId,
+            title: '选择案件负责人',
+            subtitle: '负责人承担调查推进、期限控制和结案材料完整性',
+            placeholder: '请选择案件负责人'
+          },
+          label: '案件负责人',
+          key: 'ownerEmployeeId',
+          type: 'employeeSelect',
+          span: 24
+        },
         {
           label: '严重程度',
           key: 'severity',

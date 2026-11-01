@@ -88,7 +88,7 @@
   const formModel = reactive<Api.Hr.EmployeeExperienceSurvey>(createInitialModel())
   const dictOptions = (code: string) => getDictMap.value[code] ?? []
 
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     const items: FormItem[] = []
     if (isPlatformSuper.value) {
       items.push({

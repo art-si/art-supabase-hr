@@ -884,7 +884,6 @@
 
     display: flex;
     flex-direction: column;
-    gap: 16px;
     min-width: 0;
 
     &__control {

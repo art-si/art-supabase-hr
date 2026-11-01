@@ -13,33 +13,12 @@
       <ArtForm
         ref="formRef"
         v-model="form"
-        :items="[]"
+        :items="items"
         :rules="rules"
-        custom-layout
+        :span="24"
         scroll-to-error
         root-class="p-0! md:p-0!"
-      >
-        <ElFormItem label="工单处理人" prop="assigneeEmployeeId" required>
-          <ArtEmployeeSelect
-            v-model="form.assigneeEmployeeId"
-            v-model:selected-data="selection"
-            :tenant-id="record?.tenantId"
-            title="选择员工服务处理人"
-            subtitle="仅选择当前租户内承担员工服务交付的有效员工"
-            placeholder="请选择处理人"
-          />
-        </ElFormItem>
-        <ElFormItem label="分派说明" prop="comment">
-          <ElInput
-            v-model="form.comment"
-            type="textarea"
-            :rows="3"
-            maxlength="300"
-            show-word-limit
-            placeholder="可选：补充分派依据或处理要求"
-          />
-        </ElFormItem>
-      </ArtForm>
+      />
     </div>
   </ArtDialog>
 </template>
@@ -48,13 +27,12 @@
   import { employeeReferenceSelection } from '@/utils/form/employee-reference'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
-  import { nextTick, ref, shallowRef } from 'vue'
+  import { computed, nextTick, ref, shallowRef } from 'vue'
   import type { FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
-  import ArtForm from '@/components/core/forms/art-form/index.vue'
+  import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { transitionServiceRequest } from '@hr/api'
 
@@ -67,6 +45,35 @@
     assigneeEmployeeId: [{ required: true, message: '请选择工单处理人', trigger: 'change' }]
   }
   const selection = ref<EmployeeIntegrationItem[]>([])
+  const items = computed<FormItem[]>((): FormItem[] => [
+    {
+      key: 'assigneeEmployeeId',
+      label: '工单处理人',
+      type: 'employeeSelect',
+      formItemProps: { required: true },
+      props: {
+        tenantId: record.value?.tenantId,
+        selectedData: selection.value,
+        'onUpdate:selectedData': (value: EmployeeIntegrationItem[]) => {
+          selection.value = value
+        },
+        title: '选择员工服务处理人',
+        subtitle: '仅选择当前租户内承担员工服务交付的有效员工',
+        placeholder: '请选择处理人'
+      }
+    },
+    {
+      key: 'comment',
+      label: '分派说明',
+      type: 'textarea',
+      props: {
+        rows: 3,
+        maxlength: 300,
+        showWordLimit: true,
+        placeholder: '可选：补充分派依据或处理要求'
+      }
+    }
+  ])
 
   const submit = async (): Promise<boolean> => {
     if (!record.value?.id) return false

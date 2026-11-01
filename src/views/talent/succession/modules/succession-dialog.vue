@@ -32,26 +32,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="employeeSelection.owner"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchSuccessionEmployeeSelector"
-            :display-fields="['jobTitle']"
-            placeholder="可选：请选择负责人"
-          />
-        </template>
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection.candidate"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchSuccessionEmployeeSelector"
-            :display-fields="['jobTitle']"
-            placeholder="请选择候选员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -72,7 +52,6 @@
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -189,7 +168,7 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const common: FormItem[] = isPlatformSuper.value
         ? [
             {
@@ -212,7 +191,21 @@
           input('planCode', '计划编码', '如 SUCCESSION_OPS_01'),
           input('planName', '计划名称', '如 运输调度负责人继任计划'),
           select('positionId', '关键岗位', positionOptions.value, '请选择关键岗位'),
-          { label: '计划负责人', key: 'ownerEmployeeId', type: 'input' },
+          {
+            props: {
+              selectedData: employeeSelection.owner,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.owner) => {
+                employeeSelection.owner = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchSuccessionEmployeeSelector,
+              displayFields: ['jobTitle'],
+              placeholder: '可选：请选择负责人'
+            },
+            label: '计划负责人',
+            key: 'ownerEmployeeId',
+            type: 'employeeSelect'
+          },
           { key: 'planRisk', label: '风险与复盘', type: 'tab' },
           dict('criticality', '岗位关键度', 'hrSuccessionCriticality'),
           dict('vacancyRisk', '空缺风险', 'commonRiskLevel'),
@@ -228,7 +221,21 @@
           ...common,
           { key: 'candidateIdentity', label: '候选人与评估', type: 'tab' },
           select('planId', '继任计划', planOptions.value, '请选择目标计划'),
-          { label: '候选人', key: 'employeeId', type: 'input' },
+          {
+            props: {
+              selectedData: employeeSelection.candidate,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.candidate) => {
+                employeeSelection.candidate = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchSuccessionEmployeeSelector,
+              displayFields: ['jobTitle'],
+              placeholder: '请选择候选员工'
+            },
+            label: '候选人',
+            key: 'employeeId',
+            type: 'employeeSelect'
+          },
           dict('readiness', '继任准备度', 'hrSuccessionReadiness'),
           dict('potentialLevel', '人才潜力', 'hrSuccessionPotential'),
           dict('retentionRisk', '留任风险', 'commonRiskLevel'),
@@ -247,7 +254,21 @@
         select('candidateId', '继任候选人', candidateOptions.value, '请选择候选人'),
         dict('actionType', '行动类型', 'hrSuccessionActionType'),
         input('actionTitle', '行动名称', '如 主持季度运营复盘'),
-        { label: '行动负责人', key: 'ownerEmployeeId', type: 'input' },
+        {
+          props: {
+            selectedData: employeeSelection.owner,
+            'onUpdate:selectedData': ($event: typeof employeeSelection.owner) => {
+              employeeSelection.owner = $event
+            },
+            tenantId: form.model.tenantId,
+            apiFn: fetchSuccessionEmployeeSelector,
+            displayFields: ['jobTitle'],
+            placeholder: '可选：请选择负责人'
+          },
+          label: '行动负责人',
+          key: 'ownerEmployeeId',
+          type: 'employeeSelect'
+        },
         date('startDate', '开始日期'),
         date('dueDate', '截止日期'),
         dict('status', '行动状态', 'hrSuccessionActionStatus'),

@@ -32,36 +32,6 @@
         :gutter="22"
         label-position="top"
       >
-        <template #subjectEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.subjectEmployeeId"
-            v-model:selected-data="subjectSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择案件涉及员工"
-            subtitle="案件涉及员工用于权限可见性与调查对象识别"
-            placeholder="请选择涉及员工"
-          />
-        </template>
-        <template #reporterEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.reporterEmployeeId"
-            v-model:selected-data="reporterSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择报告员工"
-            subtitle="匿名报告不保存报告人引用"
-            placeholder="请选择报告员工"
-          />
-        </template>
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            title="选择处置行动负责人"
-            subtitle="负责人承担行动执行、证据留存和结果反馈"
-            placeholder="请选择行动负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -79,7 +49,6 @@
   import type { ArtDialogExpose } from '@/components/core/dialogs/art-dialog/types'
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
@@ -161,7 +130,7 @@
 
   const formModel = reactive<FormModel>(createInitialModel())
   const dictOptions = (code: string) => getDictMap.value[code] ?? []
-  const caseItems = computed<FormItem[]>(() => {
+  const caseItems = computed<FormItem[]>((): FormItem[] => {
     const items: FormItem[] = []
     if (isPlatformSuper.value) {
       items.push({
@@ -195,7 +164,21 @@
         span: 24,
         props: { maxlength: 160, showWordLimit: true, placeholder: '用中性、可检索的语言概括案件' }
       },
-      { label: '涉及员工', key: 'subjectEmployeeId', type: 'input' },
+      {
+        props: {
+          selectedData: subjectSelection.value,
+          'onUpdate:selectedData': ($event: typeof subjectSelection.value) => {
+            subjectSelection.value = $event
+          },
+          tenantId: form.model.tenantId,
+          title: '选择案件涉及员工',
+          subtitle: '案件涉及员工用于权限可见性与调查对象识别',
+          placeholder: '请选择涉及员工'
+        },
+        label: '涉及员工',
+        key: 'subjectEmployeeId',
+        type: 'employeeSelect'
+      },
       {
         label: '匿名报告',
         key: 'anonymousReport',
@@ -203,9 +186,19 @@
         props: { activeText: '匿名', inactiveText: '实名' }
       },
       {
+        props: {
+          selectedData: reporterSelection.value,
+          'onUpdate:selectedData': ($event: typeof reporterSelection.value) => {
+            reporterSelection.value = $event
+          },
+          tenantId: form.model.tenantId,
+          title: '选择报告员工',
+          subtitle: '匿名报告不保存报告人引用',
+          placeholder: '请选择报告员工'
+        },
         label: '报告员工',
         key: 'reporterEmployeeId',
-        type: 'input',
+        type: 'employeeSelect',
         hidden: () => formModel.anonymousReport
       },
       {
@@ -257,14 +250,28 @@
     return items
   })
 
-  const actionItems = computed<FormItem[]>(() => [
+  const actionItems = computed<FormItem[]>((): FormItem[] => [
     {
       label: '行动类型',
       key: 'actionType',
       type: 'select',
       options: dictOptions('hrEmployeeRelationActionType')
     },
-    { label: '行动负责人', key: 'ownerEmployeeId', type: 'input' },
+    {
+      props: {
+        selectedData: ownerSelection.value,
+        'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+          ownerSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        title: '选择处置行动负责人',
+        subtitle: '负责人承担行动执行、证据留存和结果反馈',
+        placeholder: '请选择行动负责人'
+      },
+      label: '行动负责人',
+      key: 'ownerEmployeeId',
+      type: 'employeeSelect'
+    },
     {
       label: '行动名称',
       key: 'title',
@@ -294,7 +301,9 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => (entity.value === 'case' ? caseItems.value : actionItems.value)),
+    items: computed((): FormItem[] =>
+      entity.value === 'case' ? caseItems.value : actionItems.value
+    ),
     rules: computed(() => ({
       tenantId: isPlatformSuper.value
         ? [{ required: true, message: '请选择所属租户', trigger: 'change' }]

@@ -89,7 +89,7 @@
     rules: ComputedRef<FormRules<ActionFormModel>>
   }>({
     model,
-    items: computed(() =>
+    items: computed((): FormItem[] =>
       isInterviewEvaluation.value
         ? [
             {

@@ -281,7 +281,7 @@
         ]
       : []
 
-  const cycleItems = computed<FormItem[]>(() => [
+  const cycleItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems(),
     { label: '周期识别', key: 'identity', type: 'tab', span: 24 },
     {
@@ -348,7 +348,7 @@
     }
   ])
 
-  const budgetItems = computed<FormItem[]>(() => [
+  const budgetItems = computed<FormItem[]>((): FormItem[] => [
     {
       ...hrOrganizationTreeField({
         key: 'organizationId',
@@ -381,7 +381,7 @@
     }
   ])
 
-  const itemItems = computed<FormItem[]>(() => [
+  const itemItems = computed<FormItem[]>((): FormItem[] => [
     {
       label: '排除本周期',
       key: 'exclude',

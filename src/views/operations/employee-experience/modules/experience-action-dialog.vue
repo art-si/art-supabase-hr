@@ -29,16 +29,6 @@
           :gutter="22"
           label-position="top"
         >
-          <template #ownerEmployeeId>
-            <ArtEmployeeSelect
-              v-model="form.model.ownerEmployeeId"
-              v-model:selected-data="ownerSelection"
-              :tenant-id="form.model.tenantId"
-              title="选择改善行动负责人"
-              subtitle="负责人承担执行、进度维护与成果验收"
-              placeholder="请选择行动负责人"
-            />
-          </template>
         </ArtForm>
       </ArtAsyncState>
     </div>
@@ -59,7 +49,6 @@
   import ArtForm, { type FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { useUserStore } from '@/store/modules/user'
   import {
@@ -125,7 +114,7 @@
   const selectedSurvey = computed(() =>
     surveys.value.find((survey) => survey.id === formModel.surveyId)
   )
-  const formItems = computed<FormItem[]>(() => {
+  const formItems = computed<FormItem[]>((): FormItem[] => {
     const items: FormItem[] = []
     if (isPlatformSuper.value) {
       items.push({
@@ -174,7 +163,21 @@
         options: organizationOptions.value,
         placeholder: '可选：不选表示全组织行动'
       }),
-      { label: '行动负责人', key: 'ownerEmployeeId', type: 'input' },
+      {
+        props: {
+          selectedData: ownerSelection.value,
+          'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+            ownerSelection.value = $event
+          },
+          tenantId: form.model.tenantId,
+          title: '选择改善行动负责人',
+          subtitle: '负责人承担执行、进度维护与成果验收',
+          placeholder: '请选择行动负责人'
+        },
+        label: '行动负责人',
+        key: 'ownerEmployeeId',
+        type: 'employeeSelect'
+      },
       {
         label: '计划完成日',
         key: 'dueDate',

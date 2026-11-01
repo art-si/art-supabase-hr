@@ -24,16 +24,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchAbsenceEmployeeSelector"
-            :display-fields="[]"
-            placeholder="请选择员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -65,7 +55,6 @@
     fetchHrOrganizationTree,
     saveAbsenceRecord
   } from '@hr/api'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchAbsenceEmployeeSelector } from '@hr/api/modules/absence'
   import type { DialogType } from '@/types'
@@ -183,7 +172,7 @@
     rules: ComputedRef<FormRules<AbsenceFormModel>>
   }>({
     model: createInitialModel(),
-    items: computed(() => {
+    items: computed((): FormItem[] => {
       const common: FormItem[] = isPlatformSuper.value
         ? [
             {
@@ -254,7 +243,21 @@
       if (entity.value === 'request')
         return [
           ...common,
-          { label: '员工', key: 'employeeId', type: 'input' },
+          {
+            props: {
+              selectedData: employeeSelection.value,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+                employeeSelection.value = $event
+              },
+              tenantId: form.model.tenantId,
+              apiFn: fetchAbsenceEmployeeSelector,
+              displayFields: [],
+              placeholder: '请选择员工'
+            },
+            label: '员工',
+            key: 'employeeId',
+            type: 'employeeSelect'
+          },
           select('leaveTypeId', '假别', leaveTypeOptions.value, '请选择假别'),
           date('startDate', '开始日期'),
           dict('startSession', '开始时段', 'hrLeaveSession'),
@@ -266,7 +269,21 @@
 
       return [
         ...common,
-        { label: '员工', key: 'employeeId', type: 'input' },
+        {
+          props: {
+            selectedData: employeeSelection.value,
+            'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+              employeeSelection.value = $event
+            },
+            tenantId: form.model.tenantId,
+            apiFn: fetchAbsenceEmployeeSelector,
+            displayFields: [],
+            placeholder: '请选择员工'
+          },
+          label: '员工',
+          key: 'employeeId',
+          type: 'employeeSelect'
+        },
         select('leaveTypeId', '假别', leaveTypeOptions.value, '请选择假别'),
         number('balanceYear', '余额年度', { min: 2000, max: 2200, precision: 0 }),
         number('delta', '调整数量', { precision: 2, placeholder: '正数增加，负数扣减' }),
@@ -403,7 +420,21 @@
         placeholder: '请选择适用组织'
       })
     if (form.model.scopeType === 'employee')
-      return { label: '指定员工', key: 'employeeId', type: 'input' }
+      return {
+        props: {
+          selectedData: employeeSelection.value,
+          'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+            employeeSelection.value = $event
+          },
+          tenantId: form.model.tenantId,
+          apiFn: fetchAbsenceEmployeeSelector,
+          displayFields: [],
+          placeholder: '请选择员工'
+        },
+        label: '指定员工',
+        key: 'employeeId',
+        type: 'employeeSelect'
+      }
     if (form.model.scopeType === 'grade')
       return select('gradeId', '指定职级', gradeOptions.value, '请选择适用职级')
     return null

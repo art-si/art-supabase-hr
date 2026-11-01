@@ -977,8 +977,6 @@
 
   @media only screen and (width <= 768px) {
     .absence-page {
-      gap: 10px;
-
       &__control-deck {
         padding: 12px;
       }

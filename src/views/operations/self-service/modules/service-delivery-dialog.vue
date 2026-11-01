@@ -25,14 +25,6 @@
         :gutter="24"
         label-position="top"
       >
-        <template #employeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.employeeId"
-            v-model:selected-data="employeeSelection"
-            :tenant-id="form.model.tenantId"
-            placeholder="请选择代建工单的员工"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -51,7 +43,6 @@
     type FormItem,
     type FormItemOption
   } from '@/components/core/forms/art-form/index.vue'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { fetchEnabledTenantList } from '@/api/system-manage'
   import { useDocumentNumberRule } from '@/hooks/core/useDocumentNumberRule'
@@ -146,7 +137,7 @@
   const formModel = reactive<FormModel>(createInitialModel())
   const numberRule = useDocumentNumberRule('hr.self_service_request', () => formModel.tenantId)
 
-  const tenantItems = computed<FormItem[]>(() =>
+  const tenantItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -164,7 +155,7 @@
       : []
   )
 
-  const requestItems = computed<FormItem[]>(() => [
+  const requestItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '工单识别', key: 'requestIdentity', type: 'divider', span: 24 },
     {
@@ -175,7 +166,21 @@
       help: numberRule.description.value
     },
     ...(managerView.value
-      ? [{ label: '申请员工', key: 'employeeId', type: 'input' as const }]
+      ? [
+          {
+            props: {
+              selectedData: employeeSelection.value,
+              'onUpdate:selectedData': ($event: typeof employeeSelection.value) => {
+                employeeSelection.value = $event
+              },
+              tenantId: form.model.tenantId,
+              placeholder: '请选择代建工单的员工'
+            },
+            label: '申请员工',
+            key: 'employeeId',
+            type: 'employeeSelect'
+          }
+        ]
       : []),
     {
       label: '服务项目',
@@ -224,7 +229,7 @@
     }
   ])
 
-  const catalogItems = computed<FormItem[]>(() => [
+  const catalogItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     {
       label: '服务定义',
@@ -294,7 +299,9 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => (entity.value === 'request' ? requestItems.value : catalogItems.value)),
+    items: computed((): FormItem[] =>
+      entity.value === 'request' ? requestItems.value : catalogItems.value
+    ),
     rules: computed(() => {
       const rules: FormRules<FormModel> = {
         tenantId: isPlatformSuper.value

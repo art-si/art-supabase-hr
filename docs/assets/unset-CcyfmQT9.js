@@ -1,0 +1,1 @@
+import{yn as e}from"./sys-B-hMWB2e.js";function t(t,n){return t==null||e(t,n)}export{t};

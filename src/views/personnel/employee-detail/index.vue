@@ -519,13 +519,18 @@
 
 <style scoped lang="scss">
   .employee-detail-page {
+    :deep(> .art-async-state) {
+      display: flex;
+      flex-direction: column;
+      gap: var(--art-page-gap);
+    }
+
     &__summary {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) minmax(320px, 0.85fr);
       gap: 22px;
       align-items: center;
       padding: 22px 26px;
-      margin-bottom: 14px;
       background: linear-gradient(110deg, var(--el-bg-color) 58%, var(--el-color-primary-light-9));
 
       :deep(.el-avatar) {
@@ -602,10 +607,6 @@
 
     &__tabs {
       padding: 0 20px 20px;
-    }
-
-    &__access-notice {
-      margin-bottom: 14px;
     }
 
     &__masked-history {

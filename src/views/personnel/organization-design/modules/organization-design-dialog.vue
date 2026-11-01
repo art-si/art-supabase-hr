@@ -26,16 +26,6 @@
         :gutter="22"
         label-position="top"
       >
-        <template #ownerEmployeeId>
-          <ArtEmployeeSelect
-            v-model="form.model.ownerEmployeeId"
-            v-model:selected-data="ownerSelection"
-            :tenant-id="form.model.tenantId"
-            :api-fn="fetchOrganizationDesignEmployeeSelector"
-            :display-fields="['jobTitle']"
-            placeholder="可选：请选择方案负责人"
-          />
-        </template>
       </ArtForm>
     </div>
   </ArtDialog>
@@ -49,7 +39,6 @@
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import dayjs from 'dayjs'
-  import ArtEmployeeSelect from '@/components/business/art-employee-select/index.vue'
   import type { EmployeeIntegrationItem } from '@/api/integration/employees'
   import { employeeReferenceSelection } from '@/utils/form/employee-reference'
   import { fetchOrganizationDesignEmployeeSelector } from '@hr/api/modules/organization-design'
@@ -147,7 +136,7 @@
   })
   const formModel = reactive<FormModel>(createInitialModel())
 
-  const tenantItems = computed<FormItem[]>(() =>
+  const tenantItems = computed<FormItem[]>((): FormItem[] =>
     isPlatformSuper.value
       ? [
           {
@@ -162,16 +151,26 @@
       : []
   )
 
-  const scenarioItems = computed<FormItem[]>(() => [
+  const scenarioItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '方案定义', key: 'scenarioDefinition', type: 'divider', span: 24 },
     { label: '方案编码', key: 'scenarioCode', type: 'input', props: { maxlength: 40 } },
     { label: '方案名称', key: 'scenarioName', type: 'input', props: { maxlength: 160 } },
     { label: '计划生效日', key: 'effectiveDate', type: 'date', props: { class: '!w-full' } },
     {
+      props: {
+        selectedData: ownerSelection.value,
+        'onUpdate:selectedData': ($event: typeof ownerSelection.value) => {
+          ownerSelection.value = $event
+        },
+        tenantId: form.model.tenantId,
+        apiFn: fetchOrganizationDesignEmployeeSelector,
+        displayFields: ['jobTitle'],
+        placeholder: '可选：请选择方案负责人'
+      },
       label: '方案负责人',
       key: 'ownerEmployeeId',
-      type: 'input'
+      type: 'employeeSelect'
     },
     {
       label: '变革目标与业务理由',
@@ -182,7 +181,7 @@
     }
   ])
 
-  const changeItems = computed<FormItem[]>(() => [
+  const changeItems = computed<FormItem[]>((): FormItem[] => [
     ...tenantItems.value,
     { label: '方案与动作', key: 'changeDefinition', type: 'divider', span: 24 },
     {
@@ -313,7 +312,9 @@
     rules: ComputedRef<FormRules<FormModel>>
   }>({
     model: formModel,
-    items: computed(() => (entity.value === 'scenario' ? scenarioItems.value : changeItems.value)),
+    items: computed((): FormItem[] =>
+      entity.value === 'scenario' ? scenarioItems.value : changeItems.value
+    ),
     rules: formRules
   })
 
