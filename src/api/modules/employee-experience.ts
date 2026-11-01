@@ -77,6 +77,7 @@ export async function fetchEmployeeExperienceDetail<
 }
 
 const normalizeRecordPayload = (
+  kind: Api.Hr.EmployeeExperienceRecordKind,
   record:
     | Api.Hr.EmployeeExperienceSurvey
     | Api.Hr.EmployeeExperienceQuestion
@@ -92,8 +93,7 @@ const normalizeRecordPayload = (
       'participantCount',
       'completedCount',
       'responseRate',
-      'surveyCode',
-      'surveyName',
+      ...(kind === 'survey' ? [] : ['surveyCode', 'surveyName']),
       'organizationName',
       'ownerEmployeeNo',
       'ownerEmployeeName',
@@ -123,7 +123,7 @@ export async function saveEmployeeExperienceRecord(
     () =>
       supabase.rpc('hr_save_employee_experience_record_secure', {
         p_kind: kind,
-        p_payload: normalizeRecordPayload(record)
+        p_payload: normalizeRecordPayload(kind, record)
       }),
     {
       showMessage: true,

@@ -16,14 +16,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -122,6 +121,7 @@
   interface ArtFormExpose {
     validate: () => Promise<boolean | void>
     clearValidate: () => void
+    focusField: (prop: string) => Promise<void>
   }
 
   const emit = defineEmits<{ success: [type: DialogType, entity: Entity] }>()
@@ -129,6 +129,7 @@
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
   const formRef = ref<ArtFormExpose>()
+  const activeTab = ref('identity')
   const entity = ref<Entity>('contract')
   const editing = ref(false)
   const tenantOptions = ref<FormItemOption[]>([])
@@ -185,7 +186,7 @@
 
   const contractItems = computed<FormItem[]>(() => [
     ...tenantItems.value,
-    { label: '合同主体', key: 'identity', type: 'divider', span: 24 },
+    { label: '合同主体', key: 'identity', type: 'tab', span: 24 },
     { label: '关联员工', key: 'employeeId', type: 'input' },
     {
       label: '合同编号',
@@ -209,11 +210,16 @@
       ),
       hidden: editing.value
     },
-    { label: '合同期限', key: 'period', type: 'divider', span: 24 },
-    { label: '签订日期', key: 'signDate', type: 'date' },
-    { label: '开始日期', key: 'startDate', type: 'date' },
-    { label: '结束日期', key: 'endDate', type: 'date' },
-    { label: '试用期结束', key: 'probationEndDate', type: 'date' },
+    { label: '期限与责任', key: 'period', type: 'tab', span: 24 },
+    { label: '签订日期', key: 'signDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+    { label: '开始日期', key: 'startDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+    { label: '结束日期', key: 'endDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+    {
+      label: '试用期结束',
+      key: 'probationEndDate',
+      type: 'date',
+      props: { valueFormat: 'YYYY-MM-DD' }
+    },
     { label: '续签与责任', key: 'renewal', type: 'divider', span: 24 },
     {
       label: '提前提醒天数',
@@ -242,7 +248,7 @@
 
   const qualificationItems = computed<FormItem[]>(() => [
     ...tenantItems.value,
-    { label: '证照主体', key: 'identity', type: 'divider', span: 24 },
+    { label: '证照主体', key: 'identity', type: 'tab', span: 24 },
     { label: '关联员工', key: 'employeeId', type: 'input' },
     {
       label: '资质类型',
@@ -253,10 +259,15 @@
     { label: '资质名称', key: 'qualificationName', type: 'input', span: 24 },
     { label: '证书编号', key: 'certificateNo', type: 'input' },
     { label: '发证机构', key: 'issuer', type: 'input' },
-    { label: '有效期与复审', key: 'period', type: 'divider', span: 24 },
-    { label: '发证日期', key: 'issueDate', type: 'date' },
-    { label: '到期日期', key: 'expiryDate', type: 'date' },
-    { label: '下次复审', key: 'nextReviewDate', type: 'date' },
+    { label: '有效期与复审', key: 'period', type: 'tab', span: 24 },
+    { label: '发证日期', key: 'issueDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+    { label: '到期日期', key: 'expiryDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+    {
+      label: '下次复审',
+      key: 'nextReviewDate',
+      type: 'date',
+      props: { valueFormat: 'YYYY-MM-DD' }
+    },
     {
       label: '提前提醒天数',
       key: 'reminderDays',
@@ -340,13 +351,14 @@
     if (entity.value === 'contract') await numberRule.loadRule()
   }
 
-  const validateBusiness = (): void => {
+  const validateBusiness = async (): Promise<void> => {
     if (
       entity.value === 'contract' &&
       formModel.startDate &&
       formModel.endDate &&
       formModel.endDate < formModel.startDate
     ) {
+      await formRef.value?.focusField('endDate')
       throw new Error('合同结束日期不能早于开始日期')
     }
     if (
@@ -355,6 +367,7 @@
       formModel.expiryDate &&
       formModel.expiryDate < formModel.issueDate
     ) {
+      await formRef.value?.focusField('expiryDate')
       throw new Error('资质到期日期不能早于发证日期')
     }
   }
@@ -362,7 +375,7 @@
   const submit = async (): Promise<boolean> => {
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
-      validateBusiness()
+      await validateBusiness()
       const type: DialogType = editing.value ? 'edit' : 'add'
       if (entity.value === 'contract') {
         await saveComplianceRecord('contract', {
@@ -430,6 +443,7 @@
   }
 
   const handleOpen = async (payload: OpenPayload): Promise<void> => {
+    activeTab.value = 'identity'
     entity.value = payload.entity
     editing.value = payload.type === 'edit'
     resetModel()

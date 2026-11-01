@@ -1,159 +1,169 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="compensation-dialog">
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
-        :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
+        :items="hrTenantScopedFormItems(workspaceItems, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
-      />
-
-      <ArtSectionCard
-        v-if="entity === 'plan'"
-        title="方案薪酬项目"
-        subtitle="定义方案包含的收入、扣减和企业成本项目；方案被已批准员工薪酬使用后即锁定。"
-        body-class="compensation-dialog__section-body"
-      >
-        <div class="compensation-dialog__selector">
-          <span>选择薪酬项目</span>
-          <ElSelect
-            v-model="selectedPlanComponentIds"
-            multiple
-            filterable
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="请选择方案包含的薪酬项目"
+        ><template #compensationComponents
+          ><ArtSectionCard
+            v-if="entity === 'plan'"
+            title="方案薪酬项目"
+            subtitle="定义方案包含的收入、扣减和企业成本项目；方案被已批准员工薪酬使用后即锁定。"
+            body-class="compensation-dialog__section-body"
           >
-            <ElOption
-              v-for="option in componentOptions"
-              :key="option.id"
-              :label="`${option.name} · ${option.code}`"
-              :value="option.id"
+            <div class="compensation-dialog__selector">
+              <span>选择薪酬项目</span>
+              <ElSelect
+                v-model="selectedPlanComponentIds"
+                multiple
+                filterable
+                collapse-tags
+                collapse-tags-tooltip
+                placeholder="请选择方案包含的薪酬项目"
+              >
+                <ElOption
+                  v-for="option in componentOptions"
+                  :key="option.id"
+                  :label="`${option.name} · ${option.code}`"
+                  :value="option.id"
+                />
+              </ElSelect>
+            </div>
+            <div v-if="planItems.length" class="compensation-dialog__item-list">
+              <div
+                v-for="item in planItems"
+                :key="item.componentId"
+                class="compensation-dialog__item"
+              >
+                <div class="compensation-dialog__item-heading">
+                  <div>
+                    <strong>{{ item.componentName }}</strong>
+                    <span>{{ item.componentCode }}</span>
+                  </div>
+                  <ArtDictDisplay
+                    dict-code="hrCompensationComponentCategory"
+                    :value="item.category || ''"
+                    display="tag"
+                  />
+                </div>
+                <div class="compensation-dialog__item-fields">
+                  <label v-if="item.amountType === 'fixed'">
+                    <span>默认金额</span>
+                    <ElInputNumber
+                      v-model="item.defaultAmount"
+                      :min="0"
+                      :precision="2"
+                      :controls="false"
+                      placeholder="选填"
+                    />
+                  </label>
+                  <label v-else-if="item.amountType === 'rate'">
+                    <span>默认比例</span>
+                    <ElInputNumber
+                      v-model="item.defaultRate"
+                      :min="0"
+                      :precision="6"
+                      :controls="false"
+                      placeholder="如 0.10"
+                    />
+                  </label>
+                  <div v-else class="compensation-dialog__variable-note">
+                    <ArtSvgIcon icon="ri:edit-box-line" />
+                    <span>由薪资核算期录入</span>
+                  </div>
+                  <label class="compensation-dialog__switch-field">
+                    <span>员工必配</span>
+                    <ElSwitch v-model="item.required" />
+                  </label>
+                </div>
+              </div>
+            </div>
+            <ArtEmptyState
+              v-else
+              title="尚未选择薪酬项目"
+              description="方案仍可仅包含基本工资。"
+              size="compact"
+              :visual-size="64"
             />
-          </ElSelect>
-        </div>
-        <div v-if="planItems.length" class="compensation-dialog__item-list">
-          <div v-for="item in planItems" :key="item.componentId" class="compensation-dialog__item">
-            <div class="compensation-dialog__item-heading">
-              <div>
-                <strong>{{ item.componentName }}</strong>
-                <span>{{ item.componentCode }}</span>
-              </div>
-              <ArtDictDisplay
-                dict-code="hrCompensationComponentCategory"
-                :value="item.category || ''"
-                display="tag"
-              />
-            </div>
-            <div class="compensation-dialog__item-fields">
-              <label v-if="item.amountType === 'fixed'">
-                <span>默认金额</span>
-                <ElInputNumber
-                  v-model="item.defaultAmount"
-                  :min="0"
-                  :precision="2"
-                  :controls="false"
-                  placeholder="选填"
-                />
-              </label>
-              <label v-else-if="item.amountType === 'rate'">
-                <span>默认比例</span>
-                <ElInputNumber
-                  v-model="item.defaultRate"
-                  :min="0"
-                  :precision="6"
-                  :controls="false"
-                  placeholder="如 0.10"
-                />
-              </label>
-              <div v-else class="compensation-dialog__variable-note">
-                <ArtSvgIcon icon="ri:edit-box-line" />
-                <span>由薪资核算期录入</span>
-              </div>
-              <label class="compensation-dialog__switch-field">
-                <span>员工必配</span>
-                <ElSwitch v-model="item.required" />
-              </label>
-            </div>
-          </div>
-        </div>
-        <ArtEmptyState
-          v-else
-          title="尚未选择薪酬项目"
-          description="方案仍可仅包含基本工资。"
-          size="compact"
-          :visual-size="64"
-        />
-      </ArtSectionCard>
+          </ArtSectionCard>
 
-      <ArtSectionCard
-        v-if="entity === 'employee'"
-        title="薪酬构成"
-        subtitle="基本工资单独维护；下列项目继承自薪酬方案，可按员工覆盖默认金额或比例。"
-        body-class="compensation-dialog__section-body"
-      >
-        <div v-if="employeeItems.length" class="compensation-dialog__item-list">
-          <div
-            v-for="item in employeeItems"
-            :key="item.componentId"
-            class="compensation-dialog__item"
+          <ArtSectionCard
+            v-if="entity === 'employee'"
+            title="薪酬构成"
+            subtitle="基本工资单独维护；下列项目继承自薪酬方案，可按员工覆盖默认金额或比例。"
+            body-class="compensation-dialog__section-body"
           >
-            <div class="compensation-dialog__item-heading">
-              <div>
-                <strong>{{ item.componentName }}</strong>
-                <span>{{ item.componentCode }}</span>
+            <div v-if="employeeItems.length" class="compensation-dialog__item-list">
+              <div
+                v-for="item in employeeItems"
+                :key="item.componentId"
+                class="compensation-dialog__item"
+              >
+                <div class="compensation-dialog__item-heading">
+                  <div>
+                    <strong>{{ item.componentName }}</strong>
+                    <span>{{ item.componentCode }}</span>
+                  </div>
+                  <ArtDictDisplay
+                    dict-code="hrCompensationComponentCategory"
+                    :value="item.category || ''"
+                    display="tag"
+                  />
+                </div>
+                <div class="compensation-dialog__item-fields">
+                  <label v-if="item.amountType !== 'rate'">
+                    <span>{{ item.amountType === 'variable' ? '核算金额' : '员工金额' }}</span>
+                    <ElInputNumber
+                      v-model="item.amount"
+                      :min="0"
+                      :precision="2"
+                      :controls="false"
+                      placeholder="留空则使用方案默认值"
+                    />
+                  </label>
+                  <label v-else>
+                    <span>员工比例</span>
+                    <ElInputNumber
+                      v-model="item.rate"
+                      :min="0"
+                      :precision="6"
+                      :controls="false"
+                      placeholder="留空则使用方案默认值"
+                    />
+                  </label>
+                  <div class="compensation-dialog__source-note">
+                    <ArtSvgIcon icon="ri:git-merge-line" />
+                    <span>保存后记录方案值或员工覆盖值</span>
+                  </div>
+                </div>
               </div>
-              <ArtDictDisplay
-                dict-code="hrCompensationComponentCategory"
-                :value="item.category || ''"
-                display="tag"
-              />
             </div>
-            <div class="compensation-dialog__item-fields">
-              <label v-if="item.amountType !== 'rate'">
-                <span>{{ item.amountType === 'variable' ? '核算金额' : '员工金额' }}</span>
-                <ElInputNumber
-                  v-model="item.amount"
-                  :min="0"
-                  :precision="2"
-                  :controls="false"
-                  placeholder="留空则使用方案默认值"
-                />
-              </label>
-              <label v-else>
-                <span>员工比例</span>
-                <ElInputNumber
-                  v-model="item.rate"
-                  :min="0"
-                  :precision="6"
-                  :controls="false"
-                  placeholder="留空则使用方案默认值"
-                />
-              </label>
-              <div class="compensation-dialog__source-note">
-                <ArtSvgIcon icon="ri:git-merge-line" />
-                <span>保存后记录方案值或员工覆盖值</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <ArtEmptyState
-          v-else
-          :title="form.model.planId ? '该方案仅包含基本工资' : '请先选择薪酬方案'"
-          :description="
-            form.model.planId
-              ? '配置更多薪酬项目后可在此查看。'
-              : '选择方案后可查看对应的薪酬项目。'
-          "
-          size="compact"
-          :visual-size="64"
-        />
-      </ArtSectionCard>
+            <ArtEmptyState
+              v-else
+              :title="form.model.planId ? '该方案仅包含基本工资' : '请先选择薪酬方案'"
+              :description="
+                form.model.planId
+                  ? '配置更多薪酬项目后可在此查看。'
+                  : '选择方案后可查看对应的薪酬项目。'
+              "
+              size="compact"
+              :visual-size="64"
+            /> </ArtSectionCard></template
+      ></ArtForm>
     </div>
   </ArtDialog>
 </template>
@@ -247,6 +257,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('employee')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -684,6 +695,34 @@
     Object.keys(form.model).forEach((key) => delete form.model[key as keyof CompensationFormModel])
     Object.assign(form.model, next)
   }
+
+  const workspaceItems = computed<FormItem[]>(() => {
+    const hasComponents = entity.value === 'plan' || entity.value === 'employee'
+    const showTabs =
+      entity.value === 'plan'
+        ? planItems.value.length > 2
+        : entity.value === 'employee' && employeeItems.value.length > 2
+    return [
+      ...(showTabs
+        ? [{ key: 'compensationIdentity', label: '薪酬资料', type: 'tab' } as FormItem]
+        : []),
+      ...form.items,
+      ...(hasComponents
+        ? [
+            ...(showTabs
+              ? [
+                  {
+                    key: 'compensationComponentsSection',
+                    label: '薪酬构成',
+                    type: 'tab'
+                  } as FormItem
+                ]
+              : []),
+            { key: 'compensationComponents', label: '', span: 24, labelWidth: 0 }
+          ]
+        : [])
+    ]
+  })
 
   const validateBusinessRules = (): void => {
     if (form.model.effectiveTo && form.model.effectiveTo < form.model.effectiveFrom)

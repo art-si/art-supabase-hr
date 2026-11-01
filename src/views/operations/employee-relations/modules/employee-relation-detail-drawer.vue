@@ -1,5 +1,13 @@
 <template>
-  <ArtDrawer :loading="loading" ref="drawerRef">
+  <ArtDrawer
+    :loading="loading"
+    ref="drawerRef"
+    @open="
+      () => {
+        activeDetailTab = 'overview'
+      }
+    "
+  >
     <ArtAsyncState
       :error="loadError"
       :empty="missing"
@@ -59,177 +67,201 @@
           </div>
         </div>
 
-        <section class="employee-relation-detail__summary" aria-label="案件控制摘要">
-          <dl>
-            <div v-for="item in summaryItems" :key="item.label">
-              <dt>{{ item.label }}</dt>
-              <dd>{{ item.value }}</dd>
-              <small>{{ item.hint }}</small>
-            </div>
-          </dl>
-        </section>
+        <ElTabs v-model="activeDetailTab"
+          ><ElTabPane name="overview" label="案件概览"
+            ><div class="space-y-4"
+              ><section class="employee-relation-detail__summary" aria-label="案件控制摘要">
+                <dl>
+                  <div v-for="item in summaryItems" :key="item.label">
+                    <dt>{{ item.label }}</dt>
+                    <dd>{{ item.value }}</dd>
+                    <small>{{ item.hint }}</small>
+                  </div>
+                </dl>
+              </section>
 
-        <section class="employee-relation-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:flow-chart" />
-            <div><strong>案件控制阶段</strong><small>从受理到结案的当前进度与控制边界</small></div>
-          </header>
-          <ol class="employee-relation-detail__rail" aria-label="案件处理阶段">
-            <li v-for="(stage, index) in lifecycleStages" :key="stage.status" :class="stage.state">
-              <span>{{ index + 1 }}</span>
-              <div
-                ><strong>{{ stage.label }}</strong
-                ><small>{{ stage.hint }}</small></div
+              <section class="employee-relation-detail__section">
+                <header>
+                  <ArtSvgIcon icon="ri:flow-chart" />
+                  <div
+                    ><strong>案件控制阶段</strong
+                    ><small>从受理到结案的当前进度与控制边界</small></div
+                  >
+                </header>
+                <ol class="employee-relation-detail__rail" aria-label="案件处理阶段">
+                  <li
+                    v-for="(stage, index) in lifecycleStages"
+                    :key="stage.status"
+                    :class="stage.state"
+                  >
+                    <span>{{ index + 1 }}</span>
+                    <div
+                      ><strong>{{ stage.label }}</strong
+                      ><small>{{ stage.hint }}</small></div
+                    >
+                  </li>
+                </ol>
+              </section></div
+            ></ElTabPane
+          >
+          <ElTabPane name="investigation" label="调查资料" v-if="!record.sensitiveRestricted"
+            ><div class="space-y-4"
+              ><section
+                v-if="!record.sensitiveRestricted"
+                class="employee-relation-detail__section"
               >
-            </li>
-          </ol>
-        </section>
-
-        <section v-if="!record.sensitiveRestricted" class="employee-relation-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:file-search-line" />
-            <div
-              ><strong>调查与解决资料</strong><small>仅向具有敏感查看权限的授权人员展示</small></div
-            >
-          </header>
-          <dl class="employee-relation-detail__narrative">
-            <div>
-              <dt>报告事实</dt>
-              <dd>{{ record.allegationSummary || '--' }}</dd>
-            </div>
-            <div>
-              <dt>调查发现</dt>
-              <dd>{{ record.findingsSummary || '尚未形成调查发现' }}</dd>
-            </div>
-            <div>
-              <dt>解决摘要</dt>
-              <dd>{{ record.resolutionSummary || '尚未提交解决结论' }}</dd>
-            </div>
-          </dl>
-          <div v-if="record.attachmentUrls?.length" class="employee-relation-detail__attachments">
-            <a
-              v-for="(url, index) in record.attachmentUrls"
-              :key="url"
-              :href="url"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ArtSvgIcon icon="ri:attachment-2" />案件附件 {{ index + 1 }}
-              <ArtSvgIcon icon="ri:external-link-line" />
-            </a>
-          </div>
-        </section>
-
-        <section class="employee-relation-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:route-line" />
-            <div
-              ><strong>纠正与跟进行动</strong
-              ><small>行动只记录建议、责任人与结果，不直接变更任职状态</small></div
-            >
-          </header>
-          <div v-if="record.actions?.length" class="employee-relation-detail__actions">
-            <article v-for="action in record.actions" :key="action.id">
-              <span :class="`is-${action.status}`"
-                ><ArtSvgIcon icon="ri:checkbox-blank-circle-fill"
-              /></span>
-              <div>
-                <div>
-                  <strong>{{ action.title }}</strong>
-                  <ElTag effect="plain" size="small">
-                    {{
-                      userStore.getDictLabelByValue(
-                        'commonActionProgressStatus',
-                        action.status,
-                        action.status ?? '--'
-                      )
-                    }}
-                  </ElTag>
+                <header>
+                  <ArtSvgIcon icon="ri:file-search-line" />
+                  <div
+                    ><strong>调查与解决资料</strong
+                    ><small>仅向具有敏感查看权限的授权人员展示</small></div
+                  >
+                </header>
+                <dl class="employee-relation-detail__narrative">
+                  <div>
+                    <dt>报告事实</dt>
+                    <dd>{{ record.allegationSummary || '--' }}</dd>
+                  </div>
+                  <div>
+                    <dt>调查发现</dt>
+                    <dd>{{ record.findingsSummary || '尚未形成调查发现' }}</dd>
+                  </div>
+                  <div>
+                    <dt>解决摘要</dt>
+                    <dd>{{ record.resolutionSummary || '尚未提交解决结论' }}</dd>
+                  </div>
+                </dl>
+                <div
+                  v-if="record.attachmentUrls?.length"
+                  class="employee-relation-detail__attachments"
+                >
+                  <a
+                    v-for="(url, index) in record.attachmentUrls"
+                    :key="url"
+                    :href="url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ArtSvgIcon icon="ri:attachment-2" />案件附件 {{ index + 1 }}
+                    <ArtSvgIcon icon="ri:external-link-line" />
+                  </a>
+                </div> </section></div
+          ></ElTabPane>
+          <ElTabPane name="actions" label="跟进行动"
+            ><div class="space-y-4"
+              ><section class="employee-relation-detail__section">
+                <header>
+                  <ArtSvgIcon icon="ri:route-line" />
+                  <div
+                    ><strong>纠正与跟进行动</strong
+                    ><small>行动只记录建议、责任人与结果，不直接变更任职状态</small></div
+                  >
+                </header>
+                <div v-if="record.actions?.length" class="employee-relation-detail__actions">
+                  <article v-for="action in record.actions" :key="action.id">
+                    <span :class="`is-${action.status}`"
+                      ><ArtSvgIcon icon="ri:checkbox-blank-circle-fill"
+                    /></span>
+                    <div>
+                      <div>
+                        <strong>{{ action.title }}</strong>
+                        <ElTag effect="plain" size="small">
+                          {{
+                            userStore.getDictLabelByValue(
+                              'commonActionProgressStatus',
+                              action.status,
+                              action.status ?? '--'
+                            )
+                          }}
+                        </ElTag>
+                      </div>
+                      <p>
+                        {{
+                          userStore.getDictLabelByValue(
+                            'hrEmployeeRelationActionType',
+                            action.actionType,
+                            action.actionType ?? '--'
+                          )
+                        }}
+                        · {{ action.ownerEmployee?.employeeName || '未指定负责人' }} · 截止
+                        {{ formatDate(action.dueDate) }}
+                      </p>
+                      <small v-if="action.completionNote">{{ action.completionNote }}</small>
+                    </div>
+                  </article>
                 </div>
-                <p>
-                  {{
-                    userStore.getDictLabelByValue(
-                      'hrEmployeeRelationActionType',
-                      action.actionType,
-                      action.actionType ?? '--'
-                    )
-                  }}
-                  · {{ action.ownerEmployee?.employeeName || '未指定负责人' }} · 截止
-                  {{ formatDate(action.dueDate) }}
-                </p>
-                <small v-if="action.completionNote">{{ action.completionNote }}</small>
-              </div>
-            </article>
-          </div>
-          <ArtEmptyState
-            v-else
-            title="暂无处置行动"
-            description="添加处置行动后，可在此跟踪进展。"
-            size="compact"
-            :visual-size="64"
-          />
-        </section>
-
-        <section class="employee-relation-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:history-line" />
-            <div
-              ><strong>不可变案件轨迹</strong
-              ><small>状态变更、分派、行动和说明均保留审计记录</small></div
-            >
-          </header>
-          <ElTimeline v-if="record.events?.length" class="employee-relation-detail__timeline">
-            <ElTimelineItem
-              v-for="event in record.events"
-              :key="event.id"
-              :type="eventTone(event.eventType)"
-              :timestamp="formatDateTime(event.createTime)"
-              placement="top"
-            >
-              <article>
-                <div>
-                  <strong>{{
-                    userStore.getDictLabelByValue(
-                      'hrEmployeeRelationEventType',
-                      event.eventType,
-                      event.eventType ?? '--'
-                    )
-                  }}</strong>
-                  <span>{{ event.actor?.employeeName || event.createBy || '系统自动处理' }}</span>
-                </div>
-                <small v-if="event.fromStatus || event.toStatus">
-                  {{
-                    event.fromStatus
-                      ? userStore.getDictLabelByValue(
-                          'hrEmployeeRelationCaseStatus',
-                          event.fromStatus,
-                          event.fromStatus ?? '--'
-                        )
-                      : '初始状态'
-                  }}
-                  <ArtSvgIcon icon="ri:arrow-right-line" />
-                  {{
-                    event.toStatus
-                      ? userStore.getDictLabelByValue(
-                          'hrEmployeeRelationCaseStatus',
-                          event.toStatus,
-                          event.toStatus ?? '--'
-                        )
-                      : '状态未变更'
-                  }}
-                </small>
-                <p v-if="event.comment">{{ event.comment }}</p>
-              </article>
-            </ElTimelineItem>
-          </ElTimeline>
-          <ArtEmptyState
-            v-else
-            title="暂无案件审计记录"
-            description="案件状态或内容变更后，会在此留下记录。"
-            size="compact"
-            :visual-size="64"
-          />
-        </section>
+                <ArtEmptyState
+                  v-else
+                  title="暂无处置行动"
+                  description="添加处置行动后，可在此跟踪进展。"
+                  size="compact"
+                  :visual-size="64"
+                /> </section></div
+          ></ElTabPane>
+          <ElTabPane name="history" label="案件轨迹"
+            ><div class="space-y-4"
+              ><section class="employee-relation-detail__section">
+                <header>
+                  <ArtSvgIcon icon="ri:history-line" />
+                  <div
+                    ><strong>不可变案件轨迹</strong
+                    ><small>状态变更、分派、行动和说明均保留审计记录</small></div
+                  >
+                </header>
+                <ElTimeline v-if="record.events?.length" class="employee-relation-detail__timeline">
+                  <ElTimelineItem
+                    v-for="event in record.events"
+                    :key="event.id"
+                    :type="eventTone(event.eventType)"
+                    :timestamp="formatDateTime(event.createTime)"
+                    placement="top"
+                  >
+                    <article>
+                      <div>
+                        <strong>{{
+                          userStore.getDictLabelByValue(
+                            'hrEmployeeRelationEventType',
+                            event.eventType,
+                            event.eventType ?? '--'
+                          )
+                        }}</strong>
+                        <span>{{
+                          event.actor?.employeeName || event.createBy || '系统自动处理'
+                        }}</span>
+                      </div>
+                      <small v-if="event.fromStatus || event.toStatus">
+                        {{
+                          event.fromStatus
+                            ? userStore.getDictLabelByValue(
+                                'hrEmployeeRelationCaseStatus',
+                                event.fromStatus,
+                                event.fromStatus ?? '--'
+                              )
+                            : '初始状态'
+                        }}
+                        <ArtSvgIcon icon="ri:arrow-right-line" />
+                        {{
+                          event.toStatus
+                            ? userStore.getDictLabelByValue(
+                                'hrEmployeeRelationCaseStatus',
+                                event.toStatus,
+                                event.toStatus ?? '--'
+                              )
+                            : '状态未变更'
+                        }}
+                      </small>
+                      <p v-if="event.comment">{{ event.comment }}</p>
+                    </article>
+                  </ElTimelineItem>
+                </ElTimeline>
+                <ArtEmptyState
+                  v-else
+                  title="暂无案件审计记录"
+                  description="案件状态或内容变更后，会在此留下记录。"
+                  size="compact"
+                  :visual-size="64"
+                /> </section></div></ElTabPane
+        ></ElTabs>
       </div>
     </ArtAsyncState>
   </ArtDrawer>
@@ -254,6 +286,7 @@
   }
 
   const drawerRef = ref<ArtDrawerExpose>()
+  const activeDetailTab = ref('overview')
   const {
     detail: record,
     loading,

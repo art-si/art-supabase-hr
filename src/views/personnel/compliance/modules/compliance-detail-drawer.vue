@@ -38,73 +38,79 @@
           </dl>
         </section>
 
-        <section class="compliance-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:information-2-line" />
-            <div><strong>合规资料</strong><small>当前有效版本的业务事实与责任信息</small></div>
-          </header>
-          <dl class="compliance-detail__facts">
-            <div v-for="item in factItems" :key="item.label">
-              <dt>{{ item.label }}</dt>
-              <dd>{{ item.value }}</dd>
-            </div>
-          </dl>
-          <a
-            v-if="attachmentUrl"
-            class="compliance-detail__attachment"
-            :href="attachmentUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ArtSvgIcon icon="ri:attachment-2" />
-            查看授权附件
-            <ArtSvgIcon icon="ri:external-link-line" />
-          </a>
-        </section>
-
-        <section class="compliance-detail__section">
-          <header>
-            <ArtSvgIcon icon="ri:history-line" />
-            <div
-              ><strong>合规审计轨迹</strong><small>状态、核验、续签和说明均不可变留痕</small></div
-            >
-          </header>
-          <ElTimeline v-if="record.events?.length" class="compliance-detail__timeline">
-            <ElTimelineItem
-              v-for="event in record.events"
-              :key="event.id"
-              :type="eventTone(event.eventType)"
-              :timestamp="formatDateTime(event.createTime)"
-              placement="top"
-            >
-              <article>
-                <div>
-                  <strong>{{
-                    userStore.getDictLabelByValue(
-                      'hrComplianceEventType',
-                      event.eventType,
-                      event.eventType ?? '--'
-                    )
-                  }}</strong>
-                  <span>{{ actorText(event) }}</span>
+        <ElTabs v-model="activeTab">
+          <ElTabPane name="facts" label="合规资料">
+            <section class="compliance-detail__section">
+              <header>
+                <ArtSvgIcon icon="ri:information-2-line" />
+                <div><strong>合规资料</strong><small>当前有效版本的业务事实与责任信息</small></div>
+              </header>
+              <dl class="compliance-detail__facts">
+                <div v-for="item in factItems" :key="item.label">
+                  <dt>{{ item.label }}</dt>
+                  <dd>{{ item.value }}</dd>
                 </div>
-                <small v-if="event.fromStatus || event.toStatus">
-                  {{ event.fromStatus ? dictStatusLabel(event.fromStatus) : '初始状态' }}
-                  <ArtSvgIcon icon="ri:arrow-right-line" />
-                  {{ event.toStatus ? dictStatusLabel(event.toStatus) : '未变更' }}
-                </small>
-                <p v-if="event.comment">{{ event.comment }}</p>
-              </article>
-            </ElTimelineItem>
-          </ElTimeline>
-          <ArtEmptyState
-            v-else
-            title="暂无合规审计记录"
-            description="合规状态或处理结果变化后，会在此留下记录。"
-            size="compact"
-            :visual-size="64"
-          />
-        </section>
+              </dl>
+              <a
+                v-if="attachmentUrl"
+                class="compliance-detail__attachment"
+                :href="attachmentUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ArtSvgIcon icon="ri:attachment-2" />
+                查看授权附件
+                <ArtSvgIcon icon="ri:external-link-line" />
+              </a>
+            </section>
+          </ElTabPane>
+          <ElTabPane name="events" label="审计轨迹">
+            <section class="compliance-detail__section">
+              <header>
+                <ArtSvgIcon icon="ri:history-line" />
+                <div
+                  ><strong>合规审计轨迹</strong
+                  ><small>状态、核验、续签和说明均不可变留痕</small></div
+                >
+              </header>
+              <ElTimeline v-if="record.events?.length" class="compliance-detail__timeline">
+                <ElTimelineItem
+                  v-for="event in record.events"
+                  :key="event.id"
+                  :type="eventTone(event.eventType)"
+                  :timestamp="formatDateTime(event.createTime)"
+                  placement="top"
+                >
+                  <article>
+                    <div>
+                      <strong>{{
+                        userStore.getDictLabelByValue(
+                          'hrComplianceEventType',
+                          event.eventType,
+                          event.eventType ?? '--'
+                        )
+                      }}</strong>
+                      <span>{{ actorText(event) }}</span>
+                    </div>
+                    <small v-if="event.fromStatus || event.toStatus">
+                      {{ event.fromStatus ? dictStatusLabel(event.fromStatus) : '初始状态' }}
+                      <ArtSvgIcon icon="ri:arrow-right-line" />
+                      {{ event.toStatus ? dictStatusLabel(event.toStatus) : '未变更' }}
+                    </small>
+                    <p v-if="event.comment">{{ event.comment }}</p>
+                  </article>
+                </ElTimelineItem>
+              </ElTimeline>
+              <ArtEmptyState
+                v-else
+                title="暂无合规审计记录"
+                description="合规状态或处理结果变化后，会在此留下记录。"
+                size="compact"
+                :visual-size="64"
+              />
+            </section>
+          </ElTabPane>
+        </ElTabs>
       </div>
     </ArtAsyncState>
   </ArtDrawer>
@@ -131,6 +137,7 @@
   }
 
   const drawerRef = ref<ArtDrawerExpose>()
+  const activeTab = ref('facts')
   const {
     detail: record,
     loading,
@@ -364,6 +371,7 @@
           : 'primary'
 
   const handleOpen = async (targetEntity: Entity, id: string): Promise<void> => {
+    activeTab.value = 'facts'
     entity.value = targetEntity
     openDetail(id)
     await drawerRef.value?.handleOpen(undefined, {

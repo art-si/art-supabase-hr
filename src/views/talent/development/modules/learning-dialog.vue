@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="learning-dialog">
       <ArtEntitySummary
         :icon="contextNote.icon"
@@ -9,14 +17,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #ownerEmployeeId>
           <ArtEmployeeSelect
@@ -135,6 +142,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('plan')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -227,10 +235,12 @@
       if (entity.value === 'plan')
         return [
           ...common,
+          { key: 'planIdentity', label: '计划定义', type: 'tab' },
           input('planCode', '计划编码', '如 FY27_LEADERSHIP'),
           input('planName', '计划名称', '如 年度基层主管培养计划'),
           dict('trainingType', '培训类型', 'hrTrainingType'),
           { label: '计划负责人', key: 'ownerEmployeeId', type: 'input' },
+          { key: 'planArrangement', label: '周期与执行', type: 'tab' },
           date('startDate', '开始日期'),
           date('endDate', '结束日期'),
           input('providerName', '培训供应方', '可填写内训团队或外部机构'),
@@ -243,6 +253,7 @@
       if (entity.value === 'course')
         return [
           ...common,
+          { key: 'courseIdentity', label: '课程定义', type: 'tab' },
           input('courseCode', '课程编码', '如 LDR_ESSENTIALS_01'),
           input('courseName', '课程名称', '如 一线主管管理基础'),
           dict('category', '课程类别', 'hrLearningCourseCategory'),
@@ -251,6 +262,7 @@
           number('creditHours', '获得学分', { min: 0, precision: 1 }),
           input('providerName', '课程供应方', '可填写内部讲师团队或外部机构'),
           input('targetAudience', '适用人群', '明确岗位、职级或人才群体'),
+          { key: 'courseAssessment', label: '考核与说明', type: 'tab' },
           number('passingScore', '通过分数', { min: 0, max: 100, precision: 1 }),
           number('minimumAttendancePercent', '最低出勤率（%）', {
             min: 0,
@@ -280,12 +292,14 @@
       if (entity.value === 'session')
         return [
           ...common,
+          { key: 'sessionIdentity', label: '班次与时间', type: 'tab' },
           input('sessionCode', '班次编码', '如 LDR_2027_01'),
           select('planId', '已发布计划', planOptions.value, '请选择培训计划'),
           select('courseId', '已发布课程', courseOptions.value, '请选择课程'),
           dateTime('startAt', '开始时间'),
           dateTime('endAt', '结束时间'),
           dateTime('enrollmentDeadline', '报名截止时间'),
+          { key: 'sessionDelivery', label: '授课与资源', type: 'tab' },
           number('capacity', '班次容量', { min: 1, max: 100000, precision: 0 }),
           input('instructorName', '讲师 / 教练', '填写主讲人或带教负责人'),
           input('location', '培训地点', '线下或混合课程填写'),

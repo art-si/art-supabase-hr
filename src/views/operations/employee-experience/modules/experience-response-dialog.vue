@@ -59,8 +59,6 @@
           :span="24"
           :gutter="20"
           label-position="top"
-          :show-reset="false"
-          :show-submit="false"
           class="experience-response-dialog__form"
         />
 

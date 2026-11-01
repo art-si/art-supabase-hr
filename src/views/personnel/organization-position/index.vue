@@ -22,7 +22,6 @@
         >
           <template #primary>
             <ArtSectionCard
-              :show-scrollbar="false"
               class="organization-position-page__organization-card"
               title="组织"
               :subtitle="`${flatOrganizations.length} 个可用节点`"
@@ -53,7 +52,7 @@
                 />
               </template>
 
-              <div class="organization-position-page__navigator">
+              <template #toolbar>
                 <ElInput
                   v-model="organizationState.keyword"
                   clearable
@@ -62,58 +61,53 @@
                 >
                   <template #prefix><ArtSvgIcon icon="ri:search-line" /></template>
                 </ElInput>
-                <ElScrollbar class="organization-position-page__organization-scrollbar">
-                  <ElTree
-                    ref="organizationTreeRef"
-                    :data="organizationState.tree"
-                    :props="organizationTreeProps"
-                    :filter-node-method="matchesOrganizationNodeKeyword"
-                    node-key="id"
-                    default-expand-all
-                    highlight-current
-                    :expand-on-click-node="false"
-                    aria-label="组织树"
-                    @node-click="handleOrganizationSelect"
-                  >
-                    <template #default="{ data: organization }">
-                      <div class="organization-position-page__organization-node">
-                        <span aria-hidden="true">
-                          <ArtSvgIcon
-                            :icon="getOrganizationTypeIcon(organization.organizationType)"
-                          />
-                        </span>
-                        <span>
-                          <strong :title="organization.organizationName">
-                            {{ organization.organizationName }}
-                          </strong>
-                          <small :title="organization.organizationCode" translate="no">
-                            {{ organization.organizationCode }}
-                          </small>
-                        </span>
-                        <ArtSvgIcon
-                          v-if="organization.id === organizationState.selectedId"
-                          icon="ri:check-line"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </template>
-                    <template #empty>
-                      <ArtEmptyState
-                        title="未找到匹配项"
-                        description="请调整关键词或清空筛选条件。"
-                        size="compact"
-                        :visual-size="64"
-                      />
-                    </template>
-                  </ElTree>
-                </ElScrollbar>
-              </div>
+              </template>
+              <ElTree
+                ref="organizationTreeRef"
+                :data="organizationState.tree"
+                :props="organizationTreeProps"
+                :filter-node-method="matchesOrganizationNodeKeyword"
+                node-key="id"
+                default-expand-all
+                highlight-current
+                :expand-on-click-node="false"
+                aria-label="组织树"
+                @node-click="handleOrganizationSelect"
+              >
+                <template #default="{ data: organization }">
+                  <div class="organization-position-page__organization-node">
+                    <span aria-hidden="true">
+                      <ArtSvgIcon :icon="getOrganizationTypeIcon(organization.organizationType)" />
+                    </span>
+                    <span>
+                      <strong :title="organization.organizationName">
+                        {{ organization.organizationName }}
+                      </strong>
+                      <small :title="organization.organizationCode" translate="no">
+                        {{ organization.organizationCode }}
+                      </small>
+                    </span>
+                    <ArtSvgIcon
+                      v-if="organization.id === organizationState.selectedId"
+                      icon="ri:check-line"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </template>
+                <template #empty>
+                  <ArtEmptyState
+                    title="未找到匹配项"
+                    description="请调整关键词或清空筛选条件。"
+                    size="compact"
+                    :visual-size="64"
+                  />
+                </template>
+              </ElTree>
             </ArtSectionCard>
           </template>
 
           <div class="organization-position-page__directory">
             <ArtSectionCard
-              :show-scrollbar="false"
               class="organization-position-page__position-card"
               title="岗位"
               :subtitle="positionSubtitle"
@@ -125,7 +119,7 @@
               :min-height="280"
               @retry="loadDirectory"
             >
-              <template #actions>
+              <template #toolbar>
                 <ElInput
                   v-model="directoryState.positionKeyword"
                   class="organization-position-page__position-search"
@@ -137,43 +131,40 @@
                 </ElInput>
               </template>
 
-              <ElScrollbar class="organization-position-page__position-scrollbar">
-                <ul
-                  class="organization-position-page__position-list"
-                  aria-label="当前组织及下级岗位列表"
+              <ul
+                class="organization-position-page__position-list"
+                aria-label="当前组织及下级岗位列表"
+              >
+                <li
+                  v-for="position in filteredPositions"
+                  :key="position.id || position.positionCode"
                 >
-                  <li
-                    v-for="position in filteredPositions"
-                    :key="position.id || position.positionCode"
+                  <button
+                    type="button"
+                    :class="{ 'is-selected': position.id === directoryState.selectedPositionId }"
+                    :aria-pressed="position.id === directoryState.selectedPositionId"
+                    @click="handlePositionSelect(position)"
                   >
-                    <button
-                      type="button"
-                      :class="{ 'is-selected': position.id === directoryState.selectedPositionId }"
-                      :aria-pressed="position.id === directoryState.selectedPositionId"
-                      @click="handlePositionSelect(position)"
-                    >
-                      <span class="organization-position-page__position-icon" aria-hidden="true">
-                        <ArtSvgIcon icon="ri:briefcase-4-line" />
-                      </span>
-                      <span class="organization-position-page__position-identity">
-                        <strong :title="position.positionName">{{ position.positionName }}</strong>
-                        <small
-                          :title="`${position.positionCode} · ${positionOrganizationName(position)}`"
-                        >
-                          {{ position.positionCode }} · {{ positionOrganizationName(position) }}
-                        </small>
-                      </span>
-                      <span class="organization-position-page__position-count">
-                        {{ position.employeeCount ?? 0 }} 人
-                      </span>
-                    </button>
-                  </li>
-                </ul>
-              </ElScrollbar>
+                    <span class="organization-position-page__position-icon" aria-hidden="true">
+                      <ArtSvgIcon icon="ri:briefcase-4-line" />
+                    </span>
+                    <span class="organization-position-page__position-identity">
+                      <strong :title="position.positionName">{{ position.positionName }}</strong>
+                      <small
+                        :title="`${position.positionCode} · ${positionOrganizationName(position)}`"
+                      >
+                        {{ position.positionCode }} · {{ positionOrganizationName(position) }}
+                      </small>
+                    </span>
+                    <span class="organization-position-page__position-count">
+                      {{ position.employeeCount ?? 0 }} 人
+                    </span>
+                  </button>
+                </li>
+              </ul>
             </ArtSectionCard>
 
             <ArtSectionCard
-              :show-scrollbar="false"
               class="organization-position-page__employee-card"
               title="员工"
               :subtitle="employeeSubtitle"
@@ -191,7 +182,7 @@
               :min-height="280"
               @retry="loadDirectory"
             >
-              <template #actions>
+              <template #toolbar>
                 <ElInput
                   v-model="directoryState.employeeKeyword"
                   class="organization-position-page__employee-search"
@@ -203,36 +194,34 @@
                 </ElInput>
               </template>
 
-              <ElScrollbar class="organization-position-page__employee-scrollbar">
-                <ul class="organization-position-page__employee-list">
-                  <li v-for="employee in filteredEmployees" :key="employee.id">
-                    <ElAvatar
-                      :size="40"
-                      :src="employee.avatarUrl || undefined"
-                      :alt="`${employee.employeeName}的头像`"
-                    >
-                      {{ employee.employeeName.slice(0, 1) }}
-                    </ElAvatar>
-                    <div class="organization-position-page__employee-identity">
-                      <strong :title="employee.employeeName">{{ employee.employeeName }}</strong>
-                      <small>
-                        <span :title="employee.employeeNo" translate="no">{{
-                          employee.employeeNo
-                        }}</span>
-                        <i aria-hidden="true"></i>
-                        <span :title="employee.jobTitle || undefined">{{
-                          employee.jobTitle || '未设置职务'
-                        }}</span>
-                      </small>
-                    </div>
-                    <ArtDictDisplay
-                      dict-code="hrEmploymentStatus"
-                      :value="employee.employmentStatus"
-                      display="auto"
-                    />
-                  </li>
-                </ul>
-              </ElScrollbar>
+              <ul class="organization-position-page__employee-list">
+                <li v-for="employee in filteredEmployees" :key="employee.id">
+                  <ElAvatar
+                    :size="40"
+                    :src="employee.avatarUrl || undefined"
+                    :alt="`${employee.employeeName}的头像`"
+                  >
+                    {{ employee.employeeName.slice(0, 1) }}
+                  </ElAvatar>
+                  <div class="organization-position-page__employee-identity">
+                    <strong :title="employee.employeeName">{{ employee.employeeName }}</strong>
+                    <small>
+                      <span :title="employee.employeeNo" translate="no">{{
+                        employee.employeeNo
+                      }}</span>
+                      <i aria-hidden="true"></i>
+                      <span :title="employee.jobTitle || undefined">{{
+                        employee.jobTitle || '未设置职务'
+                      }}</span>
+                    </small>
+                  </div>
+                  <ArtDictDisplay
+                    dict-code="hrEmploymentStatus"
+                    :value="employee.employmentStatus"
+                    display="auto"
+                  />
+                </li>
+              </ul>
             </ArtSectionCard>
           </div>
         </ArtWorkspaceSplitter>
@@ -501,28 +490,6 @@
       min-width: 0;
       min-height: 0;
       overflow: hidden;
-
-      :deep(.art-section-card__body),
-      :deep(.art-async-state),
-      :deep(.art-async-state__content) {
-        height: 100%;
-        min-height: 0;
-      }
-    }
-
-    &__navigator {
-      display: flex;
-      flex-direction: column;
-      gap: var(--art-space-3);
-      height: 100%;
-      min-height: 0;
-    }
-
-    &__organization-scrollbar,
-    &__position-scrollbar,
-    &__employee-scrollbar {
-      flex: 1;
-      min-height: 0;
     }
 
     &__organization-node {
@@ -568,7 +535,7 @@
 
     &__position-search,
     &__employee-search {
-      width: 180px;
+      width: 100%;
     }
 
     &__position-list {

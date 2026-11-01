@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="contingent-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -23,14 +31,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id) || parentTenantLocked)"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #sponsorEmployeeId>
           <ArtEmployeeSelect
@@ -158,6 +165,7 @@
   const { getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const { hasAuth } = useAuth()
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('engagement')
   const dialogType = ref<DialogType>('add')
@@ -246,7 +254,7 @@
 
   const vendorItems = computed<FormItem[]>(() => [
     ...commonTenantItems(),
-    { label: '供应商身份', key: 'vendorIdentity', type: 'divider', span: 24 },
+    { label: '供应商身份', key: 'vendorIdentity', type: 'tab', span: 24 },
     { label: '供应商编码', key: 'vendorCode', type: 'input', props: { maxlength: 40 } },
     { label: '供应商名称', key: 'vendorName', type: 'input', props: { maxlength: 120 } },
     { label: '统一登记号', key: 'registrationNo', type: 'input', props: { maxlength: 80 } },
@@ -261,7 +269,7 @@
     { label: '服务范围', key: 'serviceScope', type: 'input', props: { maxlength: 240 } },
     { label: '合同开始日', key: 'contractStartDate', type: 'date', props: { class: '!w-full' } },
     { label: '合同结束日', key: 'contractEndDate', type: 'date', props: { class: '!w-full' } },
-    { label: '联系与备注', key: 'vendorContact', type: 'divider', span: 24 },
+    { label: '联系与备注', key: 'vendorContact', type: 'tab', span: 24 },
     { label: '联系人', key: 'contactName', type: 'input', props: { maxlength: 60 } },
     { label: '联系电话', key: 'contactPhone', type: 'input', props: { maxlength: 40 } },
     { label: '联系邮箱', key: 'contactEmail', type: 'input', props: { maxlength: 120 } },
@@ -312,7 +320,7 @@
   )
   const engagementItems = computed<FormItem[]>(() => [
     ...commonTenantItems(),
-    { label: '任务归属', key: 'engagementIdentity', type: 'divider', span: 24 },
+    { label: '任务归属', key: 'engagementIdentity', type: 'tab', span: 24 },
     { label: '用工任务编号', key: 'engagementNo', type: 'input', props: { maxlength: 40 } },
     {
       label: '外部人员',
@@ -341,7 +349,7 @@
     },
     { label: '服务角色', key: 'serviceTitle', type: 'input', props: { maxlength: 120 } },
     { label: '工作地点', key: 'workLocation', type: 'input', props: { maxlength: 160 } },
-    { label: '周期与访问', key: 'engagementPeriod', type: 'divider', span: 24 },
+    { label: '周期与访问', key: 'engagementPeriod', type: 'tab', span: 24 },
     { label: '开始日期', key: 'startDate', type: 'date', props: { class: '!w-full' } },
     { label: '计划结束日', key: 'endDate', type: 'date', props: { class: '!w-full' } },
     {

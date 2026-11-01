@@ -1,1 +1,0 @@
-import{r as e,t}from"./_baseForOwn-C5mXrkjw.js";import{t as n}from"./_baseAssignValue-C1IW2gvh.js";function r(r,i){var a={};return i=e(i,3),t(r,function(e,t,r){n(a,t,i(e,t,r))}),a}export{r as t};

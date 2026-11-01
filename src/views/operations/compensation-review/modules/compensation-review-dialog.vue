@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="review-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -44,14 +52,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id) || parentTenantLocked)"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       />
     </div>
   </ArtDialog>
@@ -134,6 +141,7 @@
   const { isPlatformSuper } = storeToRefs(userStore)
   const { defaultWriteTenantId } = useTenantScopeFormPolicy()
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('cycle')
   const dialogType = ref<DialogType>('add')
@@ -275,7 +283,7 @@
 
   const cycleItems = computed<FormItem[]>(() => [
     ...tenantItems(),
-    { label: '周期识别', key: 'identity', type: 'divider', span: 24 },
+    { label: '周期识别', key: 'identity', type: 'tab', span: 24 },
     {
       label: '周期编码',
       key: 'cycleCode',
@@ -311,7 +319,7 @@
     { label: '组织校准截止', key: 'calibrationDueDate', type: 'date', props: { class: '!w-full' } },
     { label: '调薪生效日', key: 'effectiveDate', type: 'date', props: { class: '!w-full' } },
     { label: '币种', key: 'currencyCode', type: 'input', props: { maxlength: 3 } },
-    { label: '预算与指引', key: 'guardrail', type: 'divider', span: 24 },
+    { label: '预算与指引', key: 'guardrail', type: 'tab', span: 24 },
     {
       label: '默认预算率（%）',
       key: 'defaultBudgetPercent',

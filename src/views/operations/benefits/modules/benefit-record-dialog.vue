@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="benefit-record-dialog">
       <ArtEntitySummary
         :icon="contextMeta.icon"
@@ -16,14 +24,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -115,6 +122,7 @@
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const { hasAuth } = useAuth()
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('plan')
   const dialogType = ref<DialogType>('add')
@@ -199,7 +207,7 @@
 
   const planItems = computed<FormItem[]>(() => [
     ...commonTenantItems(),
-    { label: '计划识别', key: 'identity', type: 'divider', span: 24 },
+    { label: '计划识别', key: 'identity', type: 'tab', span: 24 },
     {
       label: '计划编码',
       key: 'planCode',
@@ -219,7 +227,7 @@
       options: dictOptions('hrBenefitPlanType')
     },
     { label: '服务机构', key: 'providerName', type: 'input', props: { maxlength: 120 } },
-    { label: '参保与覆盖', key: 'coverage', type: 'divider', span: 24 },
+    { label: '参保与覆盖', key: 'coverage', type: 'tab', span: 24 },
     {
       label: '参保方式',
       key: 'enrollmentMethod',
@@ -233,8 +241,18 @@
       options: dictOptions('hrBenefitCoverageScope')
     },
     { label: '币种', key: 'currencyCode', type: 'input', props: { maxlength: 3 } },
-    { label: '生效日期', key: 'effectiveFrom', type: 'date', props: { class: '!w-full' } },
-    { label: '失效日期', key: 'effectiveTo', type: 'date', props: { class: '!w-full' } },
+    {
+      label: '生效日期',
+      key: 'effectiveFrom',
+      type: 'date',
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
+    },
+    {
+      label: '失效日期',
+      key: 'effectiveTo',
+      type: 'date',
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
+    },
     {
       label: '计划说明',
       key: 'description',
@@ -246,7 +264,12 @@
 
   const enrollmentItems = computed<FormItem[]>(() => [
     ...commonTenantItems(),
-    { label: '员工与资格', key: 'employeeSection', type: 'divider', span: 24 },
+    {
+      label: '员工与资格',
+      key: 'employeeSection',
+      type: hasAuth('Hr:Benefits:Amount:Edit') ? 'tab' : 'divider',
+      span: 24
+    },
     { label: '员工', key: 'employeeId', type: 'input' },
     {
       label: '参保编号',
@@ -283,9 +306,24 @@
           : '该员工暂无开放人生事件'
       }
     },
-    { label: '保障与缴费', key: 'coverageSection', type: 'divider', span: 24 },
-    { label: '保障开始日', key: 'coverageFrom', type: 'date', props: { class: '!w-full' } },
-    { label: '保障结束日', key: 'coverageTo', type: 'date', props: { class: '!w-full' } },
+    {
+      label: '保障与缴费',
+      key: 'coverageSection',
+      type: hasAuth('Hr:Benefits:Amount:Edit') ? 'tab' : 'divider',
+      span: 24
+    },
+    {
+      label: '保障开始日',
+      key: 'coverageFrom',
+      type: 'date',
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
+    },
+    {
+      label: '保障结束日',
+      key: 'coverageTo',
+      type: 'date',
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
+    },
     {
       label: '员工月缴费',
       key: 'employeeContribution',
@@ -319,12 +357,17 @@
       type: 'select',
       options: dictOptions('hrBenefitLifeEventType')
     },
-    { label: '事件日期', key: 'eventDate', type: 'date', props: { class: '!w-full' } },
+    {
+      label: '事件日期',
+      key: 'eventDate',
+      type: 'date',
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
+    },
     {
       label: '参保窗口截止日',
       key: 'enrollmentWindowEnd',
       type: 'date',
-      props: { class: '!w-full' }
+      props: { class: '!w-full', valueFormat: 'YYYY-MM-DD' }
     },
     { label: '证明与备注', key: 'evidenceSection', type: 'divider', span: 24 },
     {

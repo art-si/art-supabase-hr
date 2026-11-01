@@ -12,14 +12,11 @@
 
       <ArtForm
         ref="formRef"
-        :model-value="form"
-        @update:model-value="replaceReactiveModel(form, $event)"
+        v-model="form"
         :items="[]"
         :rules="rules"
         custom-layout
         scroll-to-error
-        :show-reset="false"
-        :show-submit="false"
         root-class="p-0! md:p-0!"
       >
         <ElFormItem label="工单处理人" prop="assigneeEmployeeId" required>
@@ -49,10 +46,9 @@
 
 <script setup lang="ts">
   import { employeeReferenceSelection } from '@/utils/form/employee-reference'
-  import { replaceReactiveModel } from '@/utils/form/model'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
-  import { nextTick, reactive, ref, shallowRef } from 'vue'
+  import { nextTick, ref, shallowRef } from 'vue'
   import type { FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
@@ -66,7 +62,7 @@
   const dialogRef = ref<ArtDialogExpose>()
   const formRef = ref<InstanceType<typeof ArtForm>>()
   const record = shallowRef<Api.Hr.ServiceRequest>()
-  const form = reactive({ assigneeEmployeeId: undefined as string | undefined, comment: '' })
+  const form = ref({ assigneeEmployeeId: undefined as string | undefined, comment: '' })
   const rules: FormRules = {
     assigneeEmployeeId: [{ required: true, message: '请选择工单处理人', trigger: 'change' }]
   }
@@ -76,9 +72,14 @@
     if (!record.value?.id) return false
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
-      const assigneeEmployeeId = form.assigneeEmployeeId
+      const assigneeEmployeeId = form.value.assigneeEmployeeId
       if (!assigneeEmployeeId) return false
-      await transitionServiceRequest(record.value.id, 'assign', assigneeEmployeeId, form.comment)
+      await transitionServiceRequest(
+        record.value.id,
+        'assign',
+        assigneeEmployeeId,
+        form.value.comment
+      )
       emit('success')
       return true
     } catch (error) {
@@ -89,9 +90,9 @@
 
   const handleOpen = async (request: Api.Hr.ServiceRequest): Promise<void> => {
     record.value = request
-    form.assigneeEmployeeId = request.assignedEmployeeId || undefined
+    form.value.assigneeEmployeeId = request.assignedEmployeeId || undefined
     selection.value = employeeReferenceSelection(request.assignee, request.tenantId)
-    form.comment = ''
+    form.value.comment = ''
     void nextTick(() => formRef.value?.clearValidate())
     await dialogRef.value?.handleOpen(undefined, {
       title: '分派员工服务工单',

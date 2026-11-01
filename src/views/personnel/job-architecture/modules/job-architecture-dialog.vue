@@ -8,8 +8,6 @@
       :span="12"
       :gutter="24"
       label-position="top"
-      :show-reset="false"
-      :show-submit="false"
     />
   </ArtDialog>
 </template>

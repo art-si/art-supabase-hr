@@ -3,11 +3,10 @@
     <div class="personnel-change-dialog">
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
-        :show-reset="false"
-        :show-submit="false"
         label-position="top"
         :span="12"
         :gutter="24"
@@ -131,6 +130,7 @@
   const emit = defineEmits<{ success: [] }>()
   const dialogRef = ref<ArtDialogExpose<DialogOpenData>>()
   const formRef = ref<FormExpose>()
+  const activeTab = ref('baseSection')
   const userStore = useUserStore()
   const tenantScopeStore = useTenantScopeStore()
   const { getDictMap } = storeToRefs(userStore)
@@ -370,7 +370,12 @@
     items: computed(() => {
       const changeType = formModel.changeType ?? ''
       return [
-        { label: '异动基本信息', key: 'baseSection', type: 'divider', span: 24 },
+        {
+          label: '异动基本信息',
+          key: 'baseSection',
+          type: positionChangeTypes.has(changeType) ? 'tab' : 'divider',
+          span: 24
+        },
         {
           label: '异动单号',
           key: 'changeNo',
@@ -440,7 +445,7 @@
         {
           label: '异动后任职',
           key: 'targetSection',
-          type: 'divider',
+          type: positionChangeTypes.has(changeType) ? 'tab' : 'divider',
           span: 24,
           hidden: !changeType
         },
@@ -616,6 +621,7 @@
   }
 
   const handleOpen = async (data: DialogOpenData): Promise<void> => {
+    activeTab.value = 'baseSection'
     const recordTenantId = data.record?.id
       ? data.record.tenantId?.trim()
       : defaultWriteTenantId.value?.trim()

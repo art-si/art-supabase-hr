@@ -1,5 +1,12 @@
 <template>
-  <ArtDialog ref="dialogRef">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+  >
     <div class="recruitment-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -9,14 +16,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #interviewerEmployeeId>
           <ArtEmployeeSelect
@@ -147,6 +153,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('requisition')
   const tenantOptions = shallowRef<FormItemOption[]>([])
@@ -289,12 +296,14 @@
       if (entity.value === 'candidate')
         return [
           ...commonTenantItem.value,
+          { key: 'candidateIdentity', label: '候选人资料', type: 'tab' },
           remoteSelect('requisitionId', '招聘需求', 'requisition', '请选择招聘中的有效需求'),
           input('candidateName', '候选人姓名'),
           input('phone', '联系电话'),
           input('email', '电子邮箱'),
           dict('source', '候选人来源', 'hrCandidateSource'),
           number('expectedSalary', '期望月薪', { min: 0, precision: 2 }),
+          { key: 'candidateConsent', label: '简历与授权', type: 'tab' },
           input('resumeUrl', '简历附件地址'),
           dict('consentStatus', '信息授权状态', 'hrCandidateConsentStatus'),
           date('consentAt', '授权时间', 'datetime'),

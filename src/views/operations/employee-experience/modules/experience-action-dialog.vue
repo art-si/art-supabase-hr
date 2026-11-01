@@ -28,8 +28,6 @@
           :span="12"
           :gutter="22"
           label-position="top"
-          :show-reset="false"
-          :show-submit="false"
         >
           <template #ownerEmployeeId>
             <ArtEmployeeSelect
@@ -143,7 +141,6 @@
       })
     }
     items.push(
-      { label: '洞察来源', key: 'source', type: 'divider', span: 24 },
       {
         label: '关联调查',
         key: 'surveyId',
@@ -177,7 +174,6 @@
         options: organizationOptions.value,
         placeholder: '可选：不选表示全组织行动'
       }),
-      { label: '责任与期限', key: 'accountability', type: 'divider', span: 24 },
       { label: '行动负责人', key: 'ownerEmployeeId', type: 'input' },
       {
         label: '计划完成日',

@@ -36,8 +36,6 @@
           v-model="form.model"
           :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
           :rules="form.rules"
-          :show-reset="false"
-          :show-submit="false"
           label-position="top"
           :span="12"
         />

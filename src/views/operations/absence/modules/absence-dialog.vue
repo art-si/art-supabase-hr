@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="absence-dialog">
       <ArtEntitySummary
         :icon="contextNote.icon"
@@ -8,14 +16,13 @@
       />
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -119,6 +126,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('request')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -216,6 +224,7 @@
         const scopeItem = createScopeItem()
         return [
           ...common,
+          { key: 'policyScope', label: '政策与适用范围', type: 'tab' },
           select('leaveTypeId', '假别', leaveTypeOptions.value, '请选择假别'),
           input('policyCode', '政策编码', '如 ANNUAL_STD'),
           input('policyName', '政策名称', '如 全员年休假政策'),
@@ -226,6 +235,7 @@
             }
           },
           ...(scopeItem ? [scopeItem] : []),
+          { key: 'policyEntitlement', label: '权益与生效', type: 'tab' },
           dict('entitlementMethod', '权益方式', 'hrLeaveEntitlementMethod'),
           number('annualQuota', '年度额度', { min: 0, precision: 2 }),
           number('monthlyAccrual', '每月累积', { min: 0, precision: 4 }),

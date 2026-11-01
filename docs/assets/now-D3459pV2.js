@@ -1,0 +1,1 @@
+import{M as e}from"./hasIn-WcZUkZzD.js";var t=function(){return e.Date.now()};export{t};

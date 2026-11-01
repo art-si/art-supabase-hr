@@ -25,8 +25,6 @@
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #ownerEmployeeId>
           <ArtEmployeeSelect

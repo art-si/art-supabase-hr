@@ -1,5 +1,13 @@
 <template>
-  <ArtDrawer :loading="loading" ref="drawerRef">
+  <ArtDrawer
+    :loading="loading"
+    ref="drawerRef"
+    @open="
+      () => {
+        activeDetailTab = 'overview'
+      }
+    "
+  >
     <ArtAsyncState
       :error="loadError"
       :empty="missing"
@@ -27,299 +35,344 @@
         </section>
 
         <template v-if="surveyDetail">
-          <section class="experience-detail__summary" aria-label="调查配置摘要">
-            <dl>
-              <div v-for="item in surveySummary" :key="item.label">
-                <dt>{{ item.label }}</dt
-                ><dd>{{ item.value }}</dd
-                ><small>{{ item.hint }}</small>
-              </div>
-            </dl>
-          </section>
+          <ElTabs v-model="activeDetailTab"
+            ><ElTabPane name="overview" label="调查配置"
+              ><div class="space-y-4"
+                ><section class="experience-detail__summary" aria-label="调查配置摘要">
+                  <dl>
+                    <div v-for="item in surveySummary" :key="item.label">
+                      <dt>{{ item.label }}</dt
+                      ><dd>{{ item.value }}</dd
+                      ><small>{{ item.hint }}</small>
+                    </div>
+                  </dl>
+                </section>
 
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:questionnaire-line" />
-              <div><strong>调查题目</strong><small>题目按体验主题与展示顺序组织</small></div>
-              <ElButton
-                v-if="surveyDetail.status === 'draft'"
-                v-auth="'Hr:Experience:Question:Manage'"
-                type="primary"
-                plain
-                size="small"
-                @click="emit('add-question', surveyDetail)"
-              >
-                <ArtSvgIcon icon="ri:add-line" />新增题目
-              </ElButton>
-            </header>
-            <div v-if="surveyDetail.questions?.length" class="experience-detail__questions">
-              <article
-                v-for="(question, index) in surveyDetail.questions"
-                :key="question.id || `${question.dimension}-${question.sort}`"
-              >
-                <span>{{ String(index + 1).padStart(2, '0') }}</span>
-                <div>
-                  <div>
-                    <strong>{{ question.questionText }}</strong>
+                <section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:questionnaire-line" />
+                    <div><strong>调查题目</strong><small>题目按体验主题与展示顺序组织</small></div>
                     <ElButton
                       v-if="surveyDetail.status === 'draft'"
                       v-auth="'Hr:Experience:Question:Manage'"
-                      link
                       type="primary"
-                      @click="emit('edit-question', surveyDetail, question)"
-                      >编辑</ElButton
+                      plain
+                      size="small"
+                      @click="emit('add-question', surveyDetail)"
                     >
+                      <ArtSvgIcon icon="ri:add-line" />新增题目
+                    </ElButton>
+                  </header>
+                  <div v-if="surveyDetail.questions?.length" class="experience-detail__questions">
+                    <article
+                      v-for="(question, index) in surveyDetail.questions"
+                      :key="question.id || `${question.dimension}-${question.sort}`"
+                    >
+                      <span>{{ String(index + 1).padStart(2, '0') }}</span>
+                      <div>
+                        <div>
+                          <strong>{{ question.questionText }}</strong>
+                          <ElButton
+                            v-if="surveyDetail.status === 'draft'"
+                            v-auth="'Hr:Experience:Question:Manage'"
+                            link
+                            type="primary"
+                            @click="emit('edit-question', surveyDetail, question)"
+                            >编辑</ElButton
+                          >
+                        </div>
+                        <p>
+                          {{
+                            userStore.getDictLabelByValue(
+                              'hrExperienceDimension',
+                              question.dimension,
+                              question.dimension ?? '--'
+                            )
+                          }}
+                          ·
+                          {{
+                            userStore.getDictLabelByValue(
+                              'hrExperienceAnswerType',
+                              question.answerType,
+                              question.answerType ?? '--'
+                            )
+                          }}
+                          ·
+                          {{ question.required ? '必答' : '选答' }}
+                        </p>
+                      </div>
+                      <ElTag
+                        :type="question.enabled ? 'success' : 'info'"
+                        effect="plain"
+                        size="small"
+                      >
+                        {{ question.enabled ? '启用' : '停用' }}
+                      </ElTag>
+                    </article>
                   </div>
-                  <p>
-                    {{
-                      userStore.getDictLabelByValue(
-                        'hrExperienceDimension',
-                        question.dimension,
-                        question.dimension ?? '--'
-                      )
-                    }}
-                    ·
-                    {{
-                      userStore.getDictLabelByValue(
-                        'hrExperienceAnswerType',
-                        question.answerType,
-                        question.answerType ?? '--'
-                      )
-                    }}
-                    ·
-                    {{ question.required ? '必答' : '选答' }}
-                  </p>
-                </div>
-                <ElTag :type="question.enabled ? 'success' : 'info'" effect="plain" size="small">
-                  {{ question.enabled ? '启用' : '停用' }}
-                </ElTag>
-              </article>
-            </div>
-            <ArtEmptyState
-              v-else
-              title="尚未配置题目"
-              description="发布前至少添加一道数值量表题。"
-              size="compact"
-              :visual-size="64"
-            />
-          </section>
-
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:history-line" />
-              <div
-                ><strong>调查审计轨迹</strong
-                ><small>配置、发布、开放与关闭操作均保留记录</small></div
-              >
-            </header>
-            <ExperienceTimeline :events="surveyDetail.events ?? []" />
-          </section>
+                  <ArtEmptyState
+                    v-else
+                    title="尚未配置题目"
+                    description="发布前至少添加一道数值量表题。"
+                    size="compact"
+                    :visual-size="64"
+                  /> </section></div
+            ></ElTabPane>
+            <ElTabPane name="history" label="审计轨迹"
+              ><div class="space-y-4"
+                ><section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:history-line" />
+                    <div
+                      ><strong>调查审计轨迹</strong
+                      ><small>配置、发布、开放与关闭操作均保留记录</small></div
+                    >
+                  </header>
+                  <ExperienceTimeline
+                    :events="surveyDetail.events ?? []"
+                  /> </section></div></ElTabPane
+          ></ElTabs>
         </template>
 
         <template v-else-if="insightDetail">
-          <section class="experience-detail__insight-overview" aria-label="主题洞察摘要">
-            <div class="experience-detail__score-ring" :style="scoreRingStyle">
-              <span
-                ><strong>{{ insightScore }}</strong
-                ><small>/ 100</small></span
-              >
-            </div>
-            <div>
-              <small>AGGREGATED DIMENSION SCORE</small>
-              <h4>{{
-                userStore.getDictLabelByValue(
-                  'hrExperienceDimension',
-                  insightDetail.dimension,
-                  insightDetail.dimension ?? '--'
-                )
-              }}</h4>
-              <p>
-                本主题由 {{ insightDetail.respondentCount }} 名匿名答卷贡献，达到
-                {{ insightDetail.minimumGroupSize }} 人阈值。分数只用于识别组织改善方向。
-              </p>
-            </div>
-            <ElButton v-auth="'Hr:Experience:Action:Manage'" type="primary" @click="emitAddAction">
-              <ArtSvgIcon icon="ri:route-line" />建立改善行动
-            </ElButton>
-          </section>
-
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:bar-chart-grouped-line" />
-              <div
-                ><strong>题目得分分布</strong
-                ><small>统一换算为 0–100 分，仅展示数值量表题</small></div
-              >
-            </header>
-            <div v-if="insightDetail.questionScores.length" class="experience-detail__score-list">
-              <article v-for="item in insightDetail.questionScores" :key="item.questionId">
-                <div
-                  ><strong>{{ item.questionText }}</strong
-                  ><small>{{ item.respondentCount }} 人作答</small></div
-                >
-                <ElProgress
-                  :percentage="item.scorePercent"
-                  :status="progressStatus(item.scorePercent)"
-                  :stroke-width="8"
-                />
-              </article>
-            </div>
-            <ArtEmptyState
-              v-else
-              title="当前主题没有可计算的量表题结果"
-              description="收集量表题反馈后，可在此查看分析结果。"
-              size="compact"
-              :visual-size="64"
-            />
-          </section>
-
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:organization-chart" />
-              <div
-                ><strong>阈值安全的组织结果</strong
-                ><small>仅返回独立达到匿名阈值的组织群组</small></div
-              >
-            </header>
-            <div v-if="insightDetail.organizationScores.length" class="experience-detail__cohorts">
-              <article
-                v-for="cohort in insightDetail.organizationScores"
-                :key="cohort.organizationId"
-              >
-                <div
-                  ><strong>{{ cohort.organizationName }}</strong
-                  ><small>{{ cohort.respondentCount }} 人</small></div
-                >
-                <span>{{ cohort.scorePercent }}</span>
-                <ElProgress
-                  :percentage="cohort.scorePercent"
-                  :status="progressStatus(cohort.scorePercent)"
-                  :show-text="false"
-                  :stroke-width="6"
-                />
-              </article>
-            </div>
-            <ArtEmptyState
-              v-else
-              title="暂无可展示的组织结果"
-              description="没有组织群组独立达到匿名阈值，系统不会返回细分结果。"
-              size="compact"
-              :visual-size="64"
-            />
-          </section>
-
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:double-quotes-l" />
-              <div
-                ><strong>开放反馈</strong
-                ><small>文本可能包含敏感语境，需要独立评论查看权限</small></div
-              >
-            </header>
-            <div v-if="insightDetail.commentsRestricted" class="experience-detail__restricted">
-              <ArtSvgIcon icon="ri:lock-2-line" />
-              <div
-                ><strong>开放评论已隐藏</strong
-                ><p>当前角色可以查看聚合分数，但没有开放评论查看权限。</p></div
-              >
-            </div>
-            <div v-else-if="insightDetail.comments.length" class="experience-detail__comments">
-              <blockquote
-                v-for="(comment, index) in insightDetail.comments"
-                :key="`${comment.submittedAt}-${index}`"
-              >
-                <p>{{ comment.text }}</p>
-                <footer
-                  >{{ comment.questionText }} · {{ formatDateTime(comment.submittedAt) }}</footer
-                >
-              </blockquote>
-            </div>
-            <ArtEmptyState
-              v-else
-              title="当前主题暂无开放文本反馈"
-              description="收到开放文本反馈后，可在此查看。"
-              size="compact"
-              :visual-size="64"
-            />
-          </section>
-
-          <section class="experience-detail__section">
-            <header>
-              <ArtSvgIcon icon="ri:route-line" />
-              <div><strong>主题改善行动</strong><small>从洞察到负责人、期限与成果验收</small></div>
-            </header>
-            <div v-if="insightDetail.actions.length" class="experience-detail__actions">
-              <article v-for="action in insightDetail.actions" :key="action.id">
-                <span :class="`is-${action.status}`"
-                  ><ArtSvgIcon icon="ri:checkbox-blank-circle-fill"
-                /></span>
-                <div>
-                  <div
-                    ><strong>{{ action.title }}</strong
-                    ><ElTag effect="plain" size="small">{{
+          <ElTabs v-model="activeDetailTab"
+            ><ElTabPane name="overview" label="题目得分"
+              ><div class="space-y-4"
+                ><section class="experience-detail__insight-overview" aria-label="主题洞察摘要">
+                  <div class="experience-detail__score-ring" :style="scoreRingStyle">
+                    <span
+                      ><strong>{{ insightScore }}</strong
+                      ><small>/ 100</small></span
+                    >
+                  </div>
+                  <div>
+                    <small>AGGREGATED DIMENSION SCORE</small>
+                    <h4>{{
                       userStore.getDictLabelByValue(
-                        'commonActionProgressStatus',
-                        action.status,
-                        action.status ?? '--'
+                        'hrExperienceDimension',
+                        insightDetail.dimension,
+                        insightDetail.dimension ?? '--'
                       )
-                    }}</ElTag></div
+                    }}</h4>
+                    <p>
+                      本主题由 {{ insightDetail.respondentCount }} 名匿名答卷贡献，达到
+                      {{ insightDetail.minimumGroupSize }} 人阈值。分数只用于识别组织改善方向。
+                    </p>
+                  </div>
+                  <ElButton
+                    v-auth="'Hr:Experience:Action:Manage'"
+                    type="primary"
+                    @click="emitAddAction"
                   >
-                  <p>计划完成日 {{ formatDate(action.dueDate) }}</p>
-                  <small>{{ action.successMeasure }}</small>
-                </div>
-              </article>
-            </div>
-            <ArtEmptyState
-              v-else
-              title="尚未建立改善行动"
-              description="创建改善行动并指定负责人后，可在此跟踪进展。"
-              size="compact"
-              :visual-size="64"
-            />
-          </section>
+                    <ArtSvgIcon icon="ri:route-line" />建立改善行动
+                  </ElButton>
+                </section>
+
+                <section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:bar-chart-grouped-line" />
+                    <div
+                      ><strong>题目得分分布</strong
+                      ><small>统一换算为 0–100 分，仅展示数值量表题</small></div
+                    >
+                  </header>
+                  <div
+                    v-if="insightDetail.questionScores.length"
+                    class="experience-detail__score-list"
+                  >
+                    <article v-for="item in insightDetail.questionScores" :key="item.questionId">
+                      <div
+                        ><strong>{{ item.questionText }}</strong
+                        ><small>{{ item.respondentCount }} 人作答</small></div
+                      >
+                      <ElProgress
+                        :percentage="item.scorePercent"
+                        :status="progressStatus(item.scorePercent)"
+                        :stroke-width="8"
+                      />
+                    </article>
+                  </div>
+                  <ArtEmptyState
+                    v-else
+                    title="当前主题没有可计算的量表题结果"
+                    description="收集量表题反馈后，可在此查看分析结果。"
+                    size="compact"
+                    :visual-size="64"
+                  /> </section></div
+            ></ElTabPane>
+            <ElTabPane name="organizations" label="组织结果"
+              ><div class="space-y-4"
+                ><section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:organization-chart" />
+                    <div
+                      ><strong>阈值安全的组织结果</strong
+                      ><small>仅返回独立达到匿名阈值的组织群组</small></div
+                    >
+                  </header>
+                  <div
+                    v-if="insightDetail.organizationScores.length"
+                    class="experience-detail__cohorts"
+                  >
+                    <article
+                      v-for="cohort in insightDetail.organizationScores"
+                      :key="cohort.organizationId"
+                    >
+                      <div
+                        ><strong>{{ cohort.organizationName }}</strong
+                        ><small>{{ cohort.respondentCount }} 人</small></div
+                      >
+                      <span>{{ cohort.scorePercent }}</span>
+                      <ElProgress
+                        :percentage="cohort.scorePercent"
+                        :status="progressStatus(cohort.scorePercent)"
+                        :show-text="false"
+                        :stroke-width="6"
+                      />
+                    </article>
+                  </div>
+                  <ArtEmptyState
+                    v-else
+                    title="暂无可展示的组织结果"
+                    description="没有组织群组独立达到匿名阈值，系统不会返回细分结果。"
+                    size="compact"
+                    :visual-size="64"
+                  /> </section></div
+            ></ElTabPane>
+            <ElTabPane name="comments" label="开放反馈"
+              ><div class="space-y-4"
+                ><section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:double-quotes-l" />
+                    <div
+                      ><strong>开放反馈</strong
+                      ><small>文本可能包含敏感语境，需要独立评论查看权限</small></div
+                    >
+                  </header>
+                  <div
+                    v-if="insightDetail.commentsRestricted"
+                    class="experience-detail__restricted"
+                  >
+                    <ArtSvgIcon icon="ri:lock-2-line" />
+                    <div
+                      ><strong>开放评论已隐藏</strong
+                      ><p>当前角色可以查看聚合分数，但没有开放评论查看权限。</p></div
+                    >
+                  </div>
+                  <div
+                    v-else-if="insightDetail.comments.length"
+                    class="experience-detail__comments"
+                  >
+                    <blockquote
+                      v-for="(comment, index) in insightDetail.comments"
+                      :key="`${comment.submittedAt}-${index}`"
+                    >
+                      <p>{{ comment.text }}</p>
+                      <footer
+                        >{{ comment.questionText }} ·
+                        {{ formatDateTime(comment.submittedAt) }}</footer
+                      >
+                    </blockquote>
+                  </div>
+                  <ArtEmptyState
+                    v-else
+                    title="当前主题暂无开放文本反馈"
+                    description="收到开放文本反馈后，可在此查看。"
+                    size="compact"
+                    :visual-size="64"
+                  /> </section></div
+            ></ElTabPane>
+            <ElTabPane name="actions" label="改善行动"
+              ><div class="space-y-4"
+                ><section class="experience-detail__section">
+                  <header>
+                    <ArtSvgIcon icon="ri:route-line" />
+                    <div
+                      ><strong>主题改善行动</strong
+                      ><small>从洞察到负责人、期限与成果验收</small></div
+                    >
+                  </header>
+                  <div v-if="insightDetail.actions.length" class="experience-detail__actions">
+                    <article v-for="action in insightDetail.actions" :key="action.id">
+                      <span :class="`is-${action.status}`"
+                        ><ArtSvgIcon icon="ri:checkbox-blank-circle-fill"
+                      /></span>
+                      <div>
+                        <div
+                          ><strong>{{ action.title }}</strong
+                          ><ElTag effect="plain" size="small">{{
+                            userStore.getDictLabelByValue(
+                              'commonActionProgressStatus',
+                              action.status,
+                              action.status ?? '--'
+                            )
+                          }}</ElTag></div
+                        >
+                        <p>计划完成日 {{ formatDate(action.dueDate) }}</p>
+                        <small>{{ action.successMeasure }}</small>
+                      </div>
+                    </article>
+                  </div>
+                  <ArtEmptyState
+                    v-else
+                    title="尚未建立改善行动"
+                    description="创建改善行动并指定负责人后，可在此跟踪进展。"
+                    size="compact"
+                    :visual-size="64"
+                  /> </section></div></ElTabPane
+          ></ElTabs>
         </template>
 
         <template v-else-if="actionDetail">
-          <section class="experience-detail__summary" aria-label="行动控制摘要">
-            <dl>
-              <div v-for="item in actionSummary" :key="item.label">
-                <dt>{{ item.label }}</dt
-                ><dd>{{ item.value }}</dd
-                ><small>{{ item.hint }}</small>
-              </div>
-            </dl>
-          </section>
+          <ElTabs v-model="activeDetailTab"
+            ><ElTabPane name="overview" label="行动资料"
+              ><div class="space-y-4"
+                ><section class="experience-detail__summary" aria-label="行动控制摘要">
+                  <dl>
+                    <div v-for="item in actionSummary" :key="item.label">
+                      <dt>{{ item.label }}</dt
+                      ><dd>{{ item.value }}</dd
+                      ><small>{{ item.hint }}</small>
+                    </div>
+                  </dl>
+                </section>
 
-          <section class="experience-detail__section">
-            <header
-              ><ArtSvgIcon icon="ri:flag-line" /><div
-                ><strong>成功标准</strong><small>行动完成时必须对照此标准提交可核验成果</small></div
-              ></header
+                <section class="experience-detail__section">
+                  <header
+                    ><ArtSvgIcon icon="ri:flag-line" /><div
+                      ><strong>成功标准</strong
+                      ><small>行动完成时必须对照此标准提交可核验成果</small></div
+                    ></header
+                  >
+                  <div class="experience-detail__narrative">
+                    <div
+                      ><dt>成功标准</dt><dd>{{ actionDetail.successMeasure }}</dd></div
+                    >
+                    <div
+                      ><dt>当前进展</dt
+                      ><dd>{{ actionDetail.progressNote || '尚未维护阶段性进展' }}</dd></div
+                    >
+                    <div
+                      ><dt>验收结果</dt
+                      ><dd>{{ actionDetail.resultSummary || '行动尚未完成验收' }}</dd></div
+                    >
+                  </div>
+                </section></div
+              ></ElTabPane
             >
-            <div class="experience-detail__narrative">
-              <div
-                ><dt>成功标准</dt><dd>{{ actionDetail.successMeasure }}</dd></div
-              >
-              <div
-                ><dt>当前进展</dt
-                ><dd>{{ actionDetail.progressNote || '尚未维护阶段性进展' }}</dd></div
-              >
-              <div
-                ><dt>验收结果</dt
-                ><dd>{{ actionDetail.resultSummary || '行动尚未完成验收' }}</dd></div
-              >
-            </div>
-          </section>
-
-          <section class="experience-detail__section">
-            <header
-              ><ArtSvgIcon icon="ri:history-line" /><div
-                ><strong>行动审计轨迹</strong
-                ><small>创建、更新、启动、验收和取消均保留记录</small></div
-              ></header
-            >
-            <ExperienceTimeline :events="actionDetail.events ?? []" />
-          </section>
+            <ElTabPane name="history" label="审计轨迹"
+              ><div class="space-y-4"
+                ><section class="experience-detail__section">
+                  <header
+                    ><ArtSvgIcon icon="ri:history-line" /><div
+                      ><strong>行动审计轨迹</strong
+                      ><small>创建、更新、启动、验收和取消均保留记录</small></div
+                    ></header
+                  >
+                  <ExperienceTimeline
+                    :events="actionDetail.events ?? []"
+                  /> </section></div></ElTabPane
+          ></ElTabs>
         </template>
 
         <template v-else-if="myDetail">
@@ -410,6 +463,7 @@
     'add-action': [survey: Api.Hr.EmployeeExperienceReference, dimension: string]
   }>()
   const drawerRef = ref<ArtDrawerExpose>()
+  const activeDetailTab = ref('overview')
   const userStore = useUserStore()
   const entity = ref<Api.Hr.EmployeeExperienceEntity>('survey')
   const dimension = ref<string>()

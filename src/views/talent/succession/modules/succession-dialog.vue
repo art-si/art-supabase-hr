@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="succession-dialog">
       <div class="succession-dialog__context" role="note">
         <ArtSvgIcon :icon="contextNote.icon" />
@@ -16,14 +24,13 @@
       </div>
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #ownerEmployeeId>
           <ArtEmployeeSelect
@@ -125,6 +132,7 @@
   const nominationSourceOptions = useDictionaryOptions('hrSuccessionNominationSource')
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('plan')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -200,10 +208,12 @@
       if (entity.value === 'plan')
         return [
           ...common,
+          { key: 'planIdentity', label: '岗位与责任', type: 'tab' },
           input('planCode', '计划编码', '如 SUCCESSION_OPS_01'),
           input('planName', '计划名称', '如 运输调度负责人继任计划'),
           select('positionId', '关键岗位', positionOptions.value, '请选择关键岗位'),
           { label: '计划负责人', key: 'ownerEmployeeId', type: 'input' },
+          { key: 'planRisk', label: '风险与复盘', type: 'tab' },
           dict('criticality', '岗位关键度', 'hrSuccessionCriticality'),
           dict('vacancyRisk', '空缺风险', 'commonRiskLevel'),
           dict('businessImpact', '业务影响', 'hrSuccessionCriticality'),
@@ -216,12 +226,14 @@
       if (entity.value === 'candidate')
         return [
           ...common,
+          { key: 'candidateIdentity', label: '候选人与评估', type: 'tab' },
           select('planId', '继任计划', planOptions.value, '请选择目标计划'),
           { label: '候选人', key: 'employeeId', type: 'input' },
           dict('readiness', '继任准备度', 'hrSuccessionReadiness'),
           dict('potentialLevel', '人才潜力', 'hrSuccessionPotential'),
           dict('retentionRisk', '留任风险', 'commonRiskLevel'),
           number('priority', '计划内优先级', { min: 1, max: 20, precision: 0 }),
+          { key: 'candidateDevelopment', label: '意愿与发展', type: 'tab' },
           nominationSourceItem(),
           { label: '已确认发展意愿', key: 'aspirationConfirmed', type: 'switch' },
           input('mobilityScope', '可流动范围', '如 同城 / 全国 / 海外'),

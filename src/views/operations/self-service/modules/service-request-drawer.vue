@@ -1,5 +1,13 @@
 <template>
-  <ArtDrawer :loading="loading" ref="drawerRef">
+  <ArtDrawer
+    :loading="loading"
+    ref="drawerRef"
+    @open="
+      () => {
+        activeDetailTab = 'overview'
+      }
+    "
+  >
     <ArtAsyncState
       :error="loadError"
       :empty="missing"
@@ -31,107 +39,115 @@
           </div>
         </section>
 
-        <section class="service-request-drawer__summary" aria-label="工单交付摘要">
-          <dl>
-            <div>
-              <dt>申请员工</dt>
-              <dd>{{ request.requester?.name || '--' }}</dd>
-              <small>{{ request.requester?.code || '未关联工号' }}</small>
-            </div>
-            <div>
-              <dt>处理人</dt>
-              <dd>{{ request.assignee?.name || '待分派' }}</dd>
-              <small>{{ request.service?.routingGroup || 'HR 服务台' }}</small>
-            </div>
-            <div>
-              <dt>解决时限</dt>
-              <dd>{{ formatDateTime(request.resolutionDueAt) }}</dd>
-              <small>{{
-                request.waitingStartedAt ? 'SLA 暂停中' : slaLabel(resolvedSlaStatus(request))
-              }}</small>
-            </div>
-            <div>
-              <dt>优先级</dt>
-              <dd>{{
-                userStore.getDictLabelByValue(
-                  'hrServicePriority',
-                  request.priority,
-                  request.priority ?? '--'
-                )
-              }}</dd>
-              <small>{{
-                userStore.getDictLabelByValue(
-                  'hrServiceChannel',
-                  request.channel,
-                  request.channel ?? '--'
-                )
-              }}</small>
-            </div>
-          </dl>
-        </section>
+        <ElTabs v-model="activeDetailTab"
+          ><ElTabPane name="overview" label="问题与处理"
+            ><div class="space-y-4"
+              ><section class="service-request-drawer__summary" aria-label="工单交付摘要">
+                <dl>
+                  <div>
+                    <dt>申请员工</dt>
+                    <dd>{{ request.requester?.name || '--' }}</dd>
+                    <small>{{ request.requester?.code || '未关联工号' }}</small>
+                  </div>
+                  <div>
+                    <dt>处理人</dt>
+                    <dd>{{ request.assignee?.name || '待分派' }}</dd>
+                    <small>{{ request.service?.routingGroup || 'HR 服务台' }}</small>
+                  </div>
+                  <div>
+                    <dt>解决时限</dt>
+                    <dd>{{ formatDateTime(request.resolutionDueAt) }}</dd>
+                    <small>{{
+                      request.waitingStartedAt ? 'SLA 暂停中' : slaLabel(resolvedSlaStatus(request))
+                    }}</small>
+                  </div>
+                  <div>
+                    <dt>优先级</dt>
+                    <dd>{{
+                      userStore.getDictLabelByValue(
+                        'hrServicePriority',
+                        request.priority,
+                        request.priority ?? '--'
+                      )
+                    }}</dd>
+                    <small>{{
+                      userStore.getDictLabelByValue(
+                        'hrServiceChannel',
+                        request.channel,
+                        request.channel ?? '--'
+                      )
+                    }}</small>
+                  </div>
+                </dl>
+              </section>
 
-        <section class="service-request-drawer__section">
-          <header>
-            <ArtSvgIcon icon="ri:file-text-line" />
-            <div><strong>问题与处理结果</strong><small>员工诉求和 HR 最终交付结论</small></div>
-          </header>
-          <div class="service-request-drawer__narrative">
-            <div
-              ><span>问题说明</span><p>{{ request.reason }}</p></div
-            >
-            <div v-if="request.waitingReason" class="is-warning">
-              <span>待补充内容</span><p>{{ request.waitingReason }}</p>
-            </div>
-            <div v-if="request.resolution" class="is-success">
-              <span>解决结果</span><p>{{ request.resolution }}</p>
-            </div>
-          </div>
-        </section>
+              <section class="service-request-drawer__section">
+                <header>
+                  <ArtSvgIcon icon="ri:file-text-line" />
+                  <div
+                    ><strong>问题与处理结果</strong><small>员工诉求和 HR 最终交付结论</small></div
+                  >
+                </header>
+                <div class="service-request-drawer__narrative">
+                  <div
+                    ><span>问题说明</span><p>{{ request.reason }}</p></div
+                  >
+                  <div v-if="request.waitingReason" class="is-warning">
+                    <span>待补充内容</span><p>{{ request.waitingReason }}</p>
+                  </div>
+                  <div v-if="request.resolution" class="is-success">
+                    <span>解决结果</span><p>{{ request.resolution }}</p>
+                  </div>
+                </div>
+              </section>
 
-        <section v-if="request.attachmentUrls.length" class="service-request-drawer__section">
-          <header>
-            <ArtSvgIcon icon="ri:attachment-2" />
-            <div><strong>工单附件</strong><small>仅访问已授权的业务文件</small></div>
-          </header>
-          <ul class="service-request-drawer__attachments">
-            <li v-for="(url, index) in request.attachmentUrls" :key="url">
-              <a :href="url" target="_blank" rel="noopener noreferrer">
-                <ArtSvgIcon icon="ri:file-transfer-line" />
-                附件 {{ index + 1 }}
-                <ArtSvgIcon icon="ri:external-link-line" />
-              </a>
-            </li>
-          </ul>
-        </section>
-
-        <section class="service-request-drawer__section">
-          <header>
-            <ArtSvgIcon icon="ri:history-line" />
-            <div><strong>服务交付记录</strong><small>状态、分派和沟通均不可变留痕</small></div>
-          </header>
-          <ElTimeline v-if="request.events?.length" class="service-request-drawer__timeline">
-            <ElTimelineItem
-              v-for="event in request.events"
-              :key="event.id"
-              :type="eventTone(event.eventType)"
-              :timestamp="formatDateTime(event.createTime)"
-              placement="top"
-            >
-              <article>
-                <strong>{{ eventLabel(event.eventType) }}</strong>
-                <span>{{ event.actor?.name || event.createBy || '系统' }}</span>
-                <p v-if="event.comment">{{ event.comment }}</p>
-              </article>
-            </ElTimelineItem>
-          </ElTimeline>
-          <ArtEmptyState
-            v-else
-            title="暂无服务交付记录"
-            description="服务处理后，可在此查看交付过程。"
-            size="compact"
-            :visual-size="64"
-          />
-        </section>
+              <section v-if="request.attachmentUrls.length" class="service-request-drawer__section">
+                <header>
+                  <ArtSvgIcon icon="ri:attachment-2" />
+                  <div><strong>工单附件</strong><small>仅访问已授权的业务文件</small></div>
+                </header>
+                <ul class="service-request-drawer__attachments">
+                  <li v-for="(url, index) in request.attachmentUrls" :key="url">
+                    <a :href="url" target="_blank" rel="noopener noreferrer">
+                      <ArtSvgIcon icon="ri:file-transfer-line" />
+                      附件 {{ index + 1 }}
+                      <ArtSvgIcon icon="ri:external-link-line" />
+                    </a>
+                  </li>
+                </ul> </section></div
+          ></ElTabPane>
+          <ElTabPane name="history" label="交付记录"
+            ><div class="space-y-4"
+              ><section class="service-request-drawer__section">
+                <header>
+                  <ArtSvgIcon icon="ri:history-line" />
+                  <div
+                    ><strong>服务交付记录</strong><small>状态、分派和沟通均不可变留痕</small></div
+                  >
+                </header>
+                <ElTimeline v-if="request.events?.length" class="service-request-drawer__timeline">
+                  <ElTimelineItem
+                    v-for="event in request.events"
+                    :key="event.id"
+                    :type="eventTone(event.eventType)"
+                    :timestamp="formatDateTime(event.createTime)"
+                    placement="top"
+                  >
+                    <article>
+                      <strong>{{ eventLabel(event.eventType) }}</strong>
+                      <span>{{ event.actor?.name || event.createBy || '系统' }}</span>
+                      <p v-if="event.comment">{{ event.comment }}</p>
+                    </article>
+                  </ElTimelineItem>
+                </ElTimeline>
+                <ArtEmptyState
+                  v-else
+                  title="暂无服务交付记录"
+                  description="服务处理后，可在此查看交付过程。"
+                  size="compact"
+                  :visual-size="64"
+                /> </section></div></ElTabPane
+        ></ElTabs>
       </div>
     </ArtAsyncState>
   </ArtDrawer>
@@ -150,6 +166,7 @@
   import { fetchServiceRequestDetail } from '@hr/api'
 
   const drawerRef = ref<ArtDrawerExpose>()
+  const activeDetailTab = ref('overview')
   const {
     detail: request,
     loading,

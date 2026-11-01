@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="workforce-planning-dialog">
       <ArtEntitySummary
         :icon="contextNote.icon"
@@ -9,14 +17,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #ownerEmployeeId>
           <ArtEmployeeSelect
@@ -104,6 +111,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('cycle')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -255,10 +263,12 @@
       if (entity.value === 'cycle')
         return [
           ...tenantItem.value,
+          { key: 'planIdentity', label: '规划定义', type: 'tab' },
           input('planNo', '规划编号', '如 WFP_2027_BASE'),
           input('planName', '规划名称', '如 2027 年度业务增长人力规划'),
           dict('scenario', '规划场景', 'hrWorkforcePlanScenario'),
           { label: '规划负责人', key: 'ownerEmployeeId', type: 'input' },
+          { key: 'planBasis', label: '周期与测算依据', type: 'tab' },
           date('periodStart', '周期开始'),
           date('periodEnd', '周期结束'),
           date('baselineDate', '基线日期'),

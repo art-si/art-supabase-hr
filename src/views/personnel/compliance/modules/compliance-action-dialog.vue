@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="md">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="md"
+  >
     <div class="compliance-action-dialog">
       <ElAlert v-if="loadError" type="error" :closable="false" show-icon>
         <template #title>{{ loadError }}</template>
@@ -15,14 +23,13 @@
       </div>
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="form.items"
         :rules="form.rules"
         :span="12"
         :gutter="20"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #renewalOwnerId>
           <ArtEmployeeSelect
@@ -93,6 +100,7 @@
   const userStore = useUserStore()
   const { getDictMap } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('contract')
   const action = ref<Api.Hr.ComplianceAction>('comment')
@@ -189,7 +197,7 @@
     }
     if (action.value === 'renew') {
       return [
-        { label: '新合同', key: 'identity', type: 'divider', span: 24 },
+        { label: '新合同', key: 'identity', type: 'tab', span: 24 },
         {
           label: '新合同编号',
           key: 'contractNo',
@@ -203,10 +211,16 @@
           type: 'select',
           options: getDictMap.value.hrContractType ?? []
         },
-        { label: '签订日期', key: 'signDate', type: 'date' },
-        { label: '开始日期', key: 'startDate', type: 'date' },
-        { label: '结束日期', key: 'endDate', type: 'date' },
-        { label: '试用期结束', key: 'probationEndDate', type: 'date' },
+        { label: '签订日期', key: 'signDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+        { label: '开始日期', key: 'startDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+        { label: '结束日期', key: 'endDate', type: 'date', props: { valueFormat: 'YYYY-MM-DD' } },
+        {
+          label: '试用期结束',
+          key: 'probationEndDate',
+          type: 'date',
+          props: { valueFormat: 'YYYY-MM-DD' }
+        },
+        { key: 'renewalControl', label: '责任与依据', type: 'tab' },
         { label: '续签负责人', key: 'renewalOwnerId', type: 'input' },
         {
           label: '提醒天数',
@@ -227,7 +241,13 @@
     }
     if (action.value === 'terminate') {
       return [
-        { label: '终止日期', key: 'terminationDate', type: 'date', span: 24 },
+        {
+          label: '终止日期',
+          key: 'terminationDate',
+          type: 'date',
+          span: 24,
+          props: { valueFormat: 'YYYY-MM-DD' }
+        },
         commentItem('终止原因', true)
       ]
     }

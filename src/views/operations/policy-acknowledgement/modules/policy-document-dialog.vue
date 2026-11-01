@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="policy-dialog">
       <ArtEntitySummary
         icon="ri:file-shield-2-line"
@@ -23,14 +31,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       />
     </div>
   </ArtDialog>
@@ -99,6 +106,7 @@
   const audienceEmploymentTypeOptions = useDictionaryOptions('hrPolicyAudienceEmploymentType')
   const { getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const dialogType = ref<DialogType>('add')
   const tenantOptions = ref<Array<{ label: string; value: string }>>([])
@@ -145,7 +153,7 @@
 
   const formItems = computed<FormItem[]>(() => [
     ...tenantItems.value,
-    { label: '版本身份', key: 'versionIdentity', type: 'divider', span: 24 },
+    { label: '版本身份', key: 'versionIdentity', type: 'tab', span: 24 },
     { label: '政策编码', key: 'policyCode', type: 'input', props: { maxlength: 40 } },
     { label: '政策名称', key: 'policyTitle', type: 'input', props: { maxlength: 160 } },
     {
@@ -195,7 +203,7 @@
           }
         ]
       : []),
-    { label: '受控内容', key: 'controlledContent', type: 'divider', span: 24 },
+    { label: '受控内容', key: 'controlledContent', type: 'tab', span: 24 },
     {
       label: '文档引用',
       key: 'documentReference',

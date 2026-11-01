@@ -3,22 +3,18 @@
     <ArtForm
       ref="formRef"
       class="position-dialog__form"
-      :model-value="form"
-      @update:model-value="replaceReactiveModel(form, $event)"
+      v-model="form"
       :items="hrTenantScopedFormItems(formItems, Boolean(form.id))"
       :rules="formRules"
       :span="12"
       :gutter="24"
       label-position="top"
-      :show-reset="false"
-      :show-submit="false"
     />
   </ArtDialog>
 </template>
 
 <script setup lang="ts">
   import { hrTenantScopedFormItems } from '@hr/views/shared/hr-tenant-scoped-form-items'
-  import { replaceReactiveModel } from '@/utils/form/model'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import type { FormRules } from 'element-plus'
@@ -62,13 +58,13 @@
     sort: 0,
     description: ''
   })
-  const form = reactive<Position>(createInitialForm())
+  const form = ref<Position>(createInitialForm())
   const positionNumber = useDocumentNumberRule('hr.position')
 
   const formRules = computed<FormRules<Position>>(() => ({
     tenantId: [{ required: true, message: '当前账号未绑定有效租户', trigger: 'change' }],
     positionCode: [
-      ...(form.id || positionNumber.manualRequired(false)
+      ...(form.value.id || positionNumber.manualRequired(false)
         ? [{ required: true, message: '请输入岗位编码', trigger: 'blur' as const }]
         : []),
       {
@@ -101,7 +97,8 @@
       key: 'organizationId',
       type: 'treeSelect',
       immediate: false,
-      api: async () => (await fetchEnabledOrganizationTree({ tenantId: form.tenantId })).data ?? [],
+      api: async () =>
+        (await fetchEnabledOrganizationTree({ tenantId: form.value.tenantId })).data ?? [],
       valueField: 'id',
       labelField: 'organizationName',
       childrenField: 'children',
@@ -120,7 +117,8 @@
       key: 'jobProfileId',
       type: 'select',
       immediate: false,
-      api: async () => (await fetchJobArchitectureOptions('profile', form.tenantId)).data ?? [],
+      api: async () =>
+        (await fetchJobArchitectureOptions('profile', form.value.tenantId)).data ?? [],
       valueField: 'id',
       labelFn: (option) => `${option.name ?? ''} · ${option.code ?? ''}`,
       props: { filterable: true, placeholder: '请选择岗位对应的标准职务' }
@@ -130,7 +128,7 @@
       key: 'gradeId',
       type: 'select',
       immediate: false,
-      api: async () => (await fetchJobArchitectureOptions('grade', form.tenantId)).data ?? [],
+      api: async () => (await fetchJobArchitectureOptions('grade', form.value.tenantId)).data ?? [],
       valueField: 'id',
       labelFn: (option) => `${option.name ?? ''} · ${option.code ?? ''}`,
       props: { filterable: true, clearable: true, placeholder: '可选，默认继承标准职务' }
@@ -141,7 +139,7 @@
       type: 'input',
       props: {
         maxlength: 32,
-        ...positionNumber.inputProps(Boolean(form.id), '如 POS-SALES', true)
+        ...positionNumber.inputProps(Boolean(form.value.id), '如 POS-SALES', true)
       },
       description: positionNumber.description.value
     },
@@ -164,11 +162,11 @@
       props: {
         min: 1,
         max: 9999,
-        disabled: !form.multipleIncumbentsAllowed,
+        disabled: !form.value.multipleIncumbentsAllowed,
         controlsPosition: 'right',
         class: '!w-full'
       },
-      help: form.multipleIncumbentsAllowed
+      help: form.value.multipleIncumbentsAllowed
         ? '允许多人共享该岗位时的最大在岗人数。'
         : '单人岗位固定为 1 人。'
     },
@@ -181,7 +179,7 @@
         inactiveText: '单人岗位',
         inlinePrompt: true,
         onChange: (value: boolean) => {
-          if (!value) form.headcountLimit = 1
+          if (!value) form.value.headcountLimit = 1
         }
       }
     },
@@ -205,8 +203,8 @@
   ])
 
   const replaceForm = (next: Position): void => {
-    Object.keys(form).forEach((key) => delete form[key as keyof Position])
-    Object.assign(form, next)
+    Object.keys(form.value).forEach((key) => delete form.value[key as keyof Position])
+    Object.assign(form.value, next)
   }
   const resetForm = async (): Promise<void> => {
     replaceForm(createInitialForm())
@@ -217,9 +215,9 @@
   const handleSubmit = async (): Promise<boolean> => {
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
-      const type = form.id ? 'edit' : 'add'
-      if (type === 'edit') await editPosition(structuredClone(toRaw(form)))
-      else await addPosition(structuredClone(toRaw(form)))
+      const type = form.value.id ? 'edit' : 'add'
+      if (type === 'edit') await editPosition(structuredClone(toRaw(form.value)))
+      else await addPosition(structuredClone(toRaw(form.value)))
       emit('success', type)
       return true
     } catch (error) {
@@ -236,7 +234,7 @@
     if (row) {
       replaceForm({ ...createInitialForm(), ...structuredClone(toRaw(row)) })
     } else if (defaults.organizationId) {
-      form.organizationId = defaults.organizationId
+      form.value.organizationId = defaults.organizationId
     }
     await dialogRef.value?.handleOpen(row, {
       title: row ? '编辑岗位' : '新增岗位',

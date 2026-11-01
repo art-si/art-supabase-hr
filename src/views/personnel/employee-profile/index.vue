@@ -75,15 +75,12 @@
       <ElTabPane label="基础信息" name="basic">
         <ArtForm
           ref="basicFormRef"
-          :model-value="form"
-          @update:model-value="replaceReactiveModel(form, $event)"
+          v-model="form"
           :items="basicItems"
           :rules="basicRules"
           :span="formSpan"
           :gutter="20"
           label-width="112px"
-          :show-reset="false"
-          :show-submit="false"
           :validate-on-rule-change="false"
         />
       </ElTabPane>
@@ -127,8 +124,6 @@
           >
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               label-position="top"
               form-class="hr-profile-page__record-form"
               :disabled="!canEditCareerRecords"
@@ -224,8 +219,6 @@
           >
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               label-position="top"
               form-class="hr-profile-page__record-form"
               :disabled="!canEditCareerRecords"
@@ -317,8 +310,6 @@
           >
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               label-position="top"
               form-class="hr-profile-page__record-form"
               :disabled="!canEditCareerRecords"
@@ -383,8 +374,6 @@
             </ArtForm>
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               v-if="canViewCompensationDetails"
               label-position="top"
               form-class="hr-profile-page__compensation-form"
@@ -430,8 +419,6 @@
           >
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               label-position="top"
               form-class="hr-profile-page__record-form"
               :disabled="!canEditCareerRecords"
@@ -484,8 +471,6 @@
             </ArtForm>
             <ArtForm
               custom-layout
-              :show-reset="false"
-              :show-submit="false"
               v-if="canViewCompensationDetails"
               label-position="top"
               form-class="hr-profile-page__compensation-form"
@@ -541,7 +526,6 @@
 <script setup lang="ts">
   import { normalizeNullableNumber } from '@/utils/form/normalize'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
-  import { replaceReactiveModel } from '@/utils/form/model'
   import { getScrollBehavior } from '@/utils/ui/scroll'
   import { getFriendlySupabaseErrorMessage } from '@/utils/supabase'
   import { useMediaQuery } from '@vueuse/core'
@@ -647,40 +631,40 @@
     isPlatformSuper.value
       ? (tenantScopeStore.effectiveTenantId ?? undefined)
       : getUserInfo.value.tenantId
-  const form = reactive<EmployeeProfileForm>(createEmployeeProfile(initialTenantId()))
-  const employeeNumber = useDocumentNumberRule('hr.employee', () => form.tenantId)
-  const contractNumber = useDocumentNumberRule('hr.employee_contract', () => form.tenantId)
+  const form = ref<EmployeeProfileForm>(createEmployeeProfile(initialTenantId()))
+  const employeeNumber = useDocumentNumberRule('hr.employee', () => form.value.tenantId)
+  const contractNumber = useDocumentNumberRule('hr.employee_contract', () => form.value.tenantId)
   const fieldAccessFallback = computed<Api.Common.FieldAccessLevel>(() =>
     isEdit.value ? 'hidden' : 'edit'
   )
   const fieldLevel = (field: Api.Hr.EmployeeFieldKey): Api.Common.FieldAccessLevel =>
-    getFieldAccess(form.fieldAccess, field, fieldAccessFallback.value)
+    getFieldAccess(form.value.fieldAccess, field, fieldAccessFallback.value)
   const canViewContactDetails = computed(() =>
-    canViewField(form.fieldAccess, 'contactDetails', fieldAccessFallback.value)
+    canViewField(form.value.fieldAccess, 'contactDetails', fieldAccessFallback.value)
   )
   const canEditContactDetails = computed(() =>
-    canEditField(form.fieldAccess, 'contactDetails', fieldAccessFallback.value)
+    canEditField(form.value.fieldAccess, 'contactDetails', fieldAccessFallback.value)
   )
   const canEditIdentityDetails = computed(() =>
-    canEditField(form.fieldAccess, 'identityDetails', fieldAccessFallback.value)
+    canEditField(form.value.fieldAccess, 'identityDetails', fieldAccessFallback.value)
   )
   const canViewIdentityDetails = computed(() =>
-    canViewField(form.fieldAccess, 'identityDetails', fieldAccessFallback.value)
+    canViewField(form.value.fieldAccess, 'identityDetails', fieldAccessFallback.value)
   )
   const canViewCompensationDetails = computed(() =>
-    canViewField(form.fieldAccess, 'compensationDetails', fieldAccessFallback.value)
+    canViewField(form.value.fieldAccess, 'compensationDetails', fieldAccessFallback.value)
   )
   const canEditCompensationDetails = computed(() =>
-    canEditField(form.fieldAccess, 'compensationDetails', fieldAccessFallback.value)
+    canEditField(form.value.fieldAccess, 'compensationDetails', fieldAccessFallback.value)
   )
   const canViewCareerRecords = computed(() =>
-    canViewField(form.fieldAccess, 'careerRecords', fieldAccessFallback.value)
+    canViewField(form.value.fieldAccess, 'careerRecords', fieldAccessFallback.value)
   )
   const canEditCareerRecords = computed(() =>
-    canEditField(form.fieldAccess, 'careerRecords', fieldAccessFallback.value)
+    canEditField(form.value.fieldAccess, 'careerRecords', fieldAccessFallback.value)
   )
   const accessNotice = computed(() => {
-    if (!isEdit.value || form.isRecordOwner) return ''
+    if (!isEdit.value || form.value.isRecordOwner) return ''
     const readonlyGroups = (
       ['contactDetails', 'identityDetails', 'compensationDetails', 'careerRecords'] as const
     ).filter((field) => fieldLevel(field) !== 'edit').length
@@ -689,30 +673,30 @@
       : ''
   })
   const historyCountItems = computed(() => [
-    { key: 'contracts', label: '劳动合同', value: form.historyCounts?.contracts ?? 0 },
-    { key: 'educations', label: '教育背景', value: form.historyCounts?.educations ?? 0 },
+    { key: 'contracts', label: '劳动合同', value: form.value.historyCounts?.contracts ?? 0 },
+    { key: 'educations', label: '教育背景', value: form.value.historyCounts?.educations ?? 0 },
     {
       key: 'workExperiences',
       label: '工作经历',
-      value: form.historyCounts?.workExperiences ?? 0
+      value: form.value.historyCounts?.workExperiences ?? 0
     },
-    { key: 'trainings', label: '培训经历', value: form.historyCounts?.trainings ?? 0 },
-    { key: 'rewards', label: '奖惩经历', value: form.historyCounts?.rewards ?? 0 }
+    { key: 'trainings', label: '培训经历', value: form.value.historyCounts?.trainings ?? 0 },
+    { key: 'rewards', label: '奖惩经历', value: form.value.historyCounts?.rewards ?? 0 }
   ])
 
   const dict = (code: string) => getDictMap.value[code] ?? []
   const displayDict = (code: string, value?: string | null): string =>
     dict(code).find((item) => item.value === value)?.label ?? value ?? '待完善'
   const selectedPosition = computed(() =>
-    positionOptions.value.find((item) => item.id === form.positionId)
+    positionOptions.value.find((item) => item.id === form.value.positionId)
   )
   const positionFormOptions = computed<FormItemOption[]>(() =>
     positionOptions.value
       .filter(
         (position) =>
-          !form.organizationId ||
+          !form.value.organizationId ||
           !position.organizationId ||
-          position.organizationId === form.organizationId
+          position.organizationId === form.value.organizationId
       )
       .map((position) => ({
         label: `${position.positionName}（${position.positionCode}）`,
@@ -721,36 +705,36 @@
   )
 
   const requiredBaseFields = computed(() => [
-    form.employeeNo,
-    form.employeeName,
-    form.organizationId,
-    form.positionId,
-    form.employmentStatus,
-    form.employmentType
+    form.value.employeeNo,
+    form.value.employeeName,
+    form.value.organizationId,
+    form.value.positionId,
+    form.value.employmentStatus,
+    form.value.employmentType
   ])
   const optionalBaseFields = computed(() => [
-    form.hireDate,
+    form.value.hireDate,
     ...(canViewIdentityDetails.value
       ? [
-          form.gender,
-          form.birthDate,
-          form.idCardNo,
-          form.ethnicity,
-          form.educationLevel,
-          form.schoolName,
-          form.majorName,
-          form.maritalStatus,
-          form.politicalStatus,
-          form.nativePlace
+          form.value.gender,
+          form.value.birthDate,
+          form.value.idCardNo,
+          form.value.ethnicity,
+          form.value.educationLevel,
+          form.value.schoolName,
+          form.value.majorName,
+          form.value.maritalStatus,
+          form.value.politicalStatus,
+          form.value.nativePlace
         ]
       : []),
     ...(canViewContactDetails.value
       ? [
-          form.phone,
-          form.email,
-          form.homeAddress,
-          form.emergencyContactName,
-          form.emergencyContactPhone
+          form.value.phone,
+          form.value.email,
+          form.value.homeAddress,
+          form.value.emergencyContactName,
+          form.value.emergencyContactPhone
         ]
       : [])
   ])
@@ -760,16 +744,16 @@
       (value) => value !== null && value !== undefined && String(value).trim()
     ).length
     const historyBonus =
-      canViewCareerRecords.value && !form.historiesMasked
+      canViewCareerRecords.value && !form.value.historiesMasked
         ? [
-            form.contracts,
-            form.educations,
-            form.workExperiences,
-            form.trainings,
-            form.rewards
+            form.value.contracts,
+            form.value.educations,
+            form.value.workExperiences,
+            form.value.trainings,
+            form.value.rewards
           ].filter((items) => items.length).length
         : 0
-    const historyWeight = canViewCareerRecords.value && !form.historiesMasked ? 10 : 0
+    const historyWeight = canViewCareerRecords.value && !form.value.historiesMasked ? 10 : 0
     return Math.min(
       100,
       Math.round(((filled + historyBonus * 2) / Math.max(all.length + historyWeight, 1)) * 100)
@@ -797,26 +781,26 @@
     })
 
   const loadOrganizationOptions = async (): Promise<void> => {
-    if (!form.tenantId) {
+    if (!form.value.tenantId) {
       organizationFormOptions.value = []
       return
     }
-    const response = await fetchEnabledOrganizationTree({ tenantId: form.tenantId })
+    const response = await fetchEnabledOrganizationTree({ tenantId: form.value.tenantId })
     organizationFormOptions.value = mapOrganizationOptions(response.data ?? [])
   }
 
   const loadPositionOptions = async (): Promise<void> => {
-    if (!form.tenantId) {
+    if (!form.value.tenantId) {
       positionOptions.value = []
       return
     }
-    const response = await fetchPositionOptions({ tenantId: form.tenantId })
+    const response = await fetchPositionOptions({ tenantId: form.value.tenantId })
     positionOptions.value = response.data ?? []
   }
 
   const handleTenantChange = (): void => {
-    form.organizationId = null
-    form.positionId = null
+    form.value.organizationId = null
+    form.value.positionId = null
     void loadOrganizationOptions()
     void loadPositionOptions()
   }
@@ -920,14 +904,14 @@
         span: isDesktop.value ? 16 : 24,
         options: organizationFormOptions.value,
         props: {
-          disabled: !form.tenantId || isEdit.value,
+          disabled: !form.value.tenantId || isEdit.value,
           clearable: true,
           checkStrictly: true,
           defaultExpandAll: true,
           filterable: true,
-          placeholder: form.tenantId ? '请选择所属组织' : '请先选择租户',
+          placeholder: form.value.tenantId ? '请选择所属组织' : '请先选择租户',
           onChange: () => {
-            form.positionId = null
+            form.value.positionId = null
           }
         },
         description: isEdit.value ? '组织变更请通过人事异动办理并按生效日期留痕。' : undefined
@@ -957,7 +941,7 @@
           filterable: true,
           clearable: true,
           disabled: isEdit.value,
-          placeholder: form.tenantId ? '请选择工作岗位' : '请先选择租户'
+          placeholder: form.value.tenantId ? '请选择工作岗位' : '请先选择租户'
         },
         description: isEdit.value
           ? '岗位变更请通过人事异动办理；原任职将自动保留为历史。'
@@ -1115,7 +1099,7 @@
   }
 
   const replaceProfile = (profile: EmployeeProfile): void => {
-    Object.assign(form, createEmployeeProfile(initialTenantId()), structuredClone(profile))
+    Object.assign(form.value, createEmployeeProfile(initialTenantId()), structuredClone(profile))
   }
 
   const applyUserLinkPrefill = (): void => {
@@ -1124,12 +1108,12 @@
     const requestedTenantId = queryValue('tenantId')
     const currentTenantId = getUserInfo.value.tenantId || ''
     if (requestedTenantId && (isPlatformSuper.value || requestedTenantId === currentTenantId)) {
-      form.tenantId = requestedTenantId
+      form.value.tenantId = requestedTenantId
     }
     const requestedOrganizationId = queryValue('organizationId')
-    if (requestedOrganizationId) form.organizationId = requestedOrganizationId
+    if (requestedOrganizationId) form.value.organizationId = requestedOrganizationId
     const requestedEmail = queryValue('email')
-    if (requestedEmail) form.email = requestedEmail
+    if (requestedEmail) form.value.email = requestedEmail
   }
 
   const initializePage = async (): Promise<void> => {
@@ -1191,7 +1175,7 @@
     clearHistoryValidation()
     const firstFailure: { value?: ValidationTarget } = {}
 
-    form.contracts.forEach((item, index) => {
+    form.value.contracts.forEach((item, index) => {
       if (!item.contractNo.trim() && (Boolean(item.id) || contractNumber.manualRequired(false)))
         setHistoryValidationError('contracts', index, 'contractNo', '请输入合同编号', firstFailure)
       if (!item.contractType)
@@ -1221,7 +1205,7 @@
           firstFailure
         )
     })
-    form.educations.forEach((item, index) => {
+    form.value.educations.forEach((item, index) => {
       if (!item.schoolName.trim())
         setHistoryValidationError('educations', index, 'schoolName', '请输入学校名称', firstFailure)
       if (!item.educationLevel)
@@ -1235,7 +1219,7 @@
           firstFailure
         )
     })
-    form.workExperiences.forEach((item, index) => {
+    form.value.workExperiences.forEach((item, index) => {
       if (!item.companyName.trim())
         setHistoryValidationError(
           'workExperiences',
@@ -1269,7 +1253,7 @@
           firstFailure
         )
     })
-    form.trainings.forEach((item, index) => {
+    form.value.trainings.forEach((item, index) => {
       if (!item.trainingName.trim())
         setHistoryValidationError(
           'trainings',
@@ -1297,7 +1281,7 @@
           firstFailure
         )
     })
-    form.rewards.forEach((item, index) => {
+    form.value.rewards.forEach((item, index) => {
       if (!item.recordType)
         setHistoryValidationError('rewards', index, 'recordType', '请选择奖惩类型', firstFailure)
       if (!item.title.trim())
@@ -1343,33 +1327,33 @@
   }
 
   watch(
-    () => form.contracts,
+    () => form.value.contracts,
     () => clearHistoryValidation('contracts'),
     { deep: true }
   )
   watch(
-    () => form.educations,
+    () => form.value.educations,
     () => clearHistoryValidation('educations'),
     { deep: true }
   )
   watch(
-    () => form.workExperiences,
+    () => form.value.workExperiences,
     () => clearHistoryValidation('workExperiences'),
     { deep: true }
   )
   watch(
-    () => form.trainings,
+    () => form.value.trainings,
     () => clearHistoryValidation('trainings'),
     { deep: true }
   )
   watch(
-    () => form.rewards,
+    () => form.value.rewards,
     () => clearHistoryValidation('rewards'),
     { deep: true }
   )
 
   const normalizeEmployee = (): Employee => {
-    return normalizeEmployeePayload(toRaw(form), {
+    return normalizeEmployeePayload(toRaw(form.value), {
       contactDetailsEditable: canEditContactDetails.value,
       identityDetailsEditable: canEditIdentityDetails.value,
       careerRecordsEditable: canEditCareerRecords.value,
@@ -1399,24 +1383,24 @@
         employee: normalizeEmployee()
       }
       if (canEditCareerRecords.value) {
-        payload.contracts = structuredClone(toRaw(form.contracts))
-        payload.educations = structuredClone(toRaw(form.educations))
-        payload.workExperiences = structuredClone(toRaw(form.workExperiences))
-        payload.trainings = structuredClone(toRaw(form.trainings))
-        payload.rewards = structuredClone(toRaw(form.rewards))
+        payload.contracts = structuredClone(toRaw(form.value.contracts))
+        payload.educations = structuredClone(toRaw(form.value.educations))
+        payload.workExperiences = structuredClone(toRaw(form.value.workExperiences))
+        payload.trainings = structuredClone(toRaw(form.value.trainings))
+        payload.rewards = structuredClone(toRaw(form.value.rewards))
       } else if (canEditCompensationDetails.value) {
-        payload.contracts = structuredClone(toRaw(form.contracts))
-        payload.trainings = structuredClone(toRaw(form.trainings))
-        payload.rewards = structuredClone(toRaw(form.rewards))
+        payload.contracts = structuredClone(toRaw(form.value.contracts))
+        payload.trainings = structuredClone(toRaw(form.value.trainings))
+        payload.rewards = structuredClone(toRaw(form.value.rewards))
       }
       const employeeId = await saveEmployeeProfile(payload)
       if (sourceUserId.value) {
         try {
-          if (!form.tenantId) throw new Error('员工档案缺少租户信息')
+          if (!form.value.tenantId) throw new Error('员工档案缺少租户信息')
           await linkUserToEmployee({
             userId: sourceUserId.value,
             employeeId,
-            tenantId: form.tenantId
+            tenantId: form.value.tenantId
           })
           ElMessage.success('员工档案已保存，并已关联登录账号')
           returnToSource(employeeId, 'success')
@@ -1460,7 +1444,7 @@
   }
 
   watch(selectedPosition, (position) => {
-    if (position) form.jobTitle = position.positionName
+    if (position) form.value.jobTitle = position.positionName
   })
 
   onMounted(() => void initializePage())

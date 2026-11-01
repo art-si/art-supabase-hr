@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="performance-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -10,14 +18,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #ownerEmployeeId>
           <ArtEmployeeSelect
@@ -158,6 +165,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('cycle')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -270,6 +278,7 @@
       if (entity.value === 'goal')
         return [
           ...common,
+          { key: 'goalDefinition', label: '目标定义', type: 'tab' },
           select('reviewId', '员工考核', reviewOptions.value, '请选择员工考核'),
           input('goalName', '目标名称', '使用可识别的业务结果命名'),
           dict('goalType', '目标类型', 'hrPerformanceGoalType'),
@@ -277,6 +286,7 @@
           date('dueDate', '目标截止'),
           number('progressPercent', '当前进度（%）', { min: 0, max: 100, precision: 2 }),
           dict('goalStatus', '目标状态', 'hrPerformanceGoalStatus'),
+          { key: 'goalResult', label: '结果与评价', type: 'tab' },
           textarea('targetDescription', '验收标准', '描述可量化、可验证的目标标准'),
           textarea('actualResult', '实际结果', '记录已完成成果与差距'),
           input('evidenceSource', '证据来源', '如 经营看板 / 客诉记录 / 安全台账'),
@@ -286,11 +296,13 @@
       if (entity.value === 'check_in')
         return [
           ...common,
+          { key: 'checkInContext', label: '沟通记录', type: 'tab' },
           select('reviewId', '员工考核', reviewOptions.value, '请选择执行中的员工考核'),
           { label: '沟通负责人', key: 'facilitatorEmployeeId', type: 'input' },
           date('checkInDate', '沟通日期'),
           number('progressPercent', '整体进度（%）', { min: 0, max: 100, precision: 2 }),
           dict('riskStatus', '进展风险', 'hrPerformanceCheckInRisk'),
+          { key: 'checkInActions', label: '成果与行动', type: 'tab' },
           textarea('achievement', '阶段成果', '记录本阶段已完成的可验证成果'),
           textarea('blocker', '阻碍与支持', '记录影响目标达成的问题及需要的支持'),
           textarea('nextAction', '下一步行动', '明确下一阶段动作、责任与完成标准'),

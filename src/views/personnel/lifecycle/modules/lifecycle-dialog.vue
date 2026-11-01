@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="lifecycle-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -10,14 +18,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -132,6 +139,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('case')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -205,7 +213,7 @@
 
   const caseItems = computed<FormItem[]>(() => [
     ...tenantItem.value,
-    { label: '事项与来源', key: 'caseSection', type: 'divider', span: 24 },
+    { label: '事项与来源', key: 'caseSection', type: 'tab', span: 24 },
     {
       label: '事项编号',
       key: 'caseNo',
@@ -255,7 +263,7 @@
       props: { clearable: true, placeholder: '默认使用当前事项类型的标准任务包' },
       description: '建单时固化为实际任务，后续调整模板不会改写在途事项。'
     },
-    { label: '组织与责任', key: 'ownerSection', type: 'divider', span: 24 },
+    { label: '组织与责任', key: 'ownerSection', type: 'tab', span: 24 },
     hrOrganizationTreeField({
       key: 'organizationId',
       label: '组织',
@@ -287,7 +295,7 @@
 
   const taskItems = computed<FormItem[]>(() => [
     ...tenantItem.value,
-    { label: '任务归属', key: 'taskScopeSection', type: 'divider', span: 24 },
+    { label: '任务归属', key: 'taskScopeSection', type: 'tab', span: 24 },
     {
       label: '生命周期事项',
       key: 'lifecycleCaseId',
@@ -309,7 +317,7 @@
       type: 'date',
       props: { type: 'date', valueFormat: 'YYYY-MM-DD', placeholder: '请选择任务截止日期' }
     },
-    { label: '责任与门禁', key: 'taskControlSection', type: 'divider', span: 24 },
+    { label: '责任与门禁', key: 'taskControlSection', type: 'tab', span: 24 },
     {
       label: '责任泳道',
       key: 'ownerRole',

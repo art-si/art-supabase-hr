@@ -28,8 +28,6 @@
           :span="12"
           :gutter="22"
           label-position="top"
-          :show-reset="false"
-          :show-submit="false"
         />
       </ArtAsyncState>
     </div>
@@ -106,7 +104,6 @@
       })
     }
     items.push(
-      { label: '调查识别', key: 'identity', type: 'divider', span: 24 },
       {
         label: '调查编码',
         key: 'surveyCode',
@@ -136,7 +133,6 @@
         type: 'select',
         options: dictOptions('hrExperienceCadence')
       },
-      { label: '覆盖与匿名保护', key: 'audience', type: 'divider', span: 24 },
       {
         label: '覆盖方式',
         key: 'audienceType',
@@ -164,7 +160,6 @@
         props: { min: 5, max: 50, controlsPosition: 'right', class: '!w-full' },
         help: '任何主题或组织样本低于此人数时均不返回结果'
       },
-      { label: '开放周期', key: 'period', type: 'divider', span: 24 },
       {
         label: '开始日期',
         key: 'startDate',

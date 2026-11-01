@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="attendance-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -10,14 +18,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -110,6 +117,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<FormExpose>()
   const entity = ref<Entity>('record')
   const tenantOptions = ref<FormItemOption[]>([])
@@ -179,7 +187,7 @@
 
   const shiftItems = computed<FormItem[]>(() => [
     ...tenantItem.value,
-    { label: '班次识别', key: 'shiftIdentity', type: 'divider', span: 24 },
+    { label: '班次识别', key: 'shiftIdentity', type: 'tab', span: 24 },
     { label: '班次编码', key: 'shiftCode', type: 'input', props: { maxlength: 40 } },
     { label: '班次名称', key: 'shiftName', type: 'input', props: { maxlength: 80 } },
     {
@@ -189,7 +197,7 @@
       options: getDictMap.value.hrShiftType ?? []
     },
     { label: '启用班次', key: 'enabled', type: 'switch' },
-    { label: '工时与异常规则', key: 'shiftRule', type: 'divider', span: 24 },
+    { label: '工时与异常规则', key: 'shiftRule', type: 'tab', span: 24 },
     {
       label: '上班时间',
       key: 'startTime',

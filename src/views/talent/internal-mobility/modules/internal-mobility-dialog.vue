@@ -39,14 +39,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #hiringManagerEmployeeId>
           <ArtEmployeeSelect
@@ -148,6 +147,7 @@
   interface ArtFormExpose {
     validate: () => Promise<boolean | void>
     clearValidate: () => void
+    focusField: (prop: string) => Promise<void>
   }
 
   const emit = defineEmits<{ success: [entity: Entity, type: DialogType] }>()
@@ -229,7 +229,7 @@
 
   const opportunityItems = computed<FormItem[]>(() => [
     ...tenantItems.value,
-    { label: '机会定义', key: 'opportunityDefinition', type: 'divider', span: 24 },
+    { label: '机会定义', key: 'opportunityDefinition', type: 'tab', span: 24 },
     { label: '机会编码', key: 'opportunityCode', type: 'input', props: { maxlength: 40 } },
     { label: '机会名称', key: 'opportunityTitle', type: 'input', props: { maxlength: 160 } },
     {
@@ -273,7 +273,7 @@
       type: 'number',
       props: { min: 1, max: 999, precision: 0, class: '!w-full' }
     },
-    { label: '工作安排', key: 'workArrangement', type: 'divider', span: 24 },
+    { label: '工作安排', key: 'workArrangement', type: 'tab', span: 24 },
     {
       label: '工作方式',
       key: 'workMode',
@@ -300,7 +300,7 @@
       type: 'number',
       props: { min: 0, max: 600, precision: 0, class: '!w-full' }
     },
-    { label: '角色与准入', key: 'roleAndEligibility', type: 'divider', span: 24 },
+    { label: '角色与准入', key: 'roleAndEligibility', type: 'tab', span: 24 },
     {
       label: '角色说明',
       key: 'roleSummary',
@@ -461,13 +461,16 @@
     references.opportunities = opportunities?.data ?? []
   }
 
-  const validateDates = (): boolean => {
+  const activeTab = ref('opportunityDefinition')
+  const validateDates = async (): Promise<boolean> => {
     if (entity.value !== 'opportunity') return true
     if (dayjs(formModel.applicationCloseDate).isBefore(formModel.applicationOpenDate, 'day')) {
+      await formRef.value?.focusField('applicationCloseDate')
       ElMessage.warning('申请截止日不能早于开放日')
       return false
     }
     if (dayjs(formModel.expectedStartDate).isBefore(formModel.applicationOpenDate, 'day')) {
+      await formRef.value?.focusField('expectedStartDate')
       ElMessage.warning('预计开始日不能早于申请开放日')
       return false
     }
@@ -475,6 +478,7 @@
       formModel.expectedEndDate &&
       dayjs(formModel.expectedEndDate).isBefore(formModel.expectedStartDate, 'day')
     ) {
+      await formRef.value?.focusField('expectedEndDate')
       ElMessage.warning('预计结束日不能早于开始日')
       return false
     }
@@ -484,7 +488,7 @@
   const submit = async (): Promise<boolean> => {
     try {
       if (!(await validateArtFormForSubmit(formRef.value))) return false
-      if (!validateDates()) return false
+      if (!(await validateDates())) return false
       if (entity.value === 'opportunity') {
         await saveInternalMobilityOpportunity({
           id: formModel.id,
@@ -532,6 +536,7 @@
   }
 
   const handleOpen = async (payload: OpenPayload): Promise<void> => {
+    activeTab.value = 'opportunityDefinition'
     entity.value = payload.entity
     dialogType.value = payload.type
     manageAccess.value = Boolean(payload.manageAccess)

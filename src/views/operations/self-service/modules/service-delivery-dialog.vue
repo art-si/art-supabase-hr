@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="service-delivery-dialog">
       <ArtEntitySummary
         :icon="context.icon"
@@ -9,14 +17,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id) || parentTenantLocked)"
         :rules="form.rules"
         :span="12"
         :gutter="24"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #employeeId>
           <ArtEmployeeSelect
@@ -98,6 +105,7 @@
   const serviceModeOptions = useDictionaryOptions('hrServiceDeliveryMode')
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('request')
   const managerView = ref(false)
@@ -218,7 +226,12 @@
 
   const catalogItems = computed<FormItem[]>(() => [
     ...tenantItems.value,
-    { label: '服务定义', key: 'serviceIdentity', type: 'divider', span: 24 },
+    {
+      label: '服务定义',
+      key: 'serviceIdentity',
+      type: formModel.serviceMode === 'case' ? 'tab' : 'divider',
+      span: 24
+    },
     { label: '服务编码', key: 'serviceCode', type: 'input', props: { maxlength: 60 } },
     { label: '服务名称', key: 'serviceName', type: 'input', props: { maxlength: 100 } },
     {
@@ -251,6 +264,7 @@
           }
         ]
       : [
+          { key: 'serviceSla', label: '受理与时限', type: 'tab' as const },
           {
             label: '受理组',
             key: 'routingGroup',

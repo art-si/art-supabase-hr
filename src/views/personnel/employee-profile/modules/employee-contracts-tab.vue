@@ -23,8 +23,6 @@
       >
         <ArtForm
           custom-layout
-          :show-reset="false"
-          :show-submit="false"
           label-position="top"
           form-class="hr-profile-page__record-form"
           :disabled="isReadonly"
@@ -109,8 +107,6 @@
         </ArtForm>
         <ArtForm
           custom-layout
-          :show-reset="false"
-          :show-submit="false"
           v-if="canViewCompensationDetails"
           label-position="top"
           form-class="hr-profile-page__compensation-form"

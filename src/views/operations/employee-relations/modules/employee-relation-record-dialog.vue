@@ -1,5 +1,13 @@
 <template>
-  <ArtDialog ref="dialogRef" size="lg">
+  <ArtDialog
+    ref="dialogRef"
+    @open="
+      () => {
+        activeTab = ''
+      }
+    "
+    size="lg"
+  >
     <div class="employee-relation-record-dialog">
       <ArtEntitySummary
         :icon="contextMeta.icon"
@@ -16,14 +24,13 @@
 
       <ArtForm
         ref="formRef"
+        v-model:active-tab="activeTab"
         v-model="form.model"
         :items="hrTenantScopedFormItems(form.items, Boolean(form.model.id))"
         :rules="form.rules"
         :span="12"
         :gutter="22"
         label-position="top"
-        :show-reset="false"
-        :show-submit="false"
       >
         <template #subjectEmployeeId>
           <ArtEmployeeSelect
@@ -120,6 +127,7 @@
   const userStore = useUserStore()
   const { getDictMap, getUserInfo, isPlatformSuper } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('case')
   const dialogType = ref<DialogType>('add')
@@ -166,7 +174,7 @@
       })
     }
     items.push(
-      { label: '案件识别', key: 'identity', type: 'divider', span: 24 },
+      { label: '案件识别', key: 'identity', type: 'tab', span: 24 },
       {
         label: '案件编号',
         key: 'caseNo',
@@ -206,7 +214,7 @@
         type: 'select',
         options: dictOptions('hrEmployeeRelationSource')
       },
-      { label: '风险与保密', key: 'risk', type: 'divider', span: 24 },
+      { label: '风险与保密', key: 'risk', type: 'tab', span: 24 },
       {
         label: '严重程度',
         key: 'severity',
