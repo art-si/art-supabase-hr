@@ -387,7 +387,10 @@
         return (
           <BusinessTableIdentityCell
             primary={item.title}
-            secondary={item.service?.name ?? item.requestType}
+            secondary={
+              item.service?.name ??
+              userStore.getDictLabelByValue('hrServiceCategory', item.requestType, '未识别服务类别')
+            }
           />
         )
       }
@@ -464,7 +467,7 @@
         return (
           <BusinessTableIdentityCell
             primary={item.serviceName}
-            secondary={`${item.serviceCode} · ${userStore.getDictLabelByValue('hrServiceCategory', item.category, item.category ?? '--')}`}
+            secondary={`${item.serviceCode} · ${userStore.getDictLabelByValue('hrServiceCategory', item.category, '未识别服务类别')}`}
           />
         )
       }

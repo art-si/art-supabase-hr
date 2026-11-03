@@ -439,7 +439,7 @@
   })
   const lifeEventText = computed(() =>
     enrollmentRecord.value.lifeEvent
-      ? `${userStore.getDictLabelByValue('hrBenefitLifeEventType', enrollmentRecord.value.lifeEvent.eventType, enrollmentRecord.value.lifeEvent.eventType ?? '--')} · ${formatDate(enrollmentRecord.value.lifeEvent.eventDate)}`
+      ? `${userStore.getDictLabelByValue('hrBenefitLifeEventType', enrollmentRecord.value.lifeEvent.eventType, '未识别事件类型')} · ${formatDate(enrollmentRecord.value.lifeEvent.eventDate)}`
       : '未关联人生事件'
   )
   const contributionText = (option: Api.Hr.BenefitOption): string => {

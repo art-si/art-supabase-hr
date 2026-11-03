@@ -1,6 +1,7 @@
 import { buildSupabaseRpcRange } from '@/utils/supabase'
 import { normalizeNullableText } from '@/utils/form/normalize'
 import { useSupabase } from '@/hooks/core/useSupabase'
+import type { ApiFeedbackOptions } from '@/types/api/request'
 import TreeUtils from '@/utils/tree'
 
 type Employee = Api.Hr.Employee
@@ -99,13 +100,16 @@ export async function fetchEmployeeOrganizationTree(params: { tenantId?: string 
   }
 }
 
-export async function fetchOrganizationPositionDirectory(organizationId?: string) {
+export async function fetchOrganizationPositionDirectory(
+  organizationId?: string,
+  options: ApiFeedbackOptions = {}
+): Promise<{ data: Api.Hr.OrganizationPositionDirectory; error: unknown | null }> {
   const response = await responseHandle<OrganizationPositionDirectoryPayload>(
     () =>
       supabase.rpc('hr_get_organization_position_directory_secure', {
         p_organization_id: organizationId || null
       }),
-    { showErrorMessage: true }
+    { showErrorMessage: options.showErrorMessage ?? true }
   )
   const positions = (response.data?.positions ?? [])
     .filter((position) => Boolean(position.id))
@@ -120,7 +124,7 @@ export async function fetchOrganizationPositionDirectory(organizationId?: string
       employees: response.data?.employees ?? [],
       employeeTotal: response.data?.employeeTotal ?? 0,
       truncated: Boolean(response.data?.truncated)
-    } satisfies Api.Hr.OrganizationPositionDirectory,
+    },
     error: response.error
   }
 }

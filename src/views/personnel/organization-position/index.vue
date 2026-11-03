@@ -65,6 +65,7 @@
               <ElTree
                 ref="organizationTreeRef"
                 :data="organizationState.tree"
+                :current-node-key="organizationState.selectedId || undefined"
                 :props="organizationTreeProps"
                 :filter-node-method="matchesOrganizationNodeKeyword"
                 node-key="id"
@@ -237,7 +238,8 @@
   } from '@/utils/organization-display'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import ArtEmptyState from '@/components/core/feedback/art-empty-state/index.vue'
-  import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+  import { computed, onActivated, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
+  import { useRoute } from 'vue-router'
   import type { ElTree } from 'element-plus'
   import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import ArtIconButton from '@/components/core/widget/art-icon-button/index.vue'
@@ -251,6 +253,8 @@
   } from '@/components/business/business-workspace-header/index.vue'
   import { fetchOrganizationOptionsTree } from '@/api/system-manage'
   import { useUserStore } from '@/store/modules/user'
+  import { useTenantScopeStore } from '@/store/modules/tenant-scope'
+  import { useTenantOperationGuard } from '@/hooks/core/useTenantOperationGuard'
   import TreeUtils from '@/utils/tree'
   import { getFriendlySupabaseErrorMessage } from '@/utils/supabase/error'
   import { fetchOrganizationPositionDirectory } from '@hr/api'
@@ -282,6 +286,13 @@
   }
 
   const userStore = useUserStore()
+  const route = useRoute()
+  const pageRoutePath = route.path
+  const tenantScopeStore = useTenantScopeStore()
+  const captureOperation = useTenantOperationGuard('Hr:OrganizationPosition:View')
+  let organizationRequestVersion = 0
+  let directoryRequestVersion = 0
+  let inactive = false
   const organizationTreeRef = ref<InstanceType<typeof ElTree>>()
   const organizationTreeProps = { children: 'children', label: 'organizationName' }
   const organizationTreeUtils = new TreeUtils({
@@ -386,12 +397,40 @@
     }
   ])
 
+  const clearDirectory = (): void => {
+    Object.assign(directoryState, {
+      positions: [],
+      employees: [],
+      employeeTotal: 0,
+      truncated: false,
+      selectedPositionId: '',
+      loading: false,
+      error: null
+    })
+  }
+
   const loadDirectory = async (): Promise<void> => {
-    if (!organizationState.selectedId) return
+    const requestVersion = ++directoryRequestVersion
+    const organizationId = organizationState.selectedId
+    const isCurrentOperation = captureOperation()
+    if (inactive || !isCurrentOperation()) return
+    if (!organizationId) {
+      clearDirectory()
+      return
+    }
+    const isCurrentRequest = (): boolean =>
+      !inactive &&
+      requestVersion === directoryRequestVersion &&
+      organizationId === organizationState.selectedId &&
+      isCurrentOperation()
     directoryState.loading = true
     directoryState.error = null
     try {
-      const response = await fetchOrganizationPositionDirectory(organizationState.selectedId)
+      const response = await fetchOrganizationPositionDirectory(organizationId, {
+        showErrorMessage: false
+      })
+      if (!isCurrentRequest()) return
+      if (response.error) throw response.error
       Object.assign(directoryState, {
         positions: response.data.positions,
         employees: response.data.employees,
@@ -403,43 +442,52 @@
         directoryState.selectedPositionId = positions[0]?.id ?? ''
       }
     } catch (error) {
-      Object.assign(directoryState, {
-        positions: [],
-        employees: [],
-        employeeTotal: 0,
-        truncated: false,
-        selectedPositionId: '',
-        error: getFriendlySupabaseErrorMessage(error, '组织岗位人员关系加载失败，请稍后重试')
-      })
+      if (!isCurrentRequest()) return
+      clearDirectory()
+      directoryState.error = getFriendlySupabaseErrorMessage(
+        error,
+        '组织岗位人员关系加载失败，请稍后重试'
+      )
     } finally {
-      directoryState.loading = false
+      if (isCurrentRequest()) directoryState.loading = false
     }
   }
 
   const loadOrganizations = async (): Promise<void> => {
+    const requestVersion = ++organizationRequestVersion
+    const isCurrentOperation = captureOperation()
+    if (inactive || !isCurrentOperation()) return
+    const isCurrentRequest = (): boolean =>
+      !inactive && requestVersion === organizationRequestVersion && isCurrentOperation()
+    directoryRequestVersion++
+    directoryState.loading = true
+    directoryState.error = null
     organizationState.loading = true
     organizationState.error = null
     try {
-      const response = await fetchOrganizationOptionsTree({
-        status: '1'
-      })
+      const response = await fetchOrganizationOptionsTree(
+        { status: '1' },
+        { showErrorMessage: false }
+      )
+      if (!isCurrentRequest()) return
+      if (response.error) throw response.error
       organizationState.tree = response.data ?? []
       const organizations = organizationTreeUtils.treeToList(organizationState.tree)
       if (!organizations.some((organization) => organization.id === organizationState.selectedId)) {
         organizationState.selectedId = organizations[0]?.id ?? ''
       }
-      await nextTick()
-      organizationTreeRef.value?.setCurrentKey(organizationState.selectedId || undefined)
       await loadDirectory()
     } catch (error) {
+      if (!isCurrentRequest()) return
       organizationState.tree = []
       organizationState.selectedId = ''
+      clearDirectory()
       organizationState.error = getFriendlySupabaseErrorMessage(
         error,
         '组织结构加载失败，请稍后重试'
       )
     } finally {
-      organizationState.loading = false
+      if (isCurrentRequest()) organizationState.loading = false
     }
   }
 
@@ -454,12 +502,51 @@
   }
 
   watch(
-    () => organizationState.keyword,
-    (keyword) => organizationTreeRef.value?.filter(keyword)
+    [() => organizationState.keyword, () => organizationTreeRef.value],
+    ([keyword, tree]) => tree?.filter(keyword),
+    { flush: 'post' }
   )
+  watch(
+    [
+      () => tenantScopeStore.effectiveTenantId,
+      () => tenantScopeStore.revision,
+      () => userStore.getUserInfo.userId,
+      () => route.fullPath
+    ],
+    ([tenantId, revision, userId], [previousTenantId, previousRevision, previousUserId]) => {
+      organizationRequestVersion++
+      directoryRequestVersion++
+      organizationState.loading = false
+      directoryState.loading = false
+      organizationState.error = null
+      if (
+        tenantId !== previousTenantId ||
+        revision !== previousRevision ||
+        userId !== previousUserId
+      ) {
+        organizationState.tree = []
+        organizationState.selectedId = ''
+        clearDirectory()
+      }
+      if (!inactive && route.path === pageRoutePath) void loadOrganizations()
+    }
+  )
+  onDeactivated(() => {
+    inactive = true
+    organizationRequestVersion++
+    directoryRequestVersion++
+    organizationState.loading = false
+    directoryState.loading = false
+  })
+  onActivated(() => {
+    if (!inactive) return
+    inactive = false
+    void loadOrganizations()
+  })
   onMounted(async () => {
+    const isCurrentOperation = captureOperation()
     await userStore.ensureDictLoaded('hrEmploymentStatus')
-    await loadOrganizations()
+    if (!inactive && isCurrentOperation()) await loadOrganizations()
   })
 </script>
 
@@ -688,6 +775,12 @@
       &__position-card,
       &__employee-card {
         flex: 0 0 360px;
+      }
+
+      &__position-card.has-replacement-state,
+      &__employee-card.has-replacement-state {
+        flex-basis: auto;
+        min-height: 360px;
       }
     }
   }

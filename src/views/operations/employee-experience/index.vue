@@ -613,7 +613,7 @@
         return (
           <BusinessTableIdentityCell
             primary={item.surveyName}
-            secondary={`${item.surveyCode} · ${userStore.getDictLabelByValue('hrExperienceDimension', item.dimension, item.dimension ?? '--')}`}
+            secondary={`${item.surveyCode} · ${userStore.getDictLabelByValue('hrExperienceDimension', item.dimension, '未识别主题')}`}
           />
         )
       }

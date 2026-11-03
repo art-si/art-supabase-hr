@@ -167,7 +167,7 @@
     benefitOptions.value
       .filter((item) => item.planId === formModel.planId)
       .map((item) => ({
-        label: `${item.optionName} · ${userStore.getDictLabelByValue('hrBenefitCoverageLevel', item.coverageLevel, item.coverageLevel ?? '--')}`,
+        label: `${item.optionName} · ${userStore.getDictLabelByValue('hrBenefitCoverageLevel', item.coverageLevel, '未识别保障等级')}`,
         value: item.id!
       }))
   )
@@ -175,7 +175,7 @@
     lifeEvents.value
       .filter((item) => item.employeeId === formModel.employeeId)
       .map((item) => ({
-        label: `${userStore.getDictLabelByValue('hrBenefitLifeEventType', item.eventType, item.eventType ?? '--')} · ${item.eventDate}`,
+        label: `${userStore.getDictLabelByValue('hrBenefitLifeEventType', item.eventType, '未识别事件类型')} · ${item.eventDate}`,
         value: item.id!
       }))
   )

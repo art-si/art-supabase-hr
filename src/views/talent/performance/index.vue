@@ -433,7 +433,7 @@
             : 'info'
   const statusTag = (dictionary: string, value?: string | null) => (
     <ElTag type={statusTone(value)} effect="light" round>
-      {userStore.getDictLabelByValue(dictionary, value, value ?? '--')}
+      {userStore.getDictLabelByValue(dictionary, value, value ? '未识别状态' : '--')}
     </ElTag>
   )
 
@@ -586,7 +586,7 @@
             secondary={userStore.getDictLabelByValue(
               'hrPerformanceCheckInRisk',
               item.latestRiskStatus,
-              item.latestRiskStatus ?? '--'
+              '待核对'
             )}
           />
         ) : (
@@ -626,7 +626,7 @@
         return (
           <BusinessTableIdentityCell
             primary={item.goalName}
-            secondary={`${userStore.getDictLabelByValue('hrPerformanceGoalType', item.goalType, item.goalType ?? '--')} · ${item.employee?.name ?? '--'}`}
+            secondary={`${userStore.getDictLabelByValue('hrPerformanceGoalType', item.goalType, '未识别目标类型')} · ${item.employee?.name ?? '--'}`}
           />
         )
       }

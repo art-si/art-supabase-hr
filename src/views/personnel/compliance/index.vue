@@ -415,7 +415,11 @@
   const riskCell = (risk?: Api.Hr.ComplianceRiskStatus, days?: number | null) => (
     <div class="compliance-page__risk-cell">
       <ElTag type={riskTone(risk)} effect="light" round>
-        {userStore.getDictLabelByValue('hrComplianceRiskStatus', risk, risk ?? '--')}
+        {userStore.getDictLabelByValue(
+          'hrComplianceRiskStatus',
+          risk,
+          risk ? '未识别风险状态' : '--'
+        )}
       </ElTag>
       <small>{daysText(days)}</small>
     </div>

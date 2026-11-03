@@ -474,11 +474,7 @@
         const item = row as Api.Hr.TimeAttendanceDailyRecord
         return (
           <BusinessTableIdentityCell
-            primary={userStore.getDictLabelByValue(
-              'hrAttendanceSource',
-              item.source,
-              item.source ?? '--'
-            )}
+            primary={userStore.getDictLabelByValue('hrAttendanceSource', item.source, '待核对')}
             secondary={
               item.lockedAt ? '已封账锁定' : item.pendingCorrection ? '修正审核中' : '可处理'
             }
@@ -652,7 +648,7 @@
         return (
           <BusinessTableIdentityCell
             primary={item.shiftName}
-            secondary={`${item.shiftCode} · ${userStore.getDictLabelByValue('hrShiftType', item.shiftType, item.shiftType ?? '--')}`}
+            secondary={`${item.shiftCode} · ${userStore.getDictLabelByValue('hrShiftType', item.shiftType, '未识别班次类型')}`}
           />
         )
       }

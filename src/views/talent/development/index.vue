@@ -345,7 +345,7 @@
 
   const statusTag = (dictionary: string, status?: string | null) => (
     <ElTag type={statusType(status)} effect="light" round>
-      {userStore.getDictLabelByValue(dictionary, status, status ?? '--')}
+      {userStore.getDictLabelByValue(dictionary, status, status ? '未识别状态' : '--')}
     </ElTag>
   )
 
@@ -403,7 +403,7 @@
         return (
           <BusinessTableIdentityCell
             primary={plan.planName}
-            secondary={`${plan.planCode} · ${userStore.getDictLabelByValue('hrTrainingType', plan.trainingType, plan.trainingType ?? '--')}`}
+            secondary={`${plan.planCode} · ${userStore.getDictLabelByValue('hrTrainingType', plan.trainingType, '未识别培训类型')}`}
           />
         )
       }
@@ -473,7 +473,7 @@
         return (
           <BusinessTableIdentityCell
             primary={course.courseName}
-            secondary={`${course.courseCode} · ${userStore.getDictLabelByValue('hrLearningCourseCategory', course.category, course.category ?? '--')}`}
+            secondary={`${course.courseCode} · ${userStore.getDictLabelByValue('hrLearningCourseCategory', course.category, '未识别课程类别')}`}
           />
         )
       }
@@ -486,7 +486,7 @@
         userStore.getDictLabelByValue(
           'hrLearningDeliveryMode',
           (row as Api.Hr.LearningCourse).deliveryMode,
-          (row as Api.Hr.LearningCourse).deliveryMode ?? '--'
+          '待核对'
         )
     },
     {
@@ -568,7 +568,7 @@
           {userStore.getDictLabelByValue(
             'commonCompetencyLevel',
             (row as Api.Hr.LearningCourseCompetency).targetLevel,
-            (row as Api.Hr.LearningCourseCompetency).targetLevel ?? '--'
+            '待核对'
           )}
         </ElTag>
       )

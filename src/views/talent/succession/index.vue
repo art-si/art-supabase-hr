@@ -465,7 +465,7 @@
               {userStore.getDictLabelByValue(
                 'hrSuccessionCriticality',
                 (row as Api.Hr.SuccessionPlan).criticality,
-                (row as Api.Hr.SuccessionPlan).criticality ?? '--'
+                '待核对'
               )}
             </ElTag>
           )
@@ -480,7 +480,7 @@
                 {userStore.getDictLabelByValue(
                   'commonRiskLevel',
                   (row as Api.Hr.SuccessionPlan).vacancyRisk,
-                  (row as Api.Hr.SuccessionPlan).vacancyRisk ?? '--'
+                  '待核对'
                 )}
               </ElTag>
               <span>
@@ -488,7 +488,7 @@
                 {userStore.getDictLabelByValue(
                   'hrSuccessionCriticality',
                   (row as Api.Hr.SuccessionPlan).businessImpact,
-                  (row as Api.Hr.SuccessionPlan).businessImpact ?? '--'
+                  '待核对'
                 )}
               </span>
             </div>
@@ -547,7 +547,7 @@
               {userStore.getDictLabelByValue(
                 'hrSuccessionPlanStatus',
                 (row as Api.Hr.SuccessionPlan).status,
-                (row as Api.Hr.SuccessionPlan).status ?? '--'
+                '待核对'
               )}
             </ElTag>
           )
@@ -595,7 +595,7 @@
               {userStore.getDictLabelByValue(
                 'hrSuccessionReadiness',
                 (row as Api.Hr.SuccessionCandidate).readiness,
-                (row as Api.Hr.SuccessionCandidate).readiness ?? '--'
+                '待核对'
               )}
             </ElTag>
           )
@@ -608,7 +608,7 @@
             userStore.getDictLabelByValue(
               'hrSuccessionPotential',
               (row as Api.Hr.SuccessionCandidate).potentialLevel,
-              (row as Api.Hr.SuccessionCandidate).potentialLevel ?? '--'
+              '待核对'
             )
         },
         {
@@ -623,7 +623,7 @@
               {userStore.getDictLabelByValue(
                 'commonRiskLevel',
                 (row as Api.Hr.SuccessionCandidate).retentionRisk,
-                (row as Api.Hr.SuccessionCandidate).retentionRisk ?? '--'
+                '待核对'
               )}
             </ElTag>
           )
@@ -650,7 +650,7 @@
               {userStore.getDictLabelByValue(
                 'hrSuccessionCandidateStatus',
                 (row as Api.Hr.SuccessionCandidate).status,
-                (row as Api.Hr.SuccessionCandidate).status ?? '--'
+                '待核对'
               )}
             </ElTag>
           )
@@ -732,7 +732,7 @@
             {userStore.getDictLabelByValue(
               'hrSuccessionActionStatus',
               (row as Api.Hr.SuccessionDevelopmentAction).status,
-              (row as Api.Hr.SuccessionDevelopmentAction).status ?? '--'
+              '待核对'
             )}
           </ElTag>
         )

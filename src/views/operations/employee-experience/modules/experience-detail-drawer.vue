@@ -538,7 +538,7 @@
       return {
         eyebrow: `${insightDetail.value.surveyCode} · AGGREGATE INSIGHT`,
         title: insightDetail.value.surveyName,
-        description: `${userStore.getDictLabelByValue('hrExperienceDimension', insightDetail.value.dimension, insightDetail.value.dimension ?? '--')}主题的阈值安全聚合洞察`,
+        description: `${userStore.getDictLabelByValue('hrExperienceDimension', insightDetail.value.dimension, '未识别主题')}主题的阈值安全聚合洞察`,
         status: `${insightDetail.value.respondentCount} 人安全样本`,
         tone: 'success',
         icon: 'ri:radar-line'
@@ -548,7 +548,7 @@
       return {
         eyebrow: actionDetail.value.survey?.surveyName || 'EMPLOYEE EXPERIENCE ACTION',
         title: actionDetail.value.title,
-        description: `${userStore.getDictLabelByValue('hrExperienceDimension', actionDetail.value.dimension, actionDetail.value.dimension ?? '--')} · ${actionDetail.value.organization?.organizationName || '全组织行动'}`,
+        description: `${userStore.getDictLabelByValue('hrExperienceDimension', actionDetail.value.dimension, '未识别主题')} · ${actionDetail.value.organization?.organizationName || '全组织行动'}`,
         status: userStore.getDictLabelByValue(
           'commonActionProgressStatus',
           actionDetail.value.status,

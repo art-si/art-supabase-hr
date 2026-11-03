@@ -631,7 +631,7 @@
             secondary={userStore.getDictLabelByValue(
               'hrEmploymentType',
               item.employmentType,
-              item.employmentType ?? '--'
+              '待核对'
             )}
           />
         )
@@ -756,7 +756,7 @@
             primary={`${item.interviewCount ?? 0} 次面试`}
             secondary={
               item.latestOfferStatus
-                ? `Offer：${userStore.getDictLabelByValue('hrOfferStatus', item.latestOfferStatus, item.latestOfferStatus ?? '--')}`
+                ? `Offer：${userStore.getDictLabelByValue('hrOfferStatus', item.latestOfferStatus, '未识别状态')}`
                 : '尚未创建 Offer'
             }
           />
@@ -805,7 +805,7 @@
             secondary={userStore.getDictLabelByValue(
               'hrInterviewType',
               item.interviewType,
-              item.interviewType ?? '--'
+              '待核对'
             )}
           />
         )
@@ -851,7 +851,7 @@
             secondary={userStore.getDictLabelByValue(
               'hrInterviewRecommendation',
               item.recommendation,
-              item.recommendation ?? '--'
+              '待核对'
             )}
           />
         ) : (
@@ -1030,7 +1030,7 @@
             secondary={userStore.getDictLabelByValue(
               'hrOnboardingTaskCategory',
               item.taskCategory,
-              item.taskCategory ?? '--'
+              '待核对'
             )}
           />
         )
