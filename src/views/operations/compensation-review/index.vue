@@ -39,6 +39,8 @@
               v-model="selectedCycleId"
               filterable
               clearable
+              :loading="cycleOptionsLoading"
+              :disabled="cycleOptionsError"
               placeholder="选择调薪周期"
               @change="handleCycleChange"
             >
@@ -47,8 +49,18 @@
                 :key="option.id"
                 :label="`${option.name} · ${statusLabel(option.status)}`"
                 :value="option.id"
+                :disabled="cycleOptionsLoading"
               />
+              <template #empty>
+                <ArtPickerEmpty :loading="cycleOptionsLoading" title="暂无可选调薪周期" />
+              </template>
+              <template #loading><ArtPickerEmpty loading /></template>
             </ElSelect>
+            <span v-if="cycleOptionsError" class="review-page__cycle-status" role="alert">
+              调薪周期加载失败。<ElButton link type="primary" @click="loadCycleOptions"
+                >重新加载</ElButton
+              >
+            </span>
             <ElTag
               v-if="selectedCycle"
               :type="cycleStatusTone(selectedCycle.status)"
@@ -230,6 +242,7 @@
   import BusinessTableRowActions from '@/components/business/business-table-row-actions/index.vue'
   import type { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtPickerEmpty from '@/components/core/feedback/art-picker-empty/index.vue'
   import BusinessWorkspaceHeader, {
     type BusinessWorkspaceMetric,
     type BusinessWorkspaceTag
@@ -316,6 +329,9 @@
   const tableQueryRef = ref<ArtTableQueryExpose>()
   const dialogRef = ref<DialogExpose>()
   const cycleOptions = ref<Api.Hr.CompensationReviewReference[]>([])
+  const cycleOptionsLoading = ref(false)
+  const cycleOptionsError = ref(false)
+  let cycleOptionsRequest = 0
   const selectedCycleId = ref('')
   const tableTotal = ref(0)
   const tableAmountAccess = ref(false)
@@ -1034,8 +1050,22 @@
   }
 
   const loadCycleOptions = async (): Promise<void> => {
-    const response = await fetchCompensationReviewOptions('cycle', tableState.searchQuery.tenantId)
-    cycleOptions.value = response.data ?? []
+    const request = ++cycleOptionsRequest
+    cycleOptionsLoading.value = true
+    cycleOptionsError.value = false
+    try {
+      const response = await fetchCompensationReviewOptions(
+        'cycle',
+        tableState.searchQuery.tenantId
+      )
+      if (request !== cycleOptionsRequest) return
+      if (response.error) throw response.error
+      cycleOptions.value = response.data ?? []
+    } catch {
+      if (request === cycleOptionsRequest) cycleOptionsError.value = true
+    } finally {
+      if (request === cycleOptionsRequest) cycleOptionsLoading.value = false
+    }
   }
   const refreshOverview = async (): Promise<void> => {
     const response = await fetchCompensationReviewOverview(
@@ -1282,6 +1312,15 @@
       :deep(.el-select) {
         width: 100%;
       }
+    }
+
+    &__cycle-status {
+      display: flex;
+      grid-column: 2 / -1;
+      gap: var(--art-control-icon-gap-compact, 6px);
+      align-items: center;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
     }
 
     &__lifecycle {
