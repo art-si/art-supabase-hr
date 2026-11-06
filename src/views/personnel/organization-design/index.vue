@@ -610,7 +610,12 @@
   ]
   const scenarioActions = (row: Api.Hr.OrganizationDesignScenario) => {
     const actions: ButtonMoreItem[] = [
-      { key: 'changes', label: '查看变更清单', icon: 'ri:node-tree' }
+      {
+        key: 'changes',
+        label: '查看变更清单',
+        icon: 'ri:node-tree',
+        auth: 'Hr:OrganizationDesign:View'
+      }
     ]
     if (['draft', 'rejected'].includes(row.status))
       actions.unshift({

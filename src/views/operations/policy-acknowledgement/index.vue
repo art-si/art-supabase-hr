@@ -615,7 +615,8 @@
       {
         key: 'receipts',
         label: '查看员工签收',
-        icon: 'ri:group-line'
+        icon: 'ri:group-line',
+        auth: 'Hr:PolicyAcknowledgement:View'
       }
     ]
     if (row.status === 'draft') {
