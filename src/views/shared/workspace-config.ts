@@ -74,7 +74,6 @@ const positionField = (
   key,
   label,
   type: 'select',
-  optionEntity: 'headcount',
   optionLabelKeys: ['positionCode', 'positionName']
 })
 const organizationField = (

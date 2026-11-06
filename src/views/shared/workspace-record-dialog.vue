@@ -48,6 +48,7 @@
   import { hrTenantScopedFormItems } from '@hr/views/shared/hr-tenant-scoped-form-items'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
+  import dayjs from 'dayjs'
   import { cloneDeep, compact, get } from 'lodash-es'
   import type { FormRules } from 'element-plus'
   import ArtDialog from '@/components/core/dialogs/art-dialog/index.vue'
@@ -289,9 +290,15 @@
     currentWorkspace.value = data.workspace
     currentTab.value = data.tab
     isEditing.value = Boolean(data.record?.id)
+    const dateDefaults: Api.Hr.WorkspaceRecord = {}
+    if (!data.record?.id) {
+      const today = dayjs().format('YYYY-MM-DD')
+      if (data.tab.entity === 'headcount') dateDefaults.effectiveFrom = today
+      if (data.tab.entity === 'employeeCompetency') dateDefaults.assessedDate = today
+    }
     Object.assign(
       form.model,
-      cloneDeep({ ...data.tab.defaults, ...data.record, tenantId: recordTenantId })
+      cloneDeep({ ...data.tab.defaults, ...dateDefaults, ...data.record, tenantId: recordTenantId })
     )
     const ruleKeys = data.tab.fields.flatMap((field) =>
       field.documentNumberRuleKey ? [field.documentNumberRuleKey] : []

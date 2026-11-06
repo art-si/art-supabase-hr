@@ -209,14 +209,14 @@
       icon: 'ri:file-list-3-line'
     },
     {
-      label: '待关注',
+      label: '本页待关注',
       value: overview.attention,
       description: '审批中、临期或异常',
       icon: 'ri:alarm-warning-line',
       tone: 'warning'
     },
     {
-      label: '已完成',
+      label: '本页已完成',
       value: overview.completed,
       description: '已生效、完成或通过',
       icon: 'ri:checkbox-circle-line',
