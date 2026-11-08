@@ -24,8 +24,8 @@ importers:
         specifier: ^15.0.0
         version: 15.0.0(vue@3.5.43(typescript@6.0.3))
       art-supabase-pro:
-        specifier: https://gitee.com/art-si/art-supabase-pro/repository/archive/0b0595c6cb51896b98bd79d9ead955ca637ea8a6.tar.gz
-        version: https://gitee.com/art-si/art-supabase-pro/repository/archive/0b0595c6cb51896b98bd79d9ead955ca637ea8a6.tar.gz(@floating-ui/dom@1.8.0)(@nuxt/kit@4.5.2(magic-string@1.4.3)(rolldown@1.2.12)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.12)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))))(@tiptap/extension-list@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/extensions@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4)(@types/sortablejs@1.15.9)(@vue/compiler-sfc@3.5.43)(antlr4ng-cli@1.0.7)(core-js@3.50.0)(debug@4.4.3(supports-color@10.2.2))(esbuild@0.28.2)(pdf-lib@1.17.1)(rolldown@1.2.12)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))
+        specifier: https://gitee.com/art-si/art-supabase-pro/repository/archive/0f1bd209a3b0214d889376411c40dab7536de7c1.tar.gz
+        version: https://gitee.com/art-si/art-supabase-pro/repository/archive/0f1bd209a3b0214d889376411c40dab7536de7c1.tar.gz(@floating-ui/dom@1.8.0)(@nuxt/kit@4.5.2(magic-string@1.4.3)(rolldown@1.2.12)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.12)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))))(@tiptap/extension-list@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/extensions@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4)(@types/sortablejs@1.15.9)(@vue/compiler-sfc@3.5.43)(antlr4ng-cli@1.0.7)(core-js@3.50.0)(debug@4.4.3(supports-color@10.2.2))(esbuild@0.28.2)(pdf-lib@1.17.1)(rolldown@1.2.12)(snappyjs@0.7.0)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))
       dayjs:
         specifier: ^1.11.23
         version: 1.11.23
@@ -1583,6 +1583,9 @@ packages:
   '@types/clone@2.1.4':
     resolution: {integrity: sha512-NKRWaEGaVGVLnGLB2GazvDaZnyweW9FJLLFL5LhywGJB3aqGMT9R/EUoJoSRP4nzofYnZysuDmrEJtJdAqUOtQ==}
 
+  '@types/crypto-js@4.2.2':
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+
   '@types/d3-array@3.2.2':
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
@@ -2010,9 +2013,9 @@ packages:
   array-flatten@3.0.0:
     resolution: {integrity: sha512-zPMVc3ZYlGLNk4mpK1NzP2wg0ml9t7fUgDsayR5Y5rSzxQilzR9FGu/EH2jQOcKSAeAfWeylyW8juy3OkWRvNA==}
 
-  art-supabase-pro@https://gitee.com/art-si/art-supabase-pro/repository/archive/0b0595c6cb51896b98bd79d9ead955ca637ea8a6.tar.gz:
-    resolution: {integrity: sha512-tzFmLISaj+aV/7SWS0RaEdl9eWp0dXYR5CZCsdsfoWAyJvfNc9mvR+uBk+9dFyBjfxp9HkfGpoD4C1xlZaUuMg==, tarball: https://gitee.com/art-si/art-supabase-pro/repository/archive/0b0595c6cb51896b98bd79d9ead955ca637ea8a6.tar.gz}
-    version: 1.0.0
+  art-supabase-pro@https://gitee.com/art-si/art-supabase-pro/repository/archive/0f1bd209a3b0214d889376411c40dab7536de7c1.tar.gz:
+    resolution: {integrity: sha512-2CpYFWBTz2p9q4nxzoEmGhdOrRNeYNMv6hpIviEhY2VloL5GWj1zeOeLh8Zp5sOVVvT/JFlZE7Hdi8lA4L/CMg==, tarball: https://gitee.com/art-si/art-supabase-pro/repository/archive/0f1bd209a3b0214d889376411c40dab7536de7c1.tar.gz}
+    version: 1.0.1
     engines: {node: '>=22.13.0', pnpm: '>=11.28.2'}
 
   ast-kit@2.1.2:
@@ -2512,6 +2515,18 @@ packages:
 
   discontinuous-range@1.0.0:
     resolution: {integrity: sha512-c68LpLbO+7kP/b1Hr1qs8/BJ09F5khZGTxqxZuhzxpmwJKOgRFHJWIb9/KmqnqHhLdO55aOxFH/EGBvUQbL/RQ==}
+
+  dmdb@1.0.52452:
+    resolution: {integrity: sha512-X1NHOxcTEZs2JdkmiK+MWHNlrUf8Q4BWM/yHXEIUKX1tzoVVeDRavCb7oKymrWkHGk9VXUGNg52yKJzTQXvNlA==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      snappy: ^7.2.0
+      snappyjs: ^0.7.0
+    peerDependenciesMeta:
+      snappy:
+        optional: true
+      snappyjs:
+        optional: true
 
   docx-preview@0.4.1:
     resolution: {integrity: sha512-Dv4g+LeE0swHpPvNC0lAT0YsR5Zq5pAxw7d3vHQ8EChBLgIrqqe9VPL5nVt2HBJap8bEZbXUI0TJob7kBeNU9w==}
@@ -3035,6 +3050,10 @@ packages:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
     engines: {node: '>=20.0.0'}
 
+  iconv-lite@0.5.2:
+    resolution: {integrity: sha512-kERHXvpSaB4aU3eANwidg79K8FlrN77m8G9V+0vOR3HYaRifrlwMEpT7ZBJqLSEIHnEgJTHcWK82wwLwwKwtag==}
+    engines: {node: '>=0.10.0'}
+
   iconv-lite@0.6.0:
     resolution: {integrity: sha512-43ZpGYZ9QtuutX5l6WC1DSO8ane9N+Ct5qPLF2OV7vM9abM69gnAbVkh66ibaZd3aOGkoP1ZmringlKhLBkw2Q==}
     engines: {node: '>=0.10.0'}
@@ -3179,6 +3198,9 @@ packages:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
     hasBin: true
+
+  jsonc-parser@3.3.1:
+    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
 
   jsonwebtoken@9.0.3:
     resolution: {integrity: sha512-MT/xP0CrubFRNLNKvxJ2BYfy53Zkm++5bX9dtuPbqAeQpTVe0MQTFhao8+Cp//EmJp244xt6Drw/GVEGCUj40g==}
@@ -6381,6 +6403,8 @@ snapshots:
   '@types/clone@2.1.4':
     optional: true
 
+  '@types/crypto-js@4.2.2': {}
+
   '@types/d3-array@3.2.2': {}
 
   '@types/d3-axis@3.0.6':
@@ -6931,7 +6955,7 @@ snapshots:
 
   array-flatten@3.0.0: {}
 
-  art-supabase-pro@https://gitee.com/art-si/art-supabase-pro/repository/archive/0b0595c6cb51896b98bd79d9ead955ca637ea8a6.tar.gz(@floating-ui/dom@1.8.0)(@nuxt/kit@4.5.2(magic-string@1.4.3)(rolldown@1.2.12)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.12)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))))(@tiptap/extension-list@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/extensions@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4)(@types/sortablejs@1.15.9)(@vue/compiler-sfc@3.5.43)(antlr4ng-cli@1.0.7)(core-js@3.50.0)(debug@4.4.3(supports-color@10.2.2))(esbuild@0.28.2)(pdf-lib@1.17.1)(rolldown@1.2.12)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0)):
+  art-supabase-pro@https://gitee.com/art-si/art-supabase-pro/repository/archive/0f1bd209a3b0214d889376411c40dab7536de7c1.tar.gz(@floating-ui/dom@1.8.0)(@nuxt/kit@4.5.2(magic-string@1.4.3)(rolldown@1.2.12)(unplugin@3.4.0(esbuild@0.28.2)(rolldown@1.2.12)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0))))(@tiptap/extension-list@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/extensions@3.31.4(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4)(@types/sortablejs@1.15.9)(@vue/compiler-sfc@3.5.43)(antlr4ng-cli@1.0.7)(core-js@3.50.0)(debug@4.4.3(supports-color@10.2.2))(esbuild@0.28.2)(pdf-lib@1.17.1)(rolldown@1.2.12)(snappyjs@0.7.0)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)(yaml@2.9.0)):
     dependencies:
       '@cloudbase/js-sdk': 3.10.3
       '@element-plus/icons-vue': 2.3.2(vue@3.5.43(typescript@6.0.3))
@@ -6956,6 +6980,7 @@ snapshots:
       '@tiptap/starter-kit': 3.31.4
       '@tiptap/vue-3': 3.31.4(@floating-ui/dom@1.8.0)(@tiptap/core@3.31.4(@tiptap/pm@3.31.4))(@tiptap/pm@3.31.4)(vue@3.5.43(typescript@6.0.3))
       '@tresjs/core': 5.9.3(three@0.186.1)(vue@3.5.43(typescript@6.0.3))
+      '@types/crypto-js': 4.2.2
       '@vue-flow/background': 1.3.2(@vue-flow/core@1.48.2(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))
       '@vue-flow/controls': 1.1.3(@vue-flow/core@1.48.2(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))
       '@vue-flow/core': 1.48.2(vue@3.5.43(typescript@6.0.3))
@@ -6966,6 +6991,7 @@ snapshots:
       crypto-js: 4.2.0
       dayjs: 1.11.23
       decimal.js-light: 2.5.1
+      dmdb: 1.0.52452(snappyjs@0.7.0)
       docx-preview: 0.4.1
       dompurify: 3.4.16
       echarts: 6.1.0
@@ -6974,6 +7000,7 @@ snapshots:
       file-saver: 2.0.5
       highlight.js: 11.12.0
       html-to-image: 1.11.13
+      jsonc-parser: 3.3.1
       lodash-es: 4.18.1
       mitt: 3.0.1
       monaco-editor: 0.57.0
@@ -7023,6 +7050,8 @@ snapshots:
       - pdf-lib
       - rolldown
       - rollup
+      - snappy
+      - snappyjs
       - supports-color
       - typescript
       - unloader
@@ -7552,6 +7581,12 @@ snapshots:
   dingbat-to-unicode@1.0.2: {}
 
   discontinuous-range@1.0.0: {}
+
+  dmdb@1.0.52452(snappyjs@0.7.0):
+    dependencies:
+      iconv-lite: 0.5.2
+    optionalDependencies:
+      snappyjs: 0.7.0
 
   docx-preview@0.4.1:
     dependencies:
@@ -8143,6 +8178,10 @@ snapshots:
 
   iceberg-js@0.8.1: {}
 
+  iconv-lite@0.5.2:
+    dependencies:
+      safer-buffer: 2.1.2
+
   iconv-lite@0.6.0:
     dependencies:
       safer-buffer: 2.1.2
@@ -8239,6 +8278,8 @@ snapshots:
   json-stringify-pretty-compact@4.0.0: {}
 
   json5@2.2.3: {}
+
+  jsonc-parser@3.3.1: {}
 
   jsonwebtoken@9.0.3:
     dependencies:
