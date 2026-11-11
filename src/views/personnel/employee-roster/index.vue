@@ -2,7 +2,7 @@
   <div class="hr-roster-page business-workspace-page art-full-height">
     <MasterDeleteProcessingNotice
       :table="tableQueryRef"
-      action-hint="请核对关联员工的任职记录，处理完成后返回原页面重新检查。"
+      action-hint="请核对关联的业务单据，处理完成后返回原页面重新检查。档案初始化的当前主任职会在确认删除时一并清理。"
     />
     <BusinessWorkspaceHeader
       class="hr-roster-page__overview"
@@ -511,7 +511,7 @@
     try {
       if (await inspectDeleteReferences(resources)) return
       await confirmAction(
-        `确定删除“${row.employeeName}（${row.employeeNo}）”吗？此操作不可恢复。`,
+        `确定删除“${row.employeeName}（${row.employeeNo}）”吗？系统会一并清理由档案初始化生成且未被业务记录引用的当前主任职；差旅、借款、报销或人事异动等业务记录不会删除。此操作不可恢复。`,
         '删除员工档案',
         {
           confirmButtonText: '确认删除',
