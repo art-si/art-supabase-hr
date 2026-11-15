@@ -1,6 +1,8 @@
 <template>
   <ArtPermissionGuard permission="Hr:Recruitment:View">
-    <div class="recruitment-page business-workspace-page art-full-height">
+    <div
+      class="recruitment-page business-workspace-page art-full-height hr-table-workspace hr-table-workspace--tall"
+    >
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="RECRUITMENT OPERATIONS"
@@ -80,6 +82,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { formatNumberValue } from '@/utils/ui/format'
   import dayjs from 'dayjs'
   import { ElProgress } from 'element-plus'
@@ -1244,11 +1247,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .recruitment-page {
-    @include hr-table-workspace-layout(420px);
-
     &__pipeline {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));

@@ -1,6 +1,8 @@
 <template>
   <ArtPermissionGuard permission="Hr:Experience:View">
-    <div class="employee-experience-page business-workspace-page art-full-height">
+    <div
+      class="employee-experience-page business-workspace-page art-full-height hr-table-workspace"
+    >
       <MasterDeleteProcessingNotice :location-ready="false" />
       <BusinessWorkspaceHeader
         eyebrow="EMPLOYEE LISTENING & ACTION"
@@ -127,6 +129,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { createDateTimeFormatter } from '@/utils/ui/format'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import { ElProgress, ElTag, type TagProps } from 'element-plus'
@@ -1136,11 +1139,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .employee-experience-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control {
       position: relative;
       padding: 17px 18px;

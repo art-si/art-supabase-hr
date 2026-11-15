@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Attendance:View">
-    <div class="attendance-page business-workspace-page art-full-height">
+    <div class="attendance-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="TIME & ATTENDANCE CONTROL"
@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { createDateTimeFormatter } from '@/utils/ui/format'
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
@@ -1057,11 +1058,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .attendance-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control {
       flex: 0 0 auto;
       padding: 18px 20px 0;

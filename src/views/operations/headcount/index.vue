@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Headcount:View">
-    <div class="workforce-page business-workspace-page art-full-height">
+    <div class="workforce-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="WORKFORCE CAPACITY"
@@ -138,6 +138,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { formatSensitiveCurrencyValue } from '@/utils/ui/format'
   import { toNameCodeOption } from '@/utils/form/option'
 
@@ -905,11 +906,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .workforce-page {
-    @include hr-table-workspace-layout(360px);
-
     &__capacity-deck {
       display: grid;
       grid-template-columns: minmax(300px, 0.72fr) minmax(0, 2fr);

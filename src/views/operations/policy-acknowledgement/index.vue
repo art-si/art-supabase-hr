@@ -1,6 +1,8 @@
 <template>
   <ArtPermissionGuard permission="Hr:PolicyAcknowledgement:View">
-    <div class="policy-page business-workspace-page art-full-height">
+    <div
+      class="hr-lifecycle-workspace business-workspace-page art-full-height hr-table-workspace hr-table-workspace--tall"
+    >
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="POLICY DISTRIBUTION & ACKNOWLEDGEMENT"
@@ -13,10 +15,12 @@
         <template #actions><BusinessTableWorkspaceActions :table="tableQueryRef" /></template>
       </BusinessWorkspaceHeader>
 
-      <section class="policy-page__command" aria-labelledby="policy-command-title">
+      <section class="hr-lifecycle-workspace__command" aria-labelledby="policy-command-title">
         <header>
           <div>
-            <span class="policy-page__command-icon"><ArtSvgIcon icon="ri:route-line" /></span>
+            <span class="hr-lifecycle-workspace__command-icon"
+              ><ArtSvgIcon icon="ri:route-line"
+            /></span>
             <span>
               <small>CONTROLLED DISTRIBUTION PATH</small>
               <strong id="policy-command-title">从受控版本到签收证据</strong>
@@ -31,11 +35,13 @@
           </ElTag>
         </header>
 
-        <ElScrollbar class="policy-page__lifecycle-scroll">
-          <ol class="policy-page__lifecycle" aria-label="政策发布与签收治理链路">
+        <ElScrollbar class="hr-lifecycle-workspace__lifecycle-scroll">
+          <ol class="hr-lifecycle-workspace__lifecycle" aria-label="政策发布与签收治理链路">
             <li v-for="(stage, index) in lifecycleStages" :key="stage.label" :class="stage.state">
-              <span class="policy-page__stage-index">0{{ index + 1 }}</span>
-              <span class="policy-page__stage-icon"><ArtSvgIcon :icon="stage.icon" /></span>
+              <span class="hr-lifecycle-workspace__stage-index">0{{ index + 1 }}</span>
+              <span class="hr-lifecycle-workspace__stage-icon"
+                ><ArtSvgIcon :icon="stage.icon"
+              /></span>
               <div>
                 <strong>{{ stage.label }}</strong>
                 <small>{{ stage.description }}</small>
@@ -45,7 +51,7 @@
           </ol>
         </ElScrollbar>
 
-        <div class="policy-page__guardrails">
+        <div class="hr-lifecycle-workspace__guardrails">
           <article class="is-restricted">
             <span><ArtSvgIcon icon="ri:git-commit-line" /></span>
             <div
@@ -85,14 +91,14 @@
         </footer>
       </section>
 
-      <section class="policy-page__workspace" aria-labelledby="policy-workspace-title">
+      <section class="hr-lifecycle-workspace__workspace" aria-labelledby="policy-workspace-title">
         <header>
           <div>
             <small>OPERATING WORKSPACE</small>
             <strong id="policy-workspace-title">{{ activeTab.label }}</strong>
             <span>{{ activeTab.description }}</span>
           </div>
-          <span class="policy-page__result"
+          <span class="hr-lifecycle-workspace__result"
             ><ArtSvgIcon :icon="activeTab.icon" />{{ tableTotal }} 条当前结果</span
           >
         </header>
@@ -103,7 +109,10 @@
           compact
           @change="handleTabChange"
         />
-        <div v-if="activeEntity === 'receipt' && focusedPolicy" class="policy-page__focus">
+        <div
+          v-if="activeEntity === 'receipt' && focusedPolicy"
+          class="hr-lifecycle-workspace__focus"
+        >
           <span><ArtSvgIcon icon="ri:focus-3-line" /></span>
           <div>
             <small>当前政策签收</small>
@@ -141,6 +150,8 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
+  import '../../shared/hr-lifecycle-workspace.scss'
   import { createDateTimeFormatter } from '@/utils/ui/format'
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
@@ -827,319 +838,3 @@
 
   onMounted(() => void refreshOverview())
 </script>
-
-<style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-  @use '../../shared/hr-lifecycle-workspace' as lifecycle;
-
-  .policy-page {
-    @include hr-table-workspace-layout(420px);
-
-    --policy-border: color-mix(in srgb, var(--art-card-border) 84%, transparent);
-
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-
-    &__command,
-    &__workspace {
-      flex: 0 0 auto;
-      min-width: 0;
-      padding: 18px;
-      background: var(--art-bg-color);
-      border: 1px solid var(--policy-border);
-      border-radius: var(--art-surface-radius);
-      box-shadow: 0 8px 28px rgb(37 42 62 / 3%);
-    }
-
-    &__command > header,
-    &__workspace > header {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      justify-content: space-between;
-      min-width: 0;
-    }
-
-    &__command > header > div {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    &__command > header > div > span:last-child,
-    &__workspace > header > div {
-      display: grid;
-      min-width: 0;
-    }
-
-    &__command-icon {
-      @include lifecycle.command-icon;
-    }
-
-    &__command small,
-    &__workspace small {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--theme-color);
-      letter-spacing: 0.12em;
-    }
-
-    &__command strong,
-    &__workspace strong {
-      margin-top: 2px;
-      font-size: 16px;
-      color: var(--el-text-color-primary);
-    }
-
-    &__lifecycle-scroll {
-      min-width: 0;
-      height: auto;
-    }
-
-    &__command em,
-    &__workspace header span {
-      @include lifecycle.supporting-text;
-    }
-
-    &__lifecycle {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(200px, 1fr));
-      gap: 1px;
-      min-width: 1006px;
-      padding: 0;
-      margin: 18px 0 0;
-      list-style: none;
-      background: var(--policy-border);
-      border: 1px solid var(--policy-border);
-      border-radius: var(--art-surface-radius);
-    }
-
-    &__lifecycle li {
-      display: grid;
-      grid-template-columns: auto auto minmax(0, 1fr);
-      gap: 8px;
-      align-items: center;
-      min-width: 175px;
-      padding: 12px;
-      background: var(--art-bg-color);
-
-      &.is-complete {
-        background: color-mix(in srgb, var(--el-color-success) 5%, var(--art-bg-color));
-      }
-
-      &.is-current {
-        background: color-mix(in srgb, var(--theme-color) 7%, var(--art-bg-color));
-      }
-
-      &.is-risk {
-        background: color-mix(in srgb, var(--el-color-danger) 7%, var(--art-bg-color));
-      }
-
-      div {
-        display: grid;
-        min-width: 0;
-      }
-
-      strong {
-        margin: 0;
-        font-size: 12px;
-      }
-
-      small {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: var(--el-text-color-secondary);
-        letter-spacing: 0;
-        white-space: nowrap;
-      }
-
-      b {
-        grid-column: 2 / -1;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--el-text-color-secondary);
-      }
-    }
-
-    &__stage-index {
-      align-self: start;
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--el-text-color-secondary);
-    }
-
-    &__stage-icon {
-      @include lifecycle.stage-icon;
-    }
-
-    &__guardrails {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    &__guardrails article {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      min-width: 0;
-      padding: 12px;
-      background: var(--default-box-color);
-      border: 1px solid var(--policy-border);
-      border-radius: var(--art-surface-radius);
-
-      > span {
-        @include lifecycle.guardrail-icon;
-      }
-
-      div {
-        display: grid;
-        min-width: 0;
-      }
-
-      small {
-        color: var(--el-text-color-secondary);
-        letter-spacing: 0;
-      }
-
-      strong {
-        margin: 1px 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 13px;
-        white-space: nowrap;
-      }
-
-      em {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 10px;
-        white-space: nowrap;
-      }
-
-      &.is-danger > span {
-        color: var(--el-color-danger);
-        background: var(--el-color-danger-light-9);
-      }
-
-      &.is-success > span {
-        color: var(--el-color-success);
-        background: var(--el-color-success-light-9);
-      }
-
-      &.is-restricted > span {
-        color: var(--el-text-color-secondary);
-        background: var(--art-gray-100);
-      }
-    }
-
-    &__command > footer {
-      display: flex;
-      gap: 7px;
-      align-items: flex-start;
-      padding-top: 12px;
-      margin-top: 12px;
-      font-size: 11px;
-      line-height: 1.55;
-      color: var(--el-text-color-secondary);
-      border-top: 1px dashed var(--policy-border);
-
-      svg {
-        flex: 0 0 auto;
-        margin-top: 2px;
-        color: var(--theme-color);
-      }
-    }
-
-    &__workspace {
-      padding-bottom: 14px;
-    }
-
-    &__workspace > header {
-      margin-bottom: 12px;
-    }
-
-    &__result {
-      display: inline-flex;
-      flex: 0 0 auto;
-      gap: 6px;
-      align-items: center;
-      font-size: 11px !important;
-      color: var(--el-text-color-secondary) !important;
-    }
-
-    &__focus {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      margin-top: 12px;
-      background: color-mix(in srgb, var(--theme-color) 5%, var(--default-box-color));
-      border: 1px solid color-mix(in srgb, var(--theme-color) 15%, var(--policy-border));
-      border-radius: var(--art-surface-radius);
-
-      > span {
-        @include lifecycle.focus-icon;
-      }
-
-      div {
-        display: grid;
-        min-width: 0;
-        margin-right: auto;
-      }
-
-      small {
-        letter-spacing: 0;
-      }
-
-      strong {
-        margin: 0;
-        font-size: 12px;
-      }
-
-      em {
-        font-size: 10px;
-      }
-    }
-  }
-
-  @media only screen and (width <= 1200px) {
-    .policy-page__guardrails {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media only screen and (width <= 767px) {
-    .policy-page {
-      &__command,
-      &__workspace {
-        padding: 14px;
-      }
-
-      &__command > header,
-      &__workspace > header {
-        align-items: flex-start;
-      }
-
-      &__command > header {
-        flex-direction: column;
-      }
-
-      &__guardrails {
-        grid-template-columns: 1fr;
-      }
-
-      &__focus {
-        flex-wrap: wrap;
-        align-items: flex-start;
-      }
-
-      &__focus .el-button {
-        width: 100%;
-      }
-    }
-  }
-</style>

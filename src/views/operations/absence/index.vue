@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Absence:View">
-    <div class="absence-page business-workspace-page art-full-height">
+    <div class="absence-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="TIME OFF"
@@ -78,6 +78,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
   import { useRecordDeleteGuard } from '@/hooks/core/useRecordDeleteGuard'
@@ -805,11 +806,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .absence-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control-deck {
       display: grid;
       gap: 12px;

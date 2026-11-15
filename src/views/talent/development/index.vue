@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Talent:View">
-    <div class="learning-page business-workspace-page art-full-height">
+    <div class="learning-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="LEARNING OPERATIONS"
@@ -85,6 +85,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { createDateTimeFormatter, formatSensitiveCurrencyValue } from '@/utils/ui/format'
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
@@ -1188,11 +1189,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .learning-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control-deck {
       display: grid;
       gap: 14px;

@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Succession:View">
-    <div class="succession-page business-workspace-page art-full-height">
+    <div class="succession-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="SUCCESSION & CAREER"
@@ -106,6 +106,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import dayjs from 'dayjs'
   import { ElProgress, ElTag } from 'element-plus'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
@@ -868,11 +869,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .succession-page {
-    @include hr-table-workspace-layout(360px);
-
     &__command-center {
       position: relative;
       padding: 16px 18px 13px;

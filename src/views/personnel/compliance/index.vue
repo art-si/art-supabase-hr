@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Compliance:View">
-    <div class="compliance-page business-workspace-page art-full-height">
+    <div class="compliance-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="WORKFORCE COMPLIANCE CONTROL"
@@ -105,6 +105,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { createDateTimeFormatter } from '@/utils/ui/format'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
@@ -1012,11 +1013,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .compliance-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control {
       position: relative;
       padding: 18px;

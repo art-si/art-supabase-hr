@@ -1,6 +1,8 @@
 <template>
   <ArtPermissionGuard permission="Hr:InternalMobility:View">
-    <div class="mobility-page business-workspace-page art-full-height">
+    <div
+      class="mobility-page business-workspace-page art-full-height hr-table-workspace hr-table-workspace--tall"
+    >
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="INTERNAL TALENT MARKETPLACE"
@@ -152,6 +154,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { createDateTimeFormatter } from '@/utils/ui/format'
 
   import { useDictionaryOptions } from '@/hooks/core/useDictionaryOptions'
@@ -1047,11 +1050,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .mobility-page {
-    @include hr-table-workspace-layout(420px);
-
     --mobility-border: color-mix(in srgb, var(--art-card-border) 84%, transparent);
 
     display: flex;

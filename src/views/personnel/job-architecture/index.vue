@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:JobProfile:View">
-    <div class="job-architecture-page business-workspace-page art-full-height">
+    <div class="job-architecture-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="JOB ARCHITECTURE"
@@ -61,6 +61,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import { ElTag } from 'element-plus'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
@@ -392,11 +393,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .job-architecture-page {
-    @include hr-table-workspace-layout(360px);
-
     &__domain-navigation {
       display: grid;
       gap: 12px;

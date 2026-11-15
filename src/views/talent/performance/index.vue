@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Performance:View">
-    <div class="performance-page business-workspace-page art-full-height">
+    <div class="performance-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="PERFORMANCE MANAGEMENT"
@@ -124,6 +124,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { toNameCodeOption } from '@/utils/form/option'
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
@@ -1251,11 +1252,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .performance-page {
-    @include hr-table-workspace-layout(360px);
-
     &__control-deck {
       display: grid;
       gap: 14px;

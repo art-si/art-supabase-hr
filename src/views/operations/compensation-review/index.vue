@@ -1,6 +1,8 @@
 <template>
   <ArtPermissionGuard permission="Hr:CompensationReview:View">
-    <div class="review-page business-workspace-page art-full-height">
+    <div
+      class="review-page business-workspace-page art-full-height hr-table-workspace hr-table-workspace--tall"
+    >
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="COMPENSATION REVIEW & MERIT GOVERNANCE"
@@ -224,6 +226,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { formatCurrencyCodeValue, formatNumberValue } from '@/utils/ui/format'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
@@ -1209,11 +1212,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .review-page {
-    @include hr-table-workspace-layout(420px);
-
     &__command,
     &__workspace {
       display: grid;

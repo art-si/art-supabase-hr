@@ -1,9 +1,25 @@
-@mixin hr-table-workspace-layout($table-min-height: 360px) {
+.hr-table-workspace.art-full-height {
   height: auto;
   min-height: var(--art-full-height);
 
   > .art-table-query {
-    min-height: $table-min-height;
+    min-height: 360px;
+
+    // Split off the search area before sizing the table on wide scrolling pages.
+    @media (width > 768px) {
+      &:not(.is-focus-mode) {
+        display: grid;
+        grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+
+        &.has-visible-search {
+          grid-template-rows: auto minmax(0, 1fr);
+        }
+      }
+    }
+  }
+
+  &.hr-table-workspace--tall > .art-table-query {
+    min-height: 420px;
   }
 
   &.art-table-focus-path > .art-table-query {

@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:SelfService:View">
-    <div class="service-delivery-page business-workspace-page art-full-height">
+    <div class="service-delivery-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="EMPLOYEE SERVICE DELIVERY"
@@ -86,6 +86,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
   import { useRecordDeleteGuard } from '@/hooks/core/useRecordDeleteGuard'
@@ -880,11 +881,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .service-delivery-page {
-    @include hr-table-workspace-layout(360px);
-
     display: flex;
     flex-direction: column;
     min-width: 0;

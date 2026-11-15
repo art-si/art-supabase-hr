@@ -1,5 +1,5 @@
 <template>
-  <div class="hr-workspace-page business-workspace-page art-full-height">
+  <div class="hr-workspace-page business-workspace-page art-full-height hr-table-workspace">
     <MasterDeleteProcessingNotice :location-ready="locationReady" />
     <BusinessWorkspaceHeader
       class="hr-workspace-page__overview"
@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="tsx">
+  import './hr-table-workspace-layout.scss'
   import { get } from 'lodash-es'
   import type { ColumnOption } from '@/types'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
@@ -454,11 +455,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use './hr-table-workspace-layout' as *;
-
   .hr-workspace-page {
-    @include hr-table-workspace-layout(360px);
-
     &__tabs {
       min-width: 0;
       padding-inline: 8px;

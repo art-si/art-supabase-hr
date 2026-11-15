@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Lifecycle:View">
-    <div class="lifecycle-page business-workspace-page art-full-height">
+    <div class="lifecycle-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="locationReady" />
       <BusinessWorkspaceHeader
         eyebrow="EMPLOYEE JOURNEY OPERATIONS"
@@ -96,6 +96,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { toNameCodeOption } from '@/utils/form/option'
 
   import dayjs from 'dayjs'
@@ -1086,11 +1087,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .lifecycle-page {
-    @include hr-table-workspace-layout(360px);
-
     &__load-error {
       margin-bottom: 16px;
     }

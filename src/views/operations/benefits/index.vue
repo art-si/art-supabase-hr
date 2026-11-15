@@ -1,6 +1,6 @@
 <template>
   <ArtPermissionGuard permission="Hr:Benefits:View">
-    <div class="benefits-page business-workspace-page art-full-height">
+    <div class="benefits-page business-workspace-page art-full-height hr-table-workspace">
       <MasterDeleteProcessingNotice :location-ready="false" />
       <BusinessWorkspaceHeader
         eyebrow="BENEFITS & ENROLLMENT CONTROL"
@@ -114,6 +114,7 @@
 </template>
 
 <script setup lang="tsx">
+  import '../../shared/hr-table-workspace-layout.scss'
   import { formatCurrencyCodeValue } from '@/utils/ui/format'
   import { createDateTimeFormatter } from '@/utils/ui/format'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
@@ -909,11 +910,7 @@
 </script>
 
 <style scoped lang="scss">
-  @use '../../shared/hr-table-workspace-layout' as *;
-
   .benefits-page {
-    @include hr-table-workspace-layout(360px);
-
     display: flex;
     flex-direction: column;
 
