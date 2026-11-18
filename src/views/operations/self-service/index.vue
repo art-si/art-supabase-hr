@@ -282,14 +282,6 @@
     }
   ])
 
-  const statusTone = (status: Api.Hr.ServiceRequestStatus) =>
-    ['resolved', 'closed'].includes(status)
-      ? 'success'
-      : ['submitted', 'waiting_employee'].includes(status)
-        ? 'warning'
-        : ['assigned', 'in_progress'].includes(status)
-          ? 'primary'
-          : 'info'
   const slaTone = (status?: Api.Hr.ServiceRequestSlaStatus) =>
     status === 'breached'
       ? 'danger'
@@ -420,18 +412,7 @@
       prop: 'status',
       label: '状态',
       width: 110,
-      formatter: (row) => {
-        const item = row as Api.Hr.ServiceRequest
-        return (
-          <ElTag type={statusTone(item.status)} effect="light">
-            {userStore.getDictLabelByValue(
-              'hrServiceRequestStatus',
-              item.status,
-              item.status ?? '--'
-            )}
-          </ElTag>
-        )
-      }
+      dict: { code: 'hrServiceRequestStatus', display: 'tag' }
     },
     {
       prop: 'slaStatus',

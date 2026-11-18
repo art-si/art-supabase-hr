@@ -41,7 +41,7 @@
           >
         </div>
 
-        <ElTabs v-model="activeDetailTab"
+        <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
           ><ElTabPane name="overview" label="福利资料"
             ><div class="space-y-4"
               ><section class="benefit-detail__summary" aria-label="福利记录摘要">
@@ -516,11 +516,10 @@
 
       h3 {
         margin: 3px 0 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 18px;
         color: var(--el-text-color-primary);
-        white-space: nowrap;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
 
       p {

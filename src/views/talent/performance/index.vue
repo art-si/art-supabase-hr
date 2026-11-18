@@ -129,7 +129,7 @@
 
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import { useHrMasterDeleteLocation } from '@hr/views/shared/use-hr-master-delete-location'
-  import { ElButton, ElProgress, ElSkeleton, ElTag } from 'element-plus'
+  import { ElButton, ElProgress, ElSkeleton } from 'element-plus'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -147,6 +147,7 @@
     type BusinessWorkspaceTag
   } from '@/components/business/business-workspace-header/index.vue'
   import BusinessTableWorkspaceActions from '@/components/business/business-table-workspace-actions/index.vue'
+  import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import { notifyFriendlyError, useArtFeedback } from '@/hooks/core/useArtFeedback'
   import { useRecordDeleteGuard } from '@/hooks/core/useRecordDeleteGuard'
   import {
@@ -420,24 +421,6 @@
     return items
   })
 
-  const statusTone = (
-    value?: string | null
-  ): 'success' | 'warning' | 'danger' | 'info' | 'primary' =>
-    ['completed', 'approved', 'on_track'].includes(value ?? '')
-      ? 'success'
-      : ['active', 'self_review', 'manager_review', 'in_progress'].includes(value ?? '')
-        ? 'primary'
-        : ['at_risk', 'attention', 'confirmed', 'reviewing', 'setup'].includes(value ?? '')
-          ? 'warning'
-          : ['off_track', 'cancelled', 'deactivated'].includes(value ?? '')
-            ? 'danger'
-            : 'info'
-  const statusTag = (dictionary: string, value?: string | null) => (
-    <ElTag type={statusTone(value)} effect="light" round>
-      {userStore.getDictLabelByValue(dictionary, value, value ? '未识别状态' : '--')}
-    </ElTag>
-  )
-
   const score = (value?: number | null, level?: string | null) => (
     <div class="performance-page__score">
       <strong>{value == null ? '--' : Number(value).toFixed(1)}</strong>
@@ -531,8 +514,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrPerformanceCycleStatus', (row as Api.Hr.PerformanceCycle).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrPerformanceCycleStatus"
+          value={(row as Api.Hr.PerformanceCycle).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -611,8 +601,15 @@
       prop: 'status',
       label: '阶段',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrPerformanceReviewStatus', (row as Api.Hr.PerformanceReview).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrPerformanceReviewStatus"
+          value={(row as Api.Hr.PerformanceReview).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -669,8 +666,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrPerformanceGoalStatus', (row as Api.Hr.PerformanceGoal).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrPerformanceGoalStatus"
+          value={(row as Api.Hr.PerformanceGoal).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -701,8 +705,15 @@
       prop: 'riskStatus',
       label: '风险',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrPerformanceCheckInRisk', (row as Api.Hr.PerformanceCheckIn).riskStatus)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrPerformanceCheckInRisk"
+          value={(row as Api.Hr.PerformanceCheckIn).riskStatus}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     { prop: 'nextAction', label: '下一步行动', minWidth: 240, showOverflowTooltip: true },
     {
@@ -769,11 +780,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag(
-          'hrPerformanceCalibrationStatus',
-          (row as Api.Hr.PerformanceCalibrationSession).status
-        )
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrPerformanceCalibrationStatus"
+          value={(row as Api.Hr.PerformanceCalibrationSession).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]

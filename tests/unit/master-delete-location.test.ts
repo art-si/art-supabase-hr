@@ -42,6 +42,7 @@ async function prepareLocation(
   const table = shallowRef<Pick<ArtTableQueryExpose, 'dataState' | 'refreshData'>>({
     dataState: {
       rows: computed(() => rows.value),
+      appliedSearchParams: computed(() => null),
       loading: computed(() => loading.value),
       error: computed(() => error.value),
       pagination: computed(() => undefined)

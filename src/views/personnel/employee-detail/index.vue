@@ -45,9 +45,20 @@
               :value="profile.employmentStatus"
               display="tag"
             />
-            <ElTag effect="plain" round>{{
-              profile.organization?.organizationName || '未归属组织'
-            }}</ElTag>
+            <ArtTooltip
+              :content="organizationName"
+              :disabled="!organizationName"
+              :trigger="['hover', 'focus']"
+              :enterable="false"
+            >
+              <ElTag
+                class="employee-detail-page__organization"
+                :tabindex="organizationName ? 0 : undefined"
+                effect="plain"
+                round
+                >{{ organizationName || '未归属组织' }}</ElTag
+              >
+            </ArtTooltip>
             <ElTag
               v-if="canViewMaintenanceAudit && profile.account?.id"
               type="success"
@@ -158,6 +169,7 @@
 <script setup lang="ts">
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import ArtDescriptions from '@/components/core/base/art-descriptions/index.vue'
+  import ArtTooltip from '@/components/core/feedback/art-tooltip/index.vue'
   import type { ArtDescriptionItem } from '@/components/core/base/art-descriptions/types'
   import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import ArtSectionTitle from '@/components/core/surfaces/art-section-title/index.vue'
@@ -179,6 +191,7 @@
   const activeTab = ref('basic')
   const profile = shallowRef<EmployeeProfile>()
   const page = reactive<{ loading: boolean; error: Error | null }>({ loading: false, error: null })
+  const organizationName = computed(() => profile.value?.organization?.organizationName || '')
 
   const employeeInitials = computed(() => {
     const name = profile.value?.employeeName?.trim() || ''
@@ -540,6 +553,22 @@
         background: var(--el-color-primary-light-8);
         border: 4px solid var(--el-bg-color);
         box-shadow: 0 10px 26px rgb(15 23 42 / 10%);
+      }
+    }
+
+    &__organization {
+      min-inline-size: 0;
+      max-inline-size: 100%;
+
+      :deep(.el-tag__content) {
+        min-inline-size: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--theme-color);
+        outline-offset: 2px;
       }
     }
 

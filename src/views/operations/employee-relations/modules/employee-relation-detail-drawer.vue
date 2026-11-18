@@ -67,7 +67,7 @@
           </div>
         </div>
 
-        <ElTabs v-model="activeDetailTab"
+        <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
           ><ElTabPane name="overview" label="案件概览"
             ><div class="space-y-4"
               ><section class="employee-relation-detail__summary" aria-label="案件控制摘要">
@@ -453,11 +453,10 @@
 
       h3 {
         margin: 3px 0 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 18px;
         color: var(--el-text-color-primary);
-        white-space: nowrap;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
 
       p {

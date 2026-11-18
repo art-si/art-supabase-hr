@@ -38,19 +38,21 @@
           </dl>
         </section>
 
-        <ElTabs v-model="activeTab">
+        <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeTab">
           <ElTabPane name="facts" label="合规资料">
             <section class="compliance-detail__section">
               <header>
                 <ArtSvgIcon icon="ri:information-2-line" />
                 <div><strong>合规资料</strong><small>当前有效版本的业务事实与责任信息</small></div>
               </header>
-              <dl class="compliance-detail__facts">
-                <div v-for="item in factItems" :key="item.label">
-                  <dt>{{ item.label }}</dt>
-                  <dd>{{ item.value }}</dd>
-                </div>
-              </dl>
+              <ArtDescriptions
+                :data="record"
+                :items="factItems"
+                :columns="2"
+                :mobile-columns="compactFacts ? 1 : 2"
+                :label-width="compactFacts ? 96 : 108"
+                empty-text=""
+              />
               <a
                 v-if="attachmentUrl"
                 class="compliance-detail__attachment"
@@ -119,11 +121,14 @@
 <script setup lang="ts">
   import ArtAsyncState from '@/components/core/feedback/art-async-state/index.vue'
   import { useDetailRecord } from '@/hooks/core/useDetailRecord'
+  import { useMediaQuery } from '@vueuse/core'
   import type { TagProps, TimelineItemProps } from 'element-plus'
   import ArtDrawer from '@/components/core/drawers/art-drawer/index.vue'
   import type { ArtDrawerExpose } from '@/components/core/drawers/art-drawer/types'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import ArtEmptyState from '@/components/core/feedback/art-empty-state/index.vue'
+  import ArtDescriptions from '@/components/core/base/art-descriptions/index.vue'
+  import type { ArtDescriptionItem } from '@/components/core/base/art-descriptions/types'
   import { createDateTimeFormatter, formatDateTimeValue as formatDateTime } from '@/utils/ui/format'
   import { useUserStore } from '@/store/modules/user'
   import { fetchComplianceDetail } from '@hr/api'
@@ -138,6 +143,7 @@
 
   const drawerRef = ref<ArtDrawerExpose>()
   const activeTab = ref('facts')
+  const compactFacts = useMediaQuery('(max-width: 767px)')
   const {
     detail: record,
     loading,
@@ -300,13 +306,14 @@
     ]
   })
 
-  const factItems = computed<DisplayItem[]>(() => {
+  const factItems = computed<ArtDescriptionItem<RecordItem>[]>(() => {
     if (!record.value) return []
     if (entity.value === 'contract') {
       const item = record.value as Api.Hr.ComplianceContract
       return [
-        { label: '合同编号', value: item.contractNo },
+        { key: 'contractNo', label: '合同编号', value: item.contractNo },
         {
+          key: 'contractType',
           label: '合同类型',
           value: userStore.getDictLabelByValue(
             'hrContractType',
@@ -314,12 +321,17 @@
             item.contractType ?? '--'
           )
         },
-        { label: '签订日期', value: formatDate(item.signDate) },
-        { label: '生效日期', value: formatDate(item.startDate) },
-        { label: '结束日期', value: formatDate(item.endDate) },
-        { label: '试用期结束', value: formatDate(item.probationEndDate) },
-        { label: '续签提醒', value: `${item.renewalReminderDays ?? 30} 天前` },
+        { key: 'signDate', label: '签订日期', value: formatDate(item.signDate) },
+        { key: 'startDate', label: '生效日期', value: formatDate(item.startDate) },
+        { key: 'endDate', label: '结束日期', value: formatDate(item.endDate) },
+        { key: 'probationEndDate', label: '试用期结束', value: formatDate(item.probationEndDate) },
         {
+          key: 'renewalReminderDays',
+          label: '续签提醒',
+          value: `${item.renewalReminderDays ?? 30} 天前`
+        },
+        {
+          key: 'termination',
           label: '终止信息',
           value: item.terminationDate
             ? `${formatDate(item.terminationDate)} · ${item.terminationReason || '未填写原因'}`
@@ -330,6 +342,7 @@
     const item = record.value as Api.Hr.ComplianceQualification
     return [
       {
+        key: 'qualificationType',
         label: '资质类别',
         value: userStore.getDictLabelByValue(
           'hrQualificationType',
@@ -337,13 +350,14 @@
           item.qualificationType ?? '--'
         )
       },
-      { label: '证书编号', value: item.certificateNo || '--' },
-      { label: '发证机构', value: item.issuer || '--' },
-      { label: '发证日期', value: formatDate(item.issueDate) },
-      { label: '有效期至', value: formatDate(item.expiryDate) },
-      { label: '核验时间', value: formatDateTime(item.verifiedAt) },
-      { label: '核验说明', value: item.verificationNote || '--' },
+      { key: 'certificateNo', label: '证书编号', value: item.certificateNo || '--' },
+      { key: 'issuer', label: '发证机构', value: item.issuer || '--' },
+      { key: 'issueDate', label: '发证日期', value: formatDate(item.issueDate) },
+      { key: 'expiryDate', label: '有效期至', value: formatDate(item.expiryDate) },
+      { key: 'verifiedAt', label: '核验时间', value: formatDateTime(item.verifiedAt) },
+      { key: 'verificationNote', label: '核验说明', value: item.verificationNote || '--' },
       {
+        key: 'revocation',
         label: '撤销信息',
         value: item.revokedAt
           ? `${formatDateTime(item.revokedAt)} · ${item.revocationReason || '未填写原因'}`
@@ -428,11 +442,10 @@
 
       h3 {
         margin: 4px 0 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 18px;
         color: var(--el-text-color-primary);
-        white-space: nowrap;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
 
       p {
@@ -535,37 +548,6 @@
       }
     }
 
-    &__facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1px;
-      margin: 0;
-      overflow: hidden;
-      background: var(--art-card-border);
-      border: 1px solid var(--art-card-border);
-      border-radius: var(--el-border-radius-base);
-
-      > div {
-        display: grid;
-        grid-template-columns: 108px minmax(0, 1fr);
-        gap: 10px;
-        padding: 11px 12px;
-        background: var(--default-box-color);
-      }
-
-      dt {
-        font-size: 12px;
-        color: var(--el-text-color-secondary);
-      }
-
-      dd {
-        margin: 0;
-        font-size: 12px;
-        color: var(--el-text-color-primary);
-        overflow-wrap: anywhere;
-      }
-    }
-
     &__attachment {
       display: inline-flex;
       gap: 7px;
@@ -641,18 +623,13 @@
         justify-content: flex-start;
       }
 
-      &__summary dl,
-      &__facts {
+      &__summary dl {
         grid-template-columns: 1fr;
       }
 
       &__summary dl > div:not(:first-child) {
         border-top: 1px solid var(--art-card-border);
         border-left: 0;
-      }
-
-      &__facts > div {
-        grid-template-columns: 96px minmax(0, 1fr);
       }
     }
   }

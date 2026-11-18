@@ -104,23 +104,10 @@
             <div
               ><small>调薪建议区间</small
               ><strong
-                >{{
-                  formatNumberValue(selectedCycle.guidelineMinPercent ?? 0, 'zh-CN', {
-                    maximumFractionDigits: 2
-                  })
-                }}% ～
-                {{
-                  formatNumberValue(selectedCycle.guidelineMaxPercent ?? 0, 'zh-CN', {
-                    maximumFractionDigits: 2
-                  })
-                }}%</strong
+                >{{ formatReviewPercent(selectedCycle.guidelineMinPercent) }} ～
+                {{ formatReviewPercent(selectedCycle.guidelineMaxPercent) }}</strong
               ><em
-                >默认预算率
-                {{
-                  formatNumberValue(selectedCycle.defaultBudgetPercent ?? 0, 'zh-CN', {
-                    maximumFractionDigits: 2
-                  })
-                }}%</em
+                >默认预算率 {{ formatReviewPercent(selectedCycle.defaultBudgetPercent) }}</em
               ></div
             >
           </article>
@@ -129,12 +116,7 @@
               ><ArtSvgIcon :icon="overview.amountAccess ? 'ri:wallet-3-line' : 'ri:lock-2-line'"
             /></span>
             <div
-              ><small>预算占用</small
-              ><strong>{{
-                overview.amountAccess
-                  ? `${formatNumberValue(overview.budgetUtilization ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}%`
-                  : '金额受控'
-              }}</strong
+              ><small>预算占用</small><strong>{{ budgetUtilizationLabel ?? '金额受控' }}</strong
               ><em>{{
                 overview.amountAccess
                   ? `${formatCurrencyCodeValue(overview.proposedIncreaseAmount, selectedCycle?.currencyCode ?? 'CNY')} / ${formatCurrencyCodeValue(overview.budgetAmount, selectedCycle?.currencyCode ?? 'CNY')}`
@@ -227,7 +209,7 @@
 
 <script setup lang="tsx">
   import '../../shared/hr-table-workspace-layout.scss'
-  import { formatCurrencyCodeValue, formatNumberValue } from '@/utils/ui/format'
+  import { formatCurrencyCodeValue, formatPercentValue } from '@/utils/ui/format'
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import MasterDataDeleteGuard from '@/components/business/master-data-delete-guard/index.vue'
   import { useRecordDeleteGuard } from '@/hooks/core/useRecordDeleteGuard'
@@ -371,6 +353,16 @@
     budgetUtilization: null
   })
 
+  const reviewPercentOptions = { numberFormat: { maximumFractionDigits: 2 } }
+  const formatReviewPercent = (value: number | null | undefined): string => {
+    const percent = Number(value ?? 0)
+    return Number.isFinite(percent)
+      ? formatPercentValue(percent, reviewPercentOptions)
+      : `${value}%`
+  }
+  const budgetUtilizationLabel = computed(() =>
+    overview.amountAccess ? formatReviewPercent(overview.budgetUtilization) : null
+  )
   const selectedCycle = computed(() => overview.selectedCycle)
   const statusOrder: Api.Hr.CompensationReviewCycleStatus[] = [
     'draft',
@@ -442,9 +434,7 @@
     },
     {
       label: '预算占用率',
-      value: overview.amountAccess
-        ? `${formatNumberValue(overview.budgetUtilization ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}%`
-        : '--',
+      value: budgetUtilizationLabel.value ?? '--',
       description: overview.amountAccess
         ? `${overview.outOfGuidelineCount} 项超出建议区间`
         : '当前权限不展示薪酬金额',
@@ -677,8 +667,8 @@
         const item = row as Api.Hr.CompensationReviewCycle
         return (
           <BusinessTableIdentityCell
-            primary={`预算率 ${formatNumberValue(item.defaultBudgetPercent ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}%`}
-            secondary={`${formatNumberValue(item.guidelineMinPercent ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}% ～ ${formatNumberValue(item.guidelineMaxPercent ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}%`}
+            primary={`预算率 ${formatReviewPercent(item.defaultBudgetPercent)}`}
+            secondary={`${formatReviewPercent(item.guidelineMinPercent)} ～ ${formatReviewPercent(item.guidelineMaxPercent)}`}
           />
         )
       }
@@ -795,7 +785,7 @@
             class={item.outOfGuideline ? 'review-page__variance is-risk' : 'review-page__variance'}
           >
             {item.increasePercent > 0 ? '+' : ''}
-            {formatNumberValue(item.increasePercent ?? 0, 'zh-CN', { maximumFractionDigits: 2 })}%
+            {formatReviewPercent(item.increasePercent)}
           </span>
         )
       }
@@ -910,12 +900,7 @@
               }
               strokeWidth={7}
             />
-            <small>
-              {formatNumberValue(item.utilizationPercent ?? 0, 'zh-CN', {
-                maximumFractionDigits: 2
-              })}
-              %
-            </small>
+            <small>{formatReviewPercent(item.utilizationPercent)}</small>
           </div>
         )
       }

@@ -39,7 +39,7 @@
           </div>
         </section>
 
-        <ElTabs v-model="activeDetailTab"
+        <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
           ><ElTabPane name="overview" label="问题与处理"
             ><div class="space-y-4"
               ><section class="service-request-drawer__summary" aria-label="工单交付摘要">
@@ -327,12 +327,10 @@
 
       dd {
         margin: 5px 0 3px;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 13px;
         font-weight: 650;
         color: var(--el-text-color-primary);
-        white-space: nowrap;
+        overflow-wrap: anywhere;
       }
     }
 

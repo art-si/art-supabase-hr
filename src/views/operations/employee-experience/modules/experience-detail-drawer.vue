@@ -35,7 +35,7 @@
         </section>
 
         <template v-if="surveyDetail">
-          <ElTabs v-model="activeDetailTab"
+          <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
             ><ElTabPane name="overview" label="调查配置"
               ><div class="space-y-4"
                 ><section class="experience-detail__summary" aria-label="调查配置摘要">
@@ -135,7 +135,7 @@
         </template>
 
         <template v-else-if="insightDetail">
-          <ElTabs v-model="activeDetailTab"
+          <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
             ><ElTabPane name="overview" label="题目得分"
               ><div class="space-y-4"
                 ><section class="experience-detail__insight-overview" aria-label="主题洞察摘要">
@@ -324,7 +324,7 @@
         </template>
 
         <template v-else-if="actionDetail">
-          <ElTabs v-model="activeDetailTab"
+          <ElTabs class="art-card-xs art-overlay-tab-card" v-model="activeDetailTab"
             ><ElTabPane name="overview" label="行动资料"
               ><div class="space-y-4"
                 ><section class="experience-detail__summary" aria-label="行动控制摘要">
@@ -794,20 +794,16 @@
 
     &__summary dd {
       margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
       font-size: 14px;
       font-weight: 650;
       color: var(--el-text-color-primary);
-      white-space: nowrap;
+      overflow-wrap: anywhere;
     }
 
     &__summary small {
-      overflow: hidden;
-      text-overflow: ellipsis;
       font-size: 10px;
       color: var(--el-text-color-secondary);
-      white-space: nowrap;
+      overflow-wrap: anywhere;
     }
 
     &__section {

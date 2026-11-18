@@ -302,7 +302,11 @@
       label: '员工身份',
       minWidth: 210,
       fixed: 'left',
-      link: { permission: 'Hr:Employee:View', onClick: openEmployeeDetail },
+      link: {
+        permission: 'Hr:Employee:View',
+        title: (row) => `查看员工 ${row.employeeName} 档案`,
+        onClick: openEmployeeDetail
+      },
       formatter: (row) =>
         h(HrEmployeeIdentityCell, {
           employeeName: row.employeeName,

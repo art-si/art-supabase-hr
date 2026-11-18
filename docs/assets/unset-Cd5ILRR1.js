@@ -1,0 +1,1 @@
+import{Vn as e}from"./sys-DhFwwDs2.js";function t(t,n){return t==null||e(t,n)}export{t};

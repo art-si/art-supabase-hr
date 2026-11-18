@@ -73,6 +73,7 @@
                 highlight-current
                 :expand-on-click-node="false"
                 aria-label="组织树"
+                @keydown.capture="handleSelectableTreeKeydown"
                 @node-click="handleOrganizationSelect"
               >
                 <template #default="{ data: organization }">
@@ -256,6 +257,7 @@
   import { useTenantScopeStore } from '@/store/modules/tenant-scope'
   import { useTenantOperationGuard } from '@/hooks/core/useTenantOperationGuard'
   import TreeUtils from '@/utils/tree'
+  import { handleSelectableTreeKeydown } from '@/utils/ui/selection-tree-keyboard'
   import { getFriendlySupabaseErrorMessage } from '@/utils/supabase/error'
   import { fetchOrganizationPositionDirectory } from '@hr/api'
 

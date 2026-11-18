@@ -41,7 +41,23 @@
               <span aria-hidden="true"><ArtSvgIcon icon="ri:node-tree" /></span>
               <div>
                 <small>当前组织范围</small>
-                <strong>{{ selectedOrganizationLabel }}</strong>
+                <strong>
+                  <ArtTooltip
+                    v-if="selectedOrganization"
+                    :content="selectedOrganizationLabel"
+                    trigger="click"
+                    placement="top-start"
+                  >
+                    <button
+                      type="button"
+                      class="block w-full cursor-pointer truncate text-left"
+                      :title="selectedOrganizationLabel"
+                    >
+                      {{ selectedOrganizationLabel }}
+                    </button>
+                  </ArtTooltip>
+                  <template v-else>{{ selectedOrganizationLabel }}</template>
+                </strong>
               </div>
               <ElButton type="primary" plain @click="openOrganizationDrawer">
                 <ArtSvgIcon icon="ri:filter-3-line" />组织筛选
@@ -53,6 +69,7 @@
               v-model="tableState.searchQuery"
               :search-items="searchItems"
               :api-fn="fetchTableData"
+              :response-adapter="responseAdapter"
               :columns-factory="columnsFactory"
               :header-actions="headerActions"
               header-actions-placement="workspace"
@@ -60,7 +77,7 @@
               :table-props="{
                 rowKey: 'id',
                 tableLayout: 'fixed',
-                emptyText: '暂无岗位',
+                emptyText: hasAppliedFilters ? '没有符合条件的岗位' : '暂无岗位',
                 emptyDescription: tableEmptyDescription
               }"
               :on-success="handleTableSuccess"
@@ -106,12 +123,12 @@
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
-    ArtTableQueryHeaderAction,
-    ArtTableQueryProps
+    ArtTableQueryHeaderAction
   } from '@/components/core/tables/art-table-query/index.vue'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import BusinessTableRowActions from '@/components/business/business-table-row-actions/index.vue'
   import ArtDrawer from '@/components/core/drawers/art-drawer/index.vue'
+  import ArtTooltip from '@/components/core/feedback/art-tooltip/index.vue'
   import type { ArtDrawerExpose } from '@/components/core/drawers/art-drawer/types'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import ArtWorkspaceSplitter from '@/components/core/layouts/art-workspace-splitter/index.vue'
@@ -125,6 +142,8 @@
   import OrganizationScopeFilter from '@/views/system/shared/organization-scope-filter.vue'
   import { ColumnOption, DialogType } from '@/types'
   import { buildSupabasePageRange } from '@/utils/supabase/pagination'
+  import type { ApiResponse } from '@/utils/table/table-cache'
+  import { defaultResponseAdapter } from '@/utils/table/table-utils'
   import { formatWithDayjs } from '@/utils/time'
   import TreeUtils from '@/utils/tree'
   import { useUserStore } from '@/store/modules/user'
@@ -138,6 +157,8 @@
   type Position = Api.Hr.Position
   type SearchParams = Api.Hr.PositionSearchParams
   type TableParams = SearchParams & Pick<Api.Common.PaginationParams, 'current' | 'size'>
+  type TableResult = Awaited<ReturnType<typeof fetchPositionList>> & { hasFilters: boolean }
+  type TableResponse = ApiResponse<Position> & { hasFilters: boolean }
   type Organization = Api.SystemManage.OrganizationScopeFilterItem
 
   interface PositionDialogDefaults {
@@ -176,6 +197,7 @@
   const includeDescendantOrganizations = ref(true)
   const selectedTenantId = computed(() => effectiveTenantId.value ?? '')
   const overview = reactive<{ total: number; rows: PositionOverviewRow[] }>({ total: 0, rows: [] })
+  const hasAppliedFilters = ref(false)
   const tableState = reactive<{ searchQuery: SearchParams }>({
     searchQuery: { enabled: undefined, keyword: '' }
   })
@@ -199,11 +221,13 @@
       .map((item) => item.id)
       .filter((id): id is string => Boolean(id))
   })
-  const tableEmptyDescription = computed(() =>
-    selectedOrganization.value
-      ? `“${selectedOrganization.value.organizationName}”当前范围内暂无岗位，可新增岗位或调整筛选条件。`
+  const tableEmptyDescription = computed(() => {
+    if (hasAppliedFilters.value) return '可调整岗位状态或关键字后再查询。'
+    if (!hasAuth('Hr:Position:Add')) return '可切换组织范围后再查询。'
+    return selectedOrganization.value
+      ? '可新增岗位，或切换组织范围后再查询。'
       : '请先维护职务体系，再为组织新增具体岗位。'
-  )
+  })
   const enabledPositionCount = computed(
     () => overview.rows.filter((position) => position.enabled).length
   )
@@ -370,23 +394,31 @@
     }
   ])
 
-  const fetchTableData = (params: TableParams) => {
+  const fetchTableData = async (params: TableParams): Promise<TableResult> => {
     const { from, to } = buildSupabasePageRange({ current: params.current, size: params.size })
-    return fetchPositionList({
+    const hasFilters = params.enabled != null || Boolean(params.keyword?.trim())
+    const result = await fetchPositionList({
       ...params,
       tenantId: selectedTenantId.value || undefined,
       organizationIds: selectedOrganizationIds.value,
       from,
       to
     })
+    return { ...result, hasFilters }
   }
 
-  const handleTableSuccess: NonNullable<ArtTableQueryProps['onSuccess']> = (rows, response) => {
+  const responseAdapter = (response: TableResult): TableResponse => ({
+    ...defaultResponseAdapter<Position>(response),
+    hasFilters: response.hasFilters
+  })
+
+  const handleTableSuccess = (rows: Position[], response: TableResponse): void => {
     overview.rows = rows.map((row) => ({
       enabled: Boolean(row.enabled),
       employeeCount: Number(row.employeeCount ?? 0)
     }))
     overview.total = response.total ?? rows.length
+    hasAppliedFilters.value = response.hasFilters
   }
 
   const loadOrganizationTree = async (): Promise<void> => {
