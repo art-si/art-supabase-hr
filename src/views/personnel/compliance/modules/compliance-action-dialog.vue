@@ -39,6 +39,7 @@
 <script setup lang="ts">
   import { employeeReferenceSelection } from '@/utils/form/employee-reference'
   import { notifyFriendlyError } from '@/hooks/core/useArtFeedback'
+  import { useArtOverlaySession } from '@/hooks/core/useArtOverlay'
   import { validateArtFormForSubmit } from '@/utils/form/validate-art-form'
   import { getFriendlySupabaseErrorMessage } from '@/utils/supabase'
   import dayjs from 'dayjs'
@@ -89,6 +90,7 @@
   const userStore = useUserStore()
   const { getDictMap } = storeToRefs(userStore)
   const dialogRef = ref<ArtDialogExpose>()
+  const session = useArtOverlaySession(() => Boolean(unref(dialogRef.value?.visible)))
   const activeTab = ref('')
   const formRef = ref<ArtFormExpose>()
   const entity = ref<Entity>('contract')
@@ -405,23 +407,28 @@
   }
 
   const loadDeferredRecord = async (): Promise<void> => {
-    if (!deferredLoader.value) return
+    const loadRecord = deferredLoader.value
+    if (!loadRecord) return
+    const requestVersion = session.invalidate()
+    const targetEntity = entity.value
+    const targetRequestedAction = requestedAction.value
     loadError.value = ''
     dialogRef.value?.setLoading(true)
     try {
-      const targetRecord = await deferredLoader.value()
+      const targetRecord = await loadRecord()
+      if (!session.isCurrent(requestVersion)) return
       if (!targetRecord) throw new Error('合规档案不存在或已无权访问')
       const targetAction =
-        requestedAction.value === 'resolve'
-          ? entity.value === 'contract'
+        targetRequestedAction === 'resolve'
+          ? targetEntity === 'contract'
             ? (targetRecord as Api.Hr.ComplianceContract).contractStatus === 'renewing'
               ? 'renew'
               : 'start_renewal'
             : (targetRecord as Api.Hr.ComplianceQualification).verificationStatus === 'verified'
               ? 'comment'
               : 'verify'
-          : requestedAction.value
-      initializeAction(entity.value, targetAction, targetRecord)
+          : targetRequestedAction
+      initializeAction(targetEntity, targetAction, targetRecord)
       dialogRef.value?.setOptions({
         title: actionMeta.value.title,
         subtitle: `${targetRecord.employee?.employeeName || '员工'} · ${targetRecord.employee?.employeeNo || '未维护工号'}`,
@@ -429,14 +436,17 @@
       })
       if (targetAction === 'renew') {
         await numberRule.loadRule()
+        if (!session.isCurrent(requestVersion)) return
         if (numberRule.automatic.value && !formModel.contractNo) formModel.contractNo = 'AUTO'
       }
       await nextTick()
+      if (!session.isCurrent(requestVersion)) return
       formRef.value?.clearValidate()
     } catch (error) {
+      if (!session.isCurrent(requestVersion)) return
       loadError.value = getFriendlySupabaseErrorMessage(error, '合规档案加载失败')
     } finally {
-      dialogRef.value?.setLoading(false)
+      if (session.isCurrent(requestVersion)) dialogRef.value?.setLoading(false)
     }
   }
 
@@ -445,6 +455,7 @@
     targetAction: Api.Hr.ComplianceAction,
     targetRecord: RecordItem
   ): Promise<void> => {
+    const requestVersion = session.invalidate()
     initializeAction(targetEntity, targetAction, targetRecord)
     loadError.value = ''
     deferredLoader.value = undefined
@@ -456,15 +467,23 @@
       contentMaxHeight: 'calc(100vh - 184px)',
       onOpen: async (_data, api) => {
         await nextTick()
+        if (!session.isCurrent(requestVersion)) return
         formRef.value?.clearValidate()
         if (targetAction !== 'renew') return
         api.setLoading(true)
         try {
           await numberRule.loadRule()
+          if (!session.isCurrent(requestVersion)) return
           if (numberRule.automatic.value && !formModel.contractNo) formModel.contractNo = 'AUTO'
         } finally {
-          api.setLoading(false)
+          if (session.isCurrent(requestVersion)) api.setLoading(false)
         }
+      },
+      onClose: () => {
+        session.invalidate()
+      },
+      onReset: () => {
+        session.invalidate()
       },
       onConfirm: submit
     })
@@ -475,6 +494,7 @@
     targetAction: Api.Hr.ComplianceAction | 'resolve',
     loadRecord: () => Promise<RecordItem | undefined>
   ): Promise<void> => {
+    session.invalidate()
     entity.value = targetEntity
     action.value = 'comment'
     record.value = undefined
@@ -491,6 +511,12 @@
       loading: true,
       loadingText: '正在加载合规档案…',
       onOpen: loadDeferredRecord,
+      onClose: () => {
+        session.invalidate()
+      },
+      onReset: () => {
+        session.invalidate()
+      },
       onConfirm: submit
     })
   }

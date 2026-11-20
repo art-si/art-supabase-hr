@@ -109,6 +109,7 @@
   import '../../shared/hr-table-workspace-layout.scss'
   import dayjs from 'dayjs'
   import { ElProgress, ElTag } from 'element-plus'
+  import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -352,19 +353,6 @@
         : value === 'low' || value === 'ready_now'
           ? 'success'
           : 'info'
-  const statusType = (
-    value?: string | null
-  ): 'success' | 'warning' | 'danger' | 'info' | 'primary' =>
-    ['active', 'completed'].includes(value ?? '')
-      ? 'success'
-      : ['nominated', 'in_progress'].includes(value ?? '')
-        ? 'warning'
-        : ['closed', 'withdrawn', 'cancelled'].includes(value ?? '')
-          ? 'info'
-          : value === 'placed'
-            ? 'primary'
-            : 'info'
-
   const actionColumn = (): ColumnOption<RecordItem> => ({
     prop: 'action',
     label: '操作',
@@ -544,13 +532,13 @@
           label: '状态',
           width: 105,
           formatter: (row) => (
-            <ElTag type={statusType((row as Api.Hr.SuccessionPlan).status)} effect="light">
-              {userStore.getDictLabelByValue(
-                'hrSuccessionPlanStatus',
-                (row as Api.Hr.SuccessionPlan).status,
-                '待核对'
-              )}
-            </ElTag>
+            <ArtDictDisplay
+              dictCode="hrSuccessionPlanStatus"
+              value={(row as Api.Hr.SuccessionPlan).status}
+              display="tag"
+              emptyText="待核对"
+              unknownText="待核对"
+            />
           )
         },
         actionColumn()
@@ -647,13 +635,13 @@
           label: '状态',
           width: 110,
           formatter: (row) => (
-            <ElTag type={statusType((row as Api.Hr.SuccessionCandidate).status)} effect="light">
-              {userStore.getDictLabelByValue(
-                'hrSuccessionCandidateStatus',
-                (row as Api.Hr.SuccessionCandidate).status,
-                '待核对'
-              )}
-            </ElTag>
+            <ArtDictDisplay
+              dictCode="hrSuccessionCandidateStatus"
+              value={(row as Api.Hr.SuccessionCandidate).status}
+              display="tag"
+              emptyText="待核对"
+              unknownText="待核对"
+            />
           )
         },
         actionColumn()
@@ -726,16 +714,13 @@
         label: '状态',
         width: 105,
         formatter: (row) => (
-          <ElTag
-            type={statusType((row as Api.Hr.SuccessionDevelopmentAction).status)}
-            effect="light"
-          >
-            {userStore.getDictLabelByValue(
-              'hrSuccessionActionStatus',
-              (row as Api.Hr.SuccessionDevelopmentAction).status,
-              '待核对'
-            )}
-          </ElTag>
+          <ArtDictDisplay
+            dictCode="hrSuccessionActionStatus"
+            value={(row as Api.Hr.SuccessionDevelopmentAction).status}
+            display="tag"
+            emptyText="待核对"
+            unknownText="待核对"
+          />
         )
       },
       actionColumn()

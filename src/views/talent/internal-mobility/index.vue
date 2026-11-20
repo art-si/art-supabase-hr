@@ -159,7 +159,8 @@
 
   import { useDictionaryOptions } from '@/hooks/core/useDictionaryOptions'
   import dayjs from 'dayjs'
-  import { ElButton, ElProgress, ElTag, type TagProps } from 'element-plus'
+  import { ElButton, ElProgress, ElTag } from 'element-plus'
+  import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -364,41 +365,7 @@
     gig: '短期任务',
     onsite: '现场',
     hybrid: '混合',
-    remote: '远程',
-    draft: '草稿',
-    open: '开放中',
-    paused: '已暂停',
-    closed: '已关闭',
-    cancelled: '已取消',
-    submitted: '已提交',
-    under_review: '评审中',
-    shortlisted: '候选名单',
-    offered: '已发意向',
-    accepted: '已接受',
-    rejected: '未通过',
-    withdrawn: '已撤回',
-    converted: '已转异动',
-    not_informed: '尚未知会',
-    informed: '已知会',
-    supported: '明确支持'
-  }
-  const statusTag = (value?: string | null) => {
-    const type: TagProps['type'] = ['open', 'accepted', 'converted', 'supported'].includes(
-      value ?? ''
-    )
-      ? 'success'
-      : ['draft', 'paused', 'submitted', 'under_review', 'shortlisted', 'offered'].includes(
-            value ?? ''
-          )
-        ? 'warning'
-        : ['rejected', 'cancelled'].includes(value ?? '')
-          ? 'danger'
-          : 'info'
-    return (
-      <ElTag type={type} effect="light" round>
-        {labels[value ?? ''] ?? value ?? '--'}
-      </ElTag>
-    )
+    remote: '远程'
   }
 
   const opportunityStatusOptions = useDictionaryOptions('hrMobilityOpportunityStatus')
@@ -504,7 +471,11 @@
         const item = row as Api.Hr.InternalMobilityOpportunity
         return (
           <div class="mobility-page__tag-stack">
-            {statusTag(item.opportunityType)}
+            <ArtDictDisplay
+              dictCode="hrMobilityOpportunityType"
+              value={item.opportunityType}
+              display="tag"
+            />
             <span>
               {labels[item.workMode]}
               {item.workLocation ? ` · ${item.workLocation}` : ''}
@@ -556,7 +527,7 @@
       prop: 'status',
       label: '状态',
       width: 108,
-      formatter: (row) => statusTag((row as Api.Hr.InternalMobilityOpportunity).status)
+      dict: { code: 'hrMobilityOpportunityStatus', display: 'tag' }
     },
     {
       prop: 'action',
@@ -618,7 +589,7 @@
       prop: 'managerAwareness',
       label: '经理知会',
       width: 112,
-      formatter: (row) => statusTag((row as Api.Hr.InternalMobilityApplication).managerAwareness)
+      dict: { code: 'hrMobilityManagerAwareness', display: 'tag' }
     },
     {
       prop: 'assessmentScore',
@@ -638,7 +609,7 @@
       prop: 'status',
       label: '阶段',
       width: 110,
-      formatter: (row) => statusTag((row as Api.Hr.InternalMobilityApplication).status)
+      dict: { code: 'hrMobilityApplicationStatus', display: 'tag' }
     },
     {
       prop: 'updateTime',

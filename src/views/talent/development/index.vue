@@ -91,6 +91,7 @@
   import MasterDeleteProcessingNotice from '@/components/business/master-delete-processing-notice/index.vue'
   import dayjs from 'dayjs'
   import { ElProgress, ElTag } from 'element-plus'
+  import ArtDictDisplay from '@/components/core/base/art-dict-display/index.vue'
   import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
   import type {
     ArtTableQueryExpose,
@@ -331,25 +332,6 @@
     return items
   })
 
-  const statusType = (
-    value?: string | null
-  ): 'success' | 'warning' | 'danger' | 'info' | 'primary' =>
-    ['published', 'open', 'passed', 'valid', 'completed'].includes(value ?? '')
-      ? 'success'
-      : ['in_progress', 'attending', 'enrolled'].includes(value ?? '')
-        ? 'primary'
-        : ['failed', 'no_show', 'revoked'].includes(value ?? '')
-          ? 'danger'
-          : ['cancelled', 'retired', 'expired', 'withdrawn'].includes(value ?? '')
-            ? 'warning'
-            : 'info'
-
-  const statusTag = (dictionary: string, status?: string | null) => (
-    <ElTag type={statusType(status)} effect="light" round>
-      {userStore.getDictLabelByValue(dictionary, status, status ? '未识别状态' : '--')}
-    </ElTag>
-  )
-
   const actionColumn = (): ColumnOption<RecordItem> => ({
     prop: 'action',
     label: '操作',
@@ -459,7 +441,15 @@
       prop: 'status',
       label: '状态',
       width: 110,
-      formatter: (row) => statusTag('hrTrainingPlanStatus', (row as Api.Hr.LearningPlan).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrTrainingPlanStatus"
+          value={(row as Api.Hr.LearningPlan).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -529,7 +519,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) => statusTag('hrLearningCourseStatus', (row as Api.Hr.LearningCourse).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrLearningCourseStatus"
+          value={(row as Api.Hr.LearningCourse).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -665,8 +663,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrLearningSessionStatus', (row as Api.Hr.LearningSession).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrLearningSessionStatus"
+          value={(row as Api.Hr.LearningSession).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -728,8 +733,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrLearningEnrollmentStatus', (row as Api.Hr.LearningEnrollment).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrLearningEnrollmentStatus"
+          value={(row as Api.Hr.LearningEnrollment).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
@@ -797,8 +809,15 @@
       prop: 'status',
       label: '状态',
       width: 105,
-      formatter: (row) =>
-        statusTag('hrLearningCertificateStatus', (row as Api.Hr.LearningCertificate).status)
+      formatter: (row) => (
+        <ArtDictDisplay
+          dictCode="hrLearningCertificateStatus"
+          value={(row as Api.Hr.LearningCertificate).status}
+          display="tag"
+          unknownText="未识别状态"
+          emptyText="--"
+        />
+      )
     },
     actionColumn()
   ]
